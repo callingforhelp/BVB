@@ -20,7 +20,7 @@ scene_id="${scene_id%.blend}"
 scene_id="${scene_id%.mp4}"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$script_dir"
+repo_root="$(cd "$script_dir/.." && pwd)"
 
 blend_file="$repo_root/blend/${scene_id}.blend"
 dataset_root="$repo_root/VSI-Bench"
@@ -32,7 +32,7 @@ fi
 
 if [[ ! -d "$dataset_root" ]]; then
   echo "Error: VSI-Bench folder not found: $dataset_root" >&2
-  echo "Run this from the BVB repository root first:" >&2
+  echo "Clone VSI-Bench into the BVB repository root first:" >&2
   echo "  git clone https://huggingface.co/datasets/nyu-visionx/VSI-Bench" >&2
   exit 1
 fi

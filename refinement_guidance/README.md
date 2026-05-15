@@ -54,7 +54,13 @@ Choose an ID that has not been refined yet. Copy that ID exactly as it appears i
 
 ## 4. Start Refinement
 
-From the `BVB` repository root, run:
+Enter the refinement guidance folder:
+
+```bash
+cd refinement_guidance
+```
+
+Then start refinement:
 
 ```bash
 ./refine.sh [id]
@@ -82,19 +88,13 @@ Focus on changes that matter for the question. For example, if the QA item depen
 After finishing the refinement:
 
 1. Save the `.blend` file in Blender.
-2. Pull the latest changes:
+2. Submit your refined Blender file:
 
 ```bash
-git pull
+./submit.sh [id]
 ```
 
-3. Push your refined Blender file:
-
-```bash
-git push
-```
-
-If Git asks you to commit first, commit only the refined `.blend` file for the scene you worked on, then push.
+The script pulls the latest changes, commits only `blend/[id].blend`, and pushes the commit.
 
 ## 7. Update the Tracking Table
 
