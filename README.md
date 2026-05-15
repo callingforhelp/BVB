@@ -35,18 +35,9 @@ The benchmark supports two complementary uses:
 
 Blender is a universal 3D playground covering modeling, animation, rendering, and simulation, with a full Python API and a permissive open source license. It has a high learning curve for humans, which is precisely what makes agent mastery of it valuable.
 
-## Repository layout
+## Data
 
-```
-BVB/
-├── blend/                  # 526 Blender scenes, named <scene_id>.blend
-├── refine.sh               # Opens a scene + its source video side by side
-├── refinement_guidance/    # Step-by-step guide for human refiners
-├── LICENSE
-└── README.md
-```
-
-The source videos live in **VSI-Bench** ([Visual Spatial Intelligence Benchmark](https://vision-x-nyu.github.io/thinking-in-space.github.io/)), real indoor 3D scenes from ArkitScenes, ScanNet, and ScanNet++ with spatial reasoning QA pairs. VSI-Bench is **not** committed to this repo (see [`.gitignore`](.gitignore)) and should be cloned locally.
+The source videos come from **VSI-Bench** ([Visual Spatial Intelligence Benchmark](https://vision-x-nyu.github.io/thinking-in-space.github.io/)), real indoor 3D scenes from ArkitScenes, ScanNet, and ScanNet++ with spatial reasoning QA pairs. VSI-Bench is not committed to this repo and should be cloned locally.
 
 Each finished BVB data point is a tuple of:
 
@@ -55,9 +46,9 @@ Each finished BVB data point is a tuple of:
 - the human refined `.blend` scene
 - (eventually) the exported Python script that reconstructs the scene
 
-## Data construction
-
 The data pipeline combines automated reconstruction with human in the loop refinement:
+
+![BVB data curation pipeline](assets/data_curation_pipeline.png)
 
 1. Take a VSI-Bench video and its QA pairs.
 2. Extract representative frames.
