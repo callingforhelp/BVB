@@ -52,6 +52,8 @@ https://www.notion.so/1c0aec8a3b714a368439a6f10a7a7220?v=2cfa585c3f8a4c7b9509f40
 
 Choose an ID that has not been refined yet. Copy that ID exactly as it appears in the table.
 
+<img src="assets/notion-tracker.jpg" alt="Notion Table" width="800" height="600">
+
 ## 4. Start Refinement
 
 From the `BVB` repository root, start refinement:
