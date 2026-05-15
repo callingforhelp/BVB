@@ -3,11 +3,11 @@
   <img src="assets/bvb-logo.png" alt="BVB Logo" width="300" height="300">
 </p>
 
-> *If an agent truly understands a video, it can reconstruct it programmatically.*
-
 **BVB (Blender-VideoBench)** is a benchmark for evaluating fine-grained video understanding through programmatic reconstruction. Instead of relying solely on QA accuracy, which is a necessary but insufficient measure of understanding, BVB asks an agent to generate Blender Python code that reconstructs the 3D scene depicted in a video. Because code is precise, structured, executable, and verifiable, a successful reconstruction provides a *computational proof* of understanding.
 
 This repository hosts the dataset and refinement tooling for BVB.
+
+> *If an agent truly understands a video, it can reconstruct it programmatically.*
 
 ## Motivation
 
