@@ -1,6 +1,6 @@
 # BVB: Blender-VideoBench
 <p align="center">
-  <img src="assets/bvb-logo.png" alt="BVB Logo" width="200" height="200">
+  <img src="assets/bvb-logo.png" alt="BVB Logo" width="300" height="300">
 </p>
 
 > *If an agent truly understands a video, it can reconstruct it programmatically.*
