@@ -21,13 +21,7 @@ If an agent can write Blender Python that, when executed, produces a scene match
 
 ## Pipeline
 
-```
-Original video ──► Agent ──► Blender Python ──► Blender ──► Rendered video
-                                                                  │
-                                                                  ▼
-                                                        Compare with original
-                                                       (vision-level + code-level)
-```
+![BVB pipeline teaser](assets/teaser.png)
 
 The benchmark supports two complementary uses:
 
@@ -57,9 +51,11 @@ The data pipeline combines automated reconstruction with human in the loop refin
 2. Extract representative frames.
 3. Use an agent (Cursor + [BlenderMCP](https://github.com/ahujasid/blender-mcp)) to auto build a first pass Blender scene.
 4. **Human refines** the scene in Blender so it preserves the information needed to answer the QA correctly. This is the main contribution of this repo at present.
-5. Export the scene to Python via a custom exporter; the script can re-import the scene end to end.
+5. Export the scene to Python via the custom [blender-export-bpy](https://github.com/yunlong10/blender-export-bpy) exporter; the script can re-import the scene end to end.
 
 External asset libraries (PolyHaven, Sketchfab, etc.) are **disallowed** for benchmark agents. All geometry must be constructed from scratch, so the benchmark measures genuine scene understanding rather than asset retrieval skill.
+
+**Paired Modality Editing (PME)** applies parallel edits to the video (via video to video editing / inpainting) and the Blender scene (via keyframe animation) to produce event aligned pairs that test dynamic and temporal understanding without cross modal generation artifacts.
 
 ## Evaluation
 
@@ -76,8 +72,6 @@ BVB uses dual level evaluation:
 | Vision | **Δ accuracy** | Difference between QA accuracy on original vs. rendered video |
 | Code | **Semantic edit distance** | LLM judged structural difference between GT code and agent code |
 | Code | **Executability** | Code that fails to run scores 0, which is a natural sanity check |
-
-A planned extension, **Paired Modality Editing (PME)**, applies parallel edits to the video (via video to video editing / inpainting) and the Blender scene (via keyframe animation) to produce event aligned pairs that test dynamic and temporal understanding without cross modal generation artifacts.
 
 ## Contributing scene refinements
 
