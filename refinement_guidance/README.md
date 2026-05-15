@@ -4,7 +4,9 @@ This guide is for refining the generated Blender scenes in the BVB repository. T
 
 ## 1. Set Up Blender
 
-Install the latest version of Blender from the official Blender website.
+Install the latest version of Blender from the official Blender website:
+
+https://www.blender.org/download/
 
 Before starting refinement, spend some time getting comfortable with the basic object manipulation controls in Blender:
 
@@ -14,6 +16,16 @@ Before starting refinement, spend some time getting comfortable with the basic o
 - Use Blender's transform controls and numeric axis inputs when precise adjustments are needed.
 
 You do not need advanced Blender modeling skills for this task. The most important operations are moving, rotating, and scaling objects so that the scene better matches the source video.
+
+Tip: BlenderMCP is optional. Manual refinement is recommended because it is usually more stable and gives you better control over the final scene. If you are already comfortable using BlenderMCP, you can connect Blender to Claude or Cursor and ask the agent to help inspect or adjust the scene, but always verify the result manually in Blender before saving.
+
+To use BlenderMCP as optional assistance:
+
+1. Install and enable the BlenderMCP add-on in Blender.
+2. Start the BlenderMCP server from inside Blender.
+3. Connect Claude or Cursor to that MCP server using your local MCP configuration.
+4. Test the connection with a simple scene-inspection request before making edits.
+5. Use the agent only as an assistant; the final refinement decision should still be made manually by comparing the Blender scene with the source video and the QA item.
 
 ## 2. Clone the Repositories
 
