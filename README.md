@@ -69,6 +69,10 @@ External asset libraries (PolyHaven, Sketchfab, etc.) are **disallowed** for ben
 
 ## Evaluation
 
+The vision-level evaluation runs the same question through a frozen VLM on both the original and the agent-reconstructed video, then crosses the two outcomes into a 2x2 contingency table from which retention and hallucination rates are computed.
+
+![BVB vision-level evaluation pipeline](assets/metrics.png)
+
 BVB uses dual level evaluation:
 
 | Level | Metric | What it measures |
