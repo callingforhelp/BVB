@@ -54,13 +54,7 @@ Choose an ID that has not been refined yet. Copy that ID exactly as it appears i
 
 ## 4. Start Refinement
 
-Enter the refinement guidance folder:
-
-```bash
-cd refinement_guidance
-```
-
-Then start refinement:
+From the `BVB` repository root, start refinement:
 
 ```bash
 ./refine.sh [id]
@@ -88,13 +82,26 @@ Focus on changes that matter for the question. For example, if the QA item depen
 After finishing the refinement:
 
 1. Save the `.blend` file in Blender.
-2. Submit your refined Blender file:
+2. Pull the latest changes:
 
 ```bash
-./submit.sh [id]
+git pull
 ```
 
-The script pulls the latest changes, commits only `blend/[id].blend`, and pushes the commit.
+3. Stage the refined Blender files. You can submit one scene or several scenes at once:
+
+```bash
+git add blend/[id].blend
+# or, after refining multiple scenes:
+git add blend/*.blend
+```
+
+4. Commit and push:
+
+```bash
+git commit -m "Refine Blender scenes"
+git push
+```
 
 ## 7. Update the Tracking Table
 

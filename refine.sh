@@ -20,7 +20,7 @@ scene_id="${scene_id%.blend}"
 scene_id="${scene_id%.mp4}"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
+repo_root="$script_dir"
 
 blend_file="$repo_root/blend/${scene_id}.blend"
 dataset_root="$repo_root/VSI-Bench"
