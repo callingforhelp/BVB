@@ -59,7 +59,7 @@ External asset libraries (PolyHaven, Sketchfab, etc.) are **disallowed** for ben
 
 ## Evaluation
 
-The vision-level evaluation runs the same question through a frozen VLM on both the original and the agent-reconstructed video, then compares the two outcomes to report accuracy, delta accuracy, and retention. Hallucination analysis is planned once its definition is finalized.
+The vision-level evaluation runs the same question through a frozen VLM on both the original and the agent-reconstructed video, then crosses the two outcomes into a 2x2 contingency table from which retention and hallucination rates are computed.
 
 ![BVB vision-level evaluation pipeline](assets/metrics.png)
 
@@ -68,7 +68,7 @@ BVB uses dual level evaluation:
 | Level | Metric | What it measures |
 |------|--------|-------------------|
 | Vision | **Retention rate** = `#(orig ✓ ∧ rendered ✓) / #(orig ✓)` | How much correct info the reconstruction preserves |
-| Vision | **Hallucination analysis** *(planned)* | How much incorrect info the reconstruction introduces |
+| Vision | **Hallucination rate** = `#(orig ✗ ∧ rendered ✓) / #(orig ✗)` | How much incorrect info the reconstruction introduces |
 | Vision | **Δ accuracy** | Difference between QA accuracy on original vs. rendered video |
 | Code | **Semantic edit distance** | LLM judged structural difference between GT code and agent code |
 | Code | **Executability** | Code that fails to run scores 0, which is a natural sanity check |
