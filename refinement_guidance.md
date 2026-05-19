@@ -48,7 +48,7 @@ After this step, the directory should contain both the BVB files and a local `VS
 
 Open the refinement tracking table:
 
-https://www.notion.so/1c0aec8a3b714a368439a6f10a7a7220?v=2cfa585c3f8a4c7b9509f4085077e747&source=copy_link
+https://www.notion.so/365a82bfca1280ba8fb8fcc14bf63315?v=365a82bfca128135b7cd000c6ba95f6e&source=copy_link
 
 Choose an ID that has not been refined yet. Copy that ID exactly as it appears in the table.
 
