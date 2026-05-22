@@ -81,11 +81,43 @@ The refined scene should make it as easy as possible for the evaluation model to
 
 Focus on changes that matter for the question. For example, if the QA item depends on object position, visibility, orientation, distance, or relative layout, adjust those parts of the scene carefully. The scene does not need to be visually perfect, but it should preserve the information needed to answer the QA correctly.
 
-## 6. Save and Push
+## 6. Verify Exportability Before Pushing
+
+Before pushing your refined `.blend` file, verify that the scene can be exported to reproducible `bpy` code and reconstructed correctly.
+
+Install the Blender export add-on by following the instructions here:
+
+https://github.com/yunlong10/blender-export-bpy
+
+After you think the refinement is finished:
+
+1. Save the refined `.blend` file in Blender.
+2. Use the add-on to export the scene:
+
+```text
+File > Export > Blender Python Script (.py)
+```
+
+3. Open a new Blender window.
+4. Switch to the `Scripting` workspace.
+5. Open the exported `.py` file and run it.
+6. Compare the reconstructed scene from the exported script with your refined `.blend` scene.
+
+If the exported-and-reconstructed scene looks meaningfully different from the refined `.blend`, the refinement may be using unsupported structures. Common causes include overly complex geometry, unsupported modifiers, or textures/material nodes that do not export cleanly.
+
+In that case, simplify the scene before pushing:
+
+- Replace complex structures with simple geometric primitives where possible.
+- Prefer solid-color materials over textures.
+- Avoid details that look nice in Blender but disappear or change after export.
+
+Once the exported script reconstructs a scene with no major differences from the refined `.blend`, you can save the `.blend` file and push it.
+
+## 7. Save and Push
 
 After finishing the refinement:
 
-1. Save the `.blend` file in Blender.
+1. Make sure the `.blend` file is saved after the exportability check.
 2. Pull the latest changes:
 
 ```bash
@@ -107,7 +139,7 @@ git commit -m "Refine Blender scenes"
 git push
 ```
 
-## 7. Update the Tracking Table
+## 8. Update the Tracking Table
 
 After the push succeeds, go back to the Notion table and write your name in the `Refiner` column for that ID.
 
