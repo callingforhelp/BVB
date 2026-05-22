@@ -2,6 +2,8 @@
 
 This guide is for refining the generated Blender scenes in the BVB repository. The goal is to adjust each `.blend` file so that an evaluation model can answer the corresponding QA item correctly after looking at the refined scene.
 
+> Please join our [Discord channel](https://discord.gg/n86Zycpz)!
+
 ## 1. Set Up Blender
 
 Install the latest version of Blender from the official Blender website:
