@@ -51,7 +51,7 @@ The data pipeline combines automated reconstruction with human in the loop refin
 2. Extract representative frames.
 3. Use an agent (Cursor + [BlenderMCP](https://github.com/ahujasid/blender-mcp)) to auto build a first pass Blender scene.
 4. **Human refines** the scene in Blender so it preserves the information needed to answer the QA correctly. This is the main contribution of this repo at present.
-5. Export the scene to Python via the custom [blender-export-bpy](https://github.com/yunlong10/blender-export-bpy) exporter; the script can re-import the scene end to end.
+5. Export the scene to Python via the custom [Blender Export BPY add-on](addons/README.md); the script can re-import the scene end to end.
 
 External asset libraries (PolyHaven, Sketchfab, etc.) are **disallowed** for benchmark agents. All geometry must be constructed from scratch, so the benchmark measures genuine scene understanding rather than asset retrieval skill.
 

@@ -85,9 +85,13 @@ Focus on changes that matter for the question. For example, if the QA item depen
 
 Before pushing your refined `.blend` file, verify that the scene can be exported to reproducible `bpy` code and reconstructed correctly.
 
-Install the Blender export add-on by following the instructions here:
+Install the Blender export add-on from this repository:
 
-https://github.com/yunlong10/blender-export-bpy
+1. In Blender, go to `Edit > Preferences > Add-ons > Install...`.
+2. Select `addons/export_bpy_code.py`.
+3. Enable the checkbox next to `Export Scene as BPY Code`.
+
+See [`addons/README.md`](addons/README.md) for the full add-on instructions.
 
 After you think the refinement is finished:
 

@@ -4,4 +4,6 @@ VSI-Bench/
 __pycache__
 __pycache__/
 .vscode/
-
+*.pyc
+*.blend1
+*.blend2
