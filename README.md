@@ -7,6 +7,8 @@
 
 This repository hosts the dataset and refinement tooling for BVB.
 
+> Please join our [Discord channel](https://discord.gg/n86Zycpz)!
+
 > *If an agent truly understands a video, it can reconstruct it programmatically.*
 
 ## Motivation
