@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BVB: Blender-VideoBench</title>
+<meta name="description" content="BVB (Blender-VideoBench) — a benchmark for evaluating fine-grained video understanding through programmatic 3D scene reconstruction in Blender.">
+<meta property="og:title" content="BVB: Blender-VideoBench">
+<meta property="og:description" content="If an agent truly understands a video, it can reconstruct it programmatically.">
+<meta property="og:image" content="assets/teaser.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/bvb-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf9;
+    --bg-soft: #f4f3f0;
+    --fg: #1a1a1a;
+    --fg-soft: #4a4a4a;
+    --fg-mute: #6b6b6b;
+    --accent: #c8632d;
+    --accent-soft: #f5e9df;
+    --border: #e4e2dd;
+    --card: #ffffff;
+    --code-bg: #1f1f1f;
+    --code-fg: #f4f3f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14130f;
+      --bg-soft: #1c1b17;
+      --fg: #f1efe9;
+      --fg-soft: #c8c5bc;
+      --fg-mute: #8a8780;
+      --accent: #e87a3d;
+      --accent-soft: #2a1f15;
+      --border: #2c2a25;
+      --card: #1c1b17;
+      --code-bg: #0d0c0a;
+      --code-fg: #f1efe9;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  code, pre { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    padding: 64px 0 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero img.logo {
+    width: 140px;
+    height: 140px;
+    margin-bottom: 20px;
+    image-rendering: -webkit-optimize-contrast;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin: 0 0 10px;
+  }
+  .hero .subtitle {
+    font-size: 1.15rem;
+    color: var(--fg-soft);
+    margin: 0 0 6px;
+    font-weight: 500;
+  }
+  .hero .tagline {
+    font-style: italic;
+    color: var(--fg-mute);
+    margin: 18px auto 28px;
+    max-width: 640px;
+  }
+  .actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--fg);
+    transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  }
+  .btn:hover {
+    text-decoration: none;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .btn.primary {
+    background: var(--fg);
+    color: var(--bg);
+    border-color: var(--fg);
+  }
+  .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* Sections */
+  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+  h2 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin: 0 0 18px;
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 28px 0 10px;
+  }
+  p { margin: 0 0 14px; color: var(--fg-soft); }
+  ul { padding-left: 22px; color: var(--fg-soft); }
+  li { margin-bottom: 6px; }
+  strong { color: var(--fg); }
+
+  figure {
+    margin: 24px 0 8px;
+    text-align: center;
+  }
+  figure img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  figcaption {
+    font-size: 0.875rem;
+    color: var(--fg-mute);
+    margin-top: 10px;
+  }
+
+  .callout {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 20px 0;
+    color: var(--fg);
+  }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* Pillars */
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 24px 0;
+  }
+  @media (max-width: 680px) { .pillars { grid-template-columns: 1fr; } }
+  .pillar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+  }
+  .pillar .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .pillar .body { color: var(--fg-soft); font-size: 0.95rem; }
+
+  /* Metrics table */
+  .table-wrap { overflow-x: auto; margin: 18px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    background: var(--bg-soft);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fg-mute);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { background: var(--bg-soft); padding: 2px 6px; border-radius: 4px; font-size: 0.88em; }
+
+  /* Steps */
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 44px;
+    margin-bottom: 14px;
+    color: var(--fg-soft);
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Authors */
+  .authors {
+    margin: 18px 0 6px;
+    color: var(--fg-soft);
+    font-size: 1rem;
+  }
+  .authors .name { color: var(--fg); font-weight: 500; }
+  .authors sup { color: var(--accent); font-weight: 600; padding: 0 2px; }
+  .affil {
+    color: var(--fg-mute);
+    font-size: 0.9rem;
+    margin: 0 0 6px;
+  }
+  .affil sup { color: var(--accent); padding-right: 4px; font-weight: 600; }
+  .venue {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin: 22px 0 8px;
+  }
+  @media (max-width: 720px) { .stats-grid { grid-template-columns: 1fr; } }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .stat-card h3 { margin-top: 0; }
+  .placeholder-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .pie-wrap {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .pie {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .legend { list-style: none; padding: 0; margin: 0; font-size: 0.88rem; }
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    color: var(--fg-soft);
+  }
+  .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .legend .pct { color: var(--fg-mute); margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+  .bars { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { font-size: 0.88rem; }
+  .bar-row .lbl { display: flex; justify-content: space-between; margin-bottom: 3px; color: var(--fg-soft); }
+  .bar-row .lbl .num { color: var(--fg-mute); font-variant-numeric: tabular-nums; }
+  .bar-track {
+    height: 8px;
+    background: var(--bg-soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+
+  /* Leaderboard */
+  .lb-note { font-size: 0.85rem; color: var(--fg-mute); margin-top: 10px; }
+  .placeholder-row td { color: var(--fg-mute); font-style: italic; }
+  .method { color: var(--fg); font-weight: 500; font-style: normal; }
+  .arrow { font-size: 0.75em; color: var(--fg-mute); margin-left: 3px; }
+
+  /* Footer */
+  footer {
+    padding: 36px 0 48px;
+    text-align: center;
+    color: var(--fg-mute);
+    font-size: 0.88rem;
+  }
+  footer a { color: var(--fg-mute); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <img class="logo" src="assets/bvb-logo.png" alt="BVB logo">
+    <h1>BVB: Blender-VideoBench</h1>
+    <p class="subtitle">A benchmark for fine-grained video understanding via programmatic 3D reconstruction.</p>
+    <p class="authors">
+      <span class="name">Author Name<sup>1</sup></span> &middot;
+      <span class="name">Author Name<sup>1</sup></span> &middot;
+      <span class="name">Author Name<sup>2</sup></span> &middot;
+      <span class="name">Author Name<sup>1,2</sup></span>
+    </p>
+    <p class="affil">
+      <sup>1</sup>Affiliation One &nbsp;&nbsp; <sup>2</sup>Affiliation Two
+    </p>
+    <p><span class="venue">Preprint &middot; 2026</span></p>
+    <p class="tagline">&ldquo;If an agent truly understands a video, it can reconstruct it programmatically.&rdquo;</p>
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/yunlong10/BVB" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+      <a class="btn" href="https://discord.gg/n86Zycpz" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.369A19.79 19.79 0 0016.558 3.2a14.91 14.91 0 00-.69 1.413 18.27 18.27 0 00-5.487 0A14.91 14.91 0 009.69 3.2a19.79 19.79 0 00-3.76 1.17C2.5 9.18 1.5 13.86 1.94 18.48a19.93 19.93 0 005.99 3.02 14.65 14.65 0 001.27-2.06 13 13 0 01-2-1c.17-.13.34-.26.5-.4a14.18 14.18 0 0012.6 0c.16.14.33.27.5.4a13 13 0 01-2 1 14.65 14.65 0 001.27 2.06 19.93 19.93 0 006-3.02c.46-5.34-.81-9.98-3.43-14.11zM9.34 15.4c-1.18 0-2.15-1.08-2.15-2.41s.95-2.42 2.15-2.42 2.17 1.09 2.15 2.42c0 1.33-.96 2.41-2.15 2.41zm5.32 0c-1.18 0-2.15-1.08-2.15-2.41s.95-2.42 2.15-2.42 2.17 1.09 2.15 2.42c0 1.33-.96 2.41-2.15 2.41z"/></svg>
+        Discord
+      </a>
+      <a class="btn" href="https://vision-x-nyu.github.io/thinking-in-space.github.io/" target="_blank" rel="noopener">VSI-Bench</a>
+    </div>
+  </div>
+</header>
+
+<section id="overview">
+  <div class="container">
+    <h2>Overview</h2>
+    <p><strong>BVB (Blender-VideoBench)</strong> evaluates fine-grained video understanding through programmatic reconstruction. Instead of relying solely on QA accuracy &mdash; a necessary but insufficient measure of understanding &mdash; BVB asks an agent to generate Blender Python code that reconstructs the 3D scene depicted in a video. Because code is precise, structured, executable, and verifiable, a successful reconstruction provides a <em>computational proof</em> of understanding.</p>
+
+    <figure>
+      <img src="assets/teaser.png" alt="BVB pipeline teaser">
+      <figcaption>From video to verifiable code: agents reconstruct the depicted 3D scene as a Blender script.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="motivation">
+  <div class="container">
+    <h2>Why code as the evaluation target?</h2>
+    <p>Existing video LLMs are typically evaluated on multiple choice or open-ended QA. But QA accuracy can mask shallow understanding: a model might pick the right answer for the wrong reason, or memorize dataset biases. BVB takes a different view of evaluation.</p>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="label">Vision</div>
+        <div class="body">Raw and unstructured &mdash; pixels alone don&rsquo;t commit to any geometric claim.</div>
+      </div>
+      <div class="pillar">
+        <div class="label">Language</div>
+        <div class="body">Descriptive but ambiguous &mdash; the same words cover many incompatible scenes.</div>
+      </div>
+      <div class="pillar">
+        <div class="label">Code</div>
+        <div class="body">Precise, structured, executable, and <strong>verifiable</strong> &mdash; the scene either reproduces or it does not.</div>
+      </div>
+    </div>
+    <p>If an agent writes Blender Python that, when executed, produces a scene matching the original video on the relevant geometric and spatial properties, that is much stronger evidence of understanding than picking option (C) on a multiple choice question.</p>
+  </div>
+</section>
+
+<section id="uses">
+  <div class="container">
+    <h2>Two complementary uses</h2>
+    <ol class="steps">
+      <li><strong>Evaluation</strong> <em>(near-term focus)</em> &mdash; measure how well agents (e.g., BlenderMCP, VIGA, future systems) reconstruct scenes from video.</li>
+      <li><strong>Enhancement</strong> <em>(medium-term direction)</em> &mdash; use code execution feedback (executes? renders correctly? preserves QA-relevant info?) as a reward signal for RL training (e.g., GRPO).</li>
+    </ol>
+    <h3>Why Blender?</h3>
+    <p>Blender is a universal 3D playground covering modeling, animation, rendering, and simulation, with a full Python API and a permissive open-source license. Its high learning curve for humans is precisely what makes agent mastery of it valuable.</p>
+  </div>
+</section>
+
+<section id="data">
+  <div class="container">
+    <h2>Data</h2>
+    <p>Source videos come from <a href="https://vision-x-nyu.github.io/thinking-in-space.github.io/" target="_blank" rel="noopener">VSI-Bench</a> &mdash; real indoor 3D scenes from ArkitScenes, ScanNet, and ScanNet++ with spatial-reasoning QA pairs. Each finished BVB data point is a tuple of:</p>
+    <ul>
+      <li>the original video (from VSI-Bench)</li>
+      <li>the spatial-reasoning QA pairs</li>
+      <li>the human-refined <code>.blend</code> scene</li>
+      <li>(eventually) the exported Python script that reconstructs the scene</li>
+    </ul>
+
+    <figure>
+      <img src="assets/data_curation_pipeline.png" alt="BVB data curation pipeline">
+      <figcaption>Automated first-pass reconstruction plus human-in-the-loop refinement.</figcaption>
+    </figure>
+
+    <ol class="steps">
+      <li>Take a VSI-Bench video and its QA pairs.</li>
+      <li>Extract representative frames.</li>
+      <li>Use an agent (Cursor + <a href="https://github.com/ahujasid/blender-mcp" target="_blank" rel="noopener">BlenderMCP</a>) to auto-build a first-pass Blender scene.</li>
+      <li><strong>Human refines</strong> the scene so it preserves the information needed to answer the QA correctly.</li>
+      <li>Export the scene to Python via the custom Blender Export BPY add-on; the script re-imports the scene end-to-end.</li>
+    </ol>
+
+    <div class="callout">
+      <p><strong>No external asset libraries.</strong> PolyHaven, Sketchfab, and similar are <em>disallowed</em> for benchmark agents &mdash; all geometry must be constructed from scratch, so the benchmark measures genuine scene understanding rather than asset-retrieval skill.</p>
+    </div>
+
+    <h3>Paired Modality Editing (PME)</h3>
+    <p>PME applies parallel edits to the video (via video-to-video editing / inpainting) and to the Blender scene (via keyframe animation), producing event-aligned pairs that test dynamic and temporal understanding without cross-modal generation artifacts.</p>
+  </div>
+</section>
+
+<section id="statistics">
+  <div class="container">
+    <h2>Benchmark statistics <span class="placeholder-tag">Placeholder</span></h2>
+    <p>Final numbers will be released with the paper. The figures below are stand-ins for the final task-distribution and source-dataset breakdowns.</p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Task distribution</h3>
+        <div class="pie-wrap">
+          <div class="pie" style="background: conic-gradient(
+            #c8632d   0deg  64.8deg,
+            #e8a05c  64.8deg 115.2deg,
+            #6b8e7f 115.2deg 151.2deg,
+            #4a7a8c 151.2deg 194.4deg,
+            #8c6d9c 194.4deg 241.2deg,
+            #b85c5c 241.2deg 291.6deg,
+            #d8b76b 291.6deg 324deg,
+            #5c8c6d 324deg   360deg
+          );" aria-label="Placeholder task distribution pie chart"></div>
+          <ul class="legend">
+            <li><span class="swatch" style="background:#c8632d"></span>Object Count <span class="pct">18%</span></li>
+            <li><span class="swatch" style="background:#e8a05c"></span>Object Size <span class="pct">14%</span></li>
+            <li><span class="swatch" style="background:#6b8e7f"></span>Room Size <span class="pct">10%</span></li>
+            <li><span class="swatch" style="background:#4a7a8c"></span>Absolute Distance <span class="pct">12%</span></li>
+            <li><span class="swatch" style="background:#8c6d9c"></span>Relative Distance <span class="pct">13%</span></li>
+            <li><span class="swatch" style="background:#b85c5c"></span>Relative Direction <span class="pct">14%</span></li>
+            <li><span class="swatch" style="background:#d8b76b"></span>Route Plan <span class="pct">9%</span></li>
+            <li><span class="swatch" style="background:#5c8c6d"></span>Appearance Order <span class="pct">10%</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3>Scenes by source dataset</h3>
+        <div class="bars">
+          <div class="bar-row">
+            <div class="lbl"><span>ScanNet</span><span class="num">180</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="lbl"><span>ArkitScenes</span><span class="num">160</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:89%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="lbl"><span>ScanNet++</span><span class="num">110</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:61%"></div></div>
+          </div>
+        </div>
+        <h3 style="margin-top:28px">Reconstruction status</h3>
+        <div class="bars">
+          <div class="bar-row">
+            <div class="lbl"><span>Refined</span><span class="num">~30%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:30%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="lbl"><span>In progress</span><span class="num">~45%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:45%; background:#e8a05c"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="lbl"><span>Pending</span><span class="num">~25%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:25%; background:#6b8e7f"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="evaluation">
+  <div class="container">
+    <h2>Evaluation</h2>
+    <p>The vision-level evaluation runs the same question through a frozen VLM on both the original and the agent-reconstructed video, then crosses the two outcomes into a 2&times;2 contingency table from which retention and hallucination rates are computed.</p>
+
+    <figure>
+      <img src="assets/metrics.png" alt="BVB vision-level evaluation pipeline">
+      <figcaption>Vision-level evaluation: paired QA outcomes across original and reconstructed video.</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Level</th><th>Metric</th><th>What it measures</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Vision</td><td><strong>Retention rate</strong><br><code>#(orig &check; &and; rendered &check;) / #(orig &check;)</code></td><td>How much correct info the reconstruction preserves.</td></tr>
+          <tr><td>Vision</td><td><strong>Hallucination rate</strong><br><code>#(orig &times; &and; rendered &check;) / #(orig &times;)</code></td><td>How much incorrect info the reconstruction introduces.</td></tr>
+          <tr><td>Vision</td><td><strong>&Delta; accuracy</strong></td><td>Difference between QA accuracy on original vs. rendered video.</td></tr>
+          <tr><td>Code</td><td><strong>Semantic edit distance</strong></td><td>LLM-judged structural difference between GT and agent code.</td></tr>
+          <tr><td>Code</td><td><strong>Executability</strong></td><td>Code that fails to run scores 0 &mdash; a natural sanity check.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="leaderboard">
+  <div class="container">
+    <h2>Leaderboard <span class="placeholder-tag">Placeholder</span></h2>
+    <p>Baseline numbers and a public submission process will be released with the paper. Entries below are placeholders showing the schema.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Retention<span class="arrow">&uarr;</span></th>
+            <th>Hallucination<span class="arrow">&darr;</span></th>
+            <th>&Delta; Acc.</th>
+            <th>Sem. Edit Dist.<span class="arrow">&darr;</span></th>
+            <th>Exec. %<span class="arrow">&uarr;</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="placeholder-row">
+            <td class="method">Human (refined)</td>
+            <td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td>
+          </tr>
+          <tr class="placeholder-row">
+            <td class="method">BlenderMCP</td>
+            <td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td>
+          </tr>
+          <tr class="placeholder-row">
+            <td class="method">VIGA</td>
+            <td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td>
+          </tr>
+          <tr class="placeholder-row">
+            <td class="method">Your method here</td>
+            <td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lb-note">Submission instructions and the evaluation server will be linked here on release.</p>
+  </div>
+</section>
+
+<section id="status">
+  <div class="container">
+    <h2>Status</h2>
+    <p>Active development. About <strong>450 VSI-Bench scenes</strong> are currently tracked, with Blender reconstructions in progress. The dataset, evaluation framework, and baseline numbers (BlenderMCP, VIGA) are targeted for release alongside the BVB paper.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>&copy; BVB &mdash; released under the <a href="https://github.com/yunlong10/BVB/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>. Source on <a href="https://github.com/yunlong10/BVB" target="_blank" rel="noopener">GitHub</a>.</p>
+  </div>
+</footer>
+
+</body>
+</html>
