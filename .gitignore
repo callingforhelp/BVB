@@ -7,3 +7,6 @@ __pycache__/
 *.pyc
 *.blend1
 *.blend2
+eval/results/
+misc
+misc/
