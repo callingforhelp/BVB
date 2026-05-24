@@ -77,21 +77,21 @@ BVB uses dual level evaluation:
 
 ## Benchmark comparison
 
-| Benchmark | Date | # Samples | Task | Video Understanding | Beyond Simple QA | Executable Output |
-|---|---:|---:|---|:---:|:---:|:---:|
-| ScreenSpot-Pro | 04/25 | 1,581 screenshot-instruction pairs | High-resolution GUI grounding | ❌ | ✅ | ❌ |
-| VSI-Bench | 12/24 | 288 real videos | Egocentric spatial video QA | ✅ | ❌ | ❌ |
-| GUI-Xplore | 03/25 | 312 apps | Exploration-guided GUI reasoning | ✅ | ✅ | ❌ |
-| VideoGUI | 06/24 | 178 GUI tasks | Instructional-video GUI automation | ✅ | ✅ | ❌ |
-| VideoWebArena | 10/24 | 74 tutorial videos | Long-video web-agent tasks | ✅ | ✅ | ❌ |
-| OmniLottie / MMLottieBench | 03/26 | 900 benchmark samples | Multimodal Lottie animation generation | ✅ | ✅ | ✅ |
-|---|---:|---:|---|:---:|:---:|:---:|
-| BlenderBench | 01/26 | 30 tasks | Blender inverse-graphics tasks | ❌ | ✅ | ✅ |
-| Code-as-Room | 05/26 | 41 scenes | Top-down image to Blender room | ❌ | ✅ | ✅ |
-| EZBlender | 01/26 | 85 episodes across five dimensions | Efficient natural-language 3D editing | ❌ | ✅ | ✅ |
-| VisPhyWorld / VisPhyBench | 02/26 | 209 videos from 108 physical templates | Video-to-simulator reconstruction | ✅ | ✅ | ✅ |
-| BlenderGym | 04/25 | 245 start-goal scene pairs | Start-to-goal Blender editing | ❌ | ✅ | ✅ |
-| **BVB (ours)** | **---** | **300-500 planned scene/video samples** | **Video-to-Blender reconstruction** | **✅** | **✅** | **✅** |
+| Benchmark | Task | # Samples | Video Understanding | Beyond Simple QA | Executable Output | Date |
+|---|---|---:|:---:|:---:|:---:|---:|
+| ScreenSpot-Pro | High-resolution GUI grounding | 1,581 screenshot-instruction pairs | ❌ | ✅ | ❌ | 04/25 |
+| VSI-Bench | Egocentric spatial video QA | 288 real videos | ✅ | ❌ | ❌ | 12/24 |
+| GUI-Xplore | Exploration-guided GUI reasoning | 312 apps | ✅ | ✅ | ❌ | 03/25 |
+| VideoGUI | Instructional-video GUI automation | 178 GUI tasks | ✅ | ✅ | ❌ | 06/24 |
+| VideoWebArena | Long-video web-agent tasks | 74 tutorial videos | ✅ | ✅ | ❌ | 10/24 |
+| OmniLottie / MMLottieBench | Multimodal Lottie animation generation | 900 benchmark samples | ✅ | ✅ | ✅ | 03/26 |
+|---|---|---:|:---:|:---:|:---:|---:|
+| BlenderBench | Blender inverse-graphics tasks | 30 tasks | ❌ | ✅ | ✅ | 01/26 |
+| Code-as-Room | Top-down image to Blender room | 41 scenes | ❌ | ✅ | ✅ | 05/26 |
+| EZBlender | Efficient natural-language 3D editing | 85 episodes across five dimensions | ❌ | ✅ | ✅ | 01/26 |
+| VisPhyWorld / VisPhyBench | Video-to-simulator reconstruction | 209 videos from 108 physical templates | ✅ | ✅ | ✅ | 02/26 |
+| BlenderGym | Start-to-goal Blender editing | 245 start-goal scene pairs | ❌ | ✅ | ✅ | 04/25 |
+| **BVB (ours)** | **Video-to-Blender reconstruction** | **300-500 planned scene/video samples** | **✅** | **✅** | **✅** | **---** |
 
 ## Contributing scene refinements
 
