@@ -27,7 +27,7 @@ If an agent can write Blender Python that, when executed, produces a scene match
 
 The benchmark supports two complementary uses:
 
-1. **Evaluation** *(near-term focus)*: measure how well agents (e.g., BlenderMCP, VIGA, future systems) reconstruct scenes from video.
+1. **Evaluation** *(near-term focus)*: measure how well scene reconstruction agents (e.g., BlenderMCP-style systems and future methods) reconstruct scenes from video.
 2. **Enhancement** *(medium-term direction)*: use code execution feedback (executes? renders correctly? preserves QA-relevant info?) as a reward signal for RL training (e.g., GRPO).
 
 ## Why Blender?
@@ -81,7 +81,7 @@ The `.blend` files in this repo are an automated first pass and need human clean
 
 ## Status
 
-Active development. About 450 VSI-Bench scenes are currently tracked, with Blender reconstructions in progress. Dataset, evaluation framework, and baseline numbers (BlenderMCP, VIGA) are targeted for release alongside the BVB paper.
+Active development. About 450 VSI-Bench scenes are currently tracked, with Blender reconstructions in progress. Dataset, evaluation framework, and baseline numbers for reconstruction agents are targeted for release alongside the BVB paper.
 
 ## License
 
