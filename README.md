@@ -77,20 +77,20 @@ BVB uses dual level evaluation:
 
 ## Benchmark comparison
 
-| Benchmark | Date | # Samples | Video Input | Beyond Simple QA | 3D Scene | Blender Environment | Evaluation | Position vs. BVB |
-|---|---:|---:|:---:|:---:|:---:|:---:|---|---|
-| ScreenSpot-Pro | 04/25 | 1,581 screenshot-instruction pairs |  | ✓ |  |  | GUI grounding accuracy | Professional 2D GUI grounding; no video or 3D reconstruction. |
-| VSI-Bench | 12/24 | 288 real videos | ✓ |  |  |  | MCA accuracy and MRA for numerical answers | Spatial video QA benchmark; BVB adds executable 3D reconstruction. |
-| GUI-Xplore | 03/25 | 312 apps | ✓ | ✓ |  |  | Five downstream QA tasks plus cross-app automation metrics | Uses exploration videos as GUI priors, but remains a 2D interface benchmark. |
-| VideoGUI | 06/24 | 178 GUI tasks | ✓ | ✓ |  |  | High-level planning, mid-level planning, atomic action metrics | Evaluates video-based GUI automation rather than physical scene reconstruction. |
-| VideoWebArena | 10/24 | 74 tutorial videos | ✓ | ✓ |  |  | Task success and factual QA accuracy | Evaluates video-conditioned web agents; BVB evaluates video-conditioned 3D reconstruction. |
-| OmniLottie / MMLottieBench | 03/26 | 900 benchmark samples | ✓ | ✓ |  |  | Animation generation quality across text2lottie, text-image2lottie, video2lottie | Produces executable vector animation programs, but not 3D scene reconstructions. |
-| BlenderGym | 04/25 | 245 start-goal scene pairs |  | ✓ | ✓ | ✓ | Code-based 3D reconstruction/editing metrics | Closest graphics benchmark, but focuses on start-to-goal editing rather than reconstructing from video. |
-| BlenderBench | 01/26 | 30 tasks |  | ✓ | ✓ | ✓ | Photometric loss and VLM score | Tests inverse-graphics agent loops; BVB turns video understanding itself into the reconstruction target. |
-| Code-as-Room | 05/26 | 41 scenes |  | ✓ | ✓ | ✓ | Object recall, spatial/layout metrics, execution rate, VLM/human scene quality | Most similar in code-as-scene representation, but input is top-down image rather than egocentric video. |
-| EZBlender | 01/26 | 85 episodes across five dimensions |  | ✓ | ✓ | ✓ | Task completion rate, CLIP alignment, latency, token cost | Benchmarks efficient Blender scene editing, not video understanding. |
-| VisPhyWorld / VisPhyBench | 02/26 | 209 videos from 108 physical templates | ✓ | ✓ | ✓ |  | Validity, perceptual quality, semantic consistency, motion/physics metrics | Execution-based reconstruction benchmark for physics simulators rather than Blender indoor scenes. |
-| **BVB (ours)** | **---** | **300-500 planned scene/video samples** | **✓** | **✓** | **✓** | **✓** | **Video-level retention, hallucination, code executability, semantic code comparison** | **Video understanding is evaluated by reconstructing the 3D scene as executable Blender code.** |
+| Benchmark | Date | # Samples | Video Understanding | Beyond Simple QA | 3D Scene | Blender Environment | Task |
+|---|---:|---:|:---:|:---:|:---:|:---:|---|
+| ScreenSpot-Pro | 04/25 | 1,581 screenshot-instruction pairs | ❌ | ✅ | ❌ | ❌ | High-resolution GUI grounding |
+| VSI-Bench | 12/24 | 288 real videos | ✅ | ❌ | ❌ | ❌ | Egocentric spatial video QA |
+| GUI-Xplore | 03/25 | 312 apps | ✅ | ✅ | ❌ | ❌ | Exploration-guided GUI reasoning |
+| VideoGUI | 06/24 | 178 GUI tasks | ✅ | ✅ | ❌ | ❌ | Instructional-video GUI automation |
+| VideoWebArena | 10/24 | 74 tutorial videos | ✅ | ✅ | ❌ | ❌ | Long-video web-agent tasks |
+| OmniLottie / MMLottieBench | 03/26 | 900 benchmark samples | ✅ | ✅ | ❌ | ❌ | Multimodal Lottie animation generation |
+| BlenderGym | 04/25 | 245 start-goal scene pairs | ❌ | ✅ | ✅ | ✅ | Start-to-goal Blender editing |
+| BlenderBench | 01/26 | 30 tasks | ❌ | ✅ | ✅ | ✅ | Blender inverse-graphics tasks |
+| Code-as-Room | 05/26 | 41 scenes | ❌ | ✅ | ✅ | ✅ | Top-down image to Blender room |
+| EZBlender | 01/26 | 85 episodes across five dimensions | ❌ | ✅ | ✅ | ✅ | Efficient natural-language 3D editing |
+| VisPhyWorld / VisPhyBench | 02/26 | 209 videos from 108 physical templates | ✅ | ✅ | ✅ | ❌ | Video-to-simulator reconstruction |
+| **BVB (ours)** | **---** | **300-500 planned scene/video samples** | **✅** | **✅** | **✅** | **✅** | **Video-to-Blender reconstruction** |
 
 ## Contributing scene refinements
 
