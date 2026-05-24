@@ -75,6 +75,23 @@ BVB uses dual level evaluation:
 | Code | **Semantic edit distance** | LLM judged structural difference between GT code and agent code |
 | Code | **Executability** | Code that fails to run scores 0, which is a natural sanity check |
 
+## Benchmark comparison
+
+| Benchmark | Date | # Samples | Video Input | Beyond Simple QA | Executable Artifact | 3D Scene | Blender Environment | Evaluation | Position vs. BVB |
+|---|---:|---:|:---:|:---:|:---:|:---:|:---:|---|---|
+| ScreenSpot-Pro | 2025-04 | 1,581 screenshot-instruction pairs |  | ✓ |  |  |  | GUI grounding accuracy | Professional 2D GUI grounding; no video or 3D reconstruction. |
+| VSI-Bench | 2024-12 | 288 real videos | ✓ |  |  |  |  | MCA accuracy and MRA for numerical answers | Spatial video QA benchmark; BVB adds executable 3D reconstruction. |
+| GUI-Xplore | 2025-03 | 312 apps | ✓ | ✓ |  |  |  | Five downstream QA tasks plus cross-app automation metrics | Uses exploration videos as GUI priors, but remains a 2D interface benchmark. |
+| VideoGUI | 2024-06 | 178 GUI tasks | ✓ | ✓ |  |  |  | High-level planning, mid-level planning, atomic action metrics | Evaluates video-based GUI automation rather than physical scene reconstruction. |
+| VideoWebArena | 2024-10 | 74 tutorial videos | ✓ | ✓ |  |  |  | Task success and factual QA accuracy | Evaluates video-conditioned web agents; BVB evaluates video-conditioned 3D reconstruction. |
+| OmniLottie / MMLottieBench | 2026-03 | 900 benchmark samples | ✓ | ✓ | ✓ |  |  | Animation generation quality across text2lottie, text-image2lottie, video2lottie | Produces executable vector animation programs, but not 3D scene reconstructions. |
+| BlenderGym | 2025-04 | 245 start-goal scene pairs |  | ✓ | ✓ | ✓ | ✓ | Code-based 3D reconstruction/editing metrics | Closest graphics benchmark, but focuses on start-to-goal editing rather than reconstructing from video. |
+| BlenderBench | 2026-01 | 30 tasks |  | ✓ | ✓ | ✓ | ✓ | Photometric loss and VLM score | Tests inverse-graphics agent loops; BVB turns video understanding itself into the reconstruction target. |
+| Code-as-Room | 2026-05 | 41 scenes |  | ✓ | ✓ | ✓ | ✓ | Object recall, spatial/layout metrics, execution rate, VLM/human scene quality | Most similar in code-as-scene representation, but input is top-down image rather than egocentric video. |
+| EZBlender | 2026-01 | 85 episodes across five dimensions |  | ✓ | ✓ | ✓ | ✓ | Task completion rate, CLIP alignment, latency, token cost | Benchmarks efficient Blender scene editing, not video understanding. |
+| VisPhyWorld / VisPhyBench | 2026-02 | 209 videos from 108 physical templates | ✓ | ✓ | ✓ | ✓ |  | Validity, perceptual quality, semantic consistency, motion/physics metrics | Execution-based reconstruction benchmark for physics simulators rather than Blender indoor scenes. |
+| **BVB (ours)** | **2026-05** | **300-500 planned scene/video samples** | **✓** | **✓** | **✓** | **✓** | **✓** | **Video-level retention, hallucination, code executability, semantic code comparison** | **Video understanding is evaluated by reconstructing the 3D scene as executable Blender code.** |
+
 ## Contributing scene refinements
 
 The `.blend` files in this repo are an automated first pass and need human cleanup so that an evaluation model can answer the corresponding QA item correctly using only the reconstructed scene. See [refinement_guidance.md](refinement_guidance.md) for the full workflow, including how to set up Blender and VSI-Bench, claim a scene, run `refine.sh`, edit the scene, and push the result.
