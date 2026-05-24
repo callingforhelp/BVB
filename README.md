@@ -90,7 +90,7 @@ BVB uses dual level evaluation:
 | Code-as-Room | 05/26 | 41 scenes |  | ✓ | ✓ | ✓ | Object recall, spatial/layout metrics, execution rate, VLM/human scene quality | Most similar in code-as-scene representation, but input is top-down image rather than egocentric video. |
 | EZBlender | 01/26 | 85 episodes across five dimensions |  | ✓ | ✓ | ✓ | Task completion rate, CLIP alignment, latency, token cost | Benchmarks efficient Blender scene editing, not video understanding. |
 | VisPhyWorld / VisPhyBench | 02/26 | 209 videos from 108 physical templates | ✓ | ✓ | ✓ |  | Validity, perceptual quality, semantic consistency, motion/physics metrics | Execution-based reconstruction benchmark for physics simulators rather than Blender indoor scenes. |
-| **BVB (ours)** | **05/26** | **300-500 planned scene/video samples** | **✓** | **✓** | **✓** | **✓** | **Video-level retention, hallucination, code executability, semantic code comparison** | **Video understanding is evaluated by reconstructing the 3D scene as executable Blender code.** |
+| **BVB (ours)** | **---** | **300-500 planned scene/video samples** | **✓** | **✓** | **✓** | **✓** | **Video-level retention, hallucination, code executability, semantic code comparison** | **Video understanding is evaluated by reconstructing the 3D scene as executable Blender code.** |
 
 ## Contributing scene refinements
 
