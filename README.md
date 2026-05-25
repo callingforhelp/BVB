@@ -97,6 +97,8 @@ BVB uses dual level evaluation:
 
 The `.blend` files in this repo are an automated first pass and need human cleanup so that an evaluation model can answer the corresponding QA item correctly using only the reconstructed scene. See [refinement_guidance.md](refinement_guidance.md) for the full workflow, including how to set up Blender and VSI-Bench, claim a scene, run `refine.sh`, edit the scene, and push the result.
 
+When using Cursor for scene reconstruction or refinement, this repo includes a project skill at [.cursor/skills/bvb-scene-builder/SKILL.md](.cursor/skills/bvb-scene-builder/SKILL.md) with BVB-specific BlenderMCP guidelines.
+
 ## Status
 
 Active development. About 450 VSI-Bench scenes are currently tracked, with Blender reconstructions in progress. Dataset, evaluation framework, and baseline numbers for reconstruction agents are targeted for release alongside the BVB paper.
