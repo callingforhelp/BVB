@@ -21,6 +21,7 @@ import json
 import math
 import os
 import re
+import sys
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -40,10 +41,6 @@ Prioritize QA-relevant scene facts:
 - material/color similarity when it affects recognition
 - lights/camera only when they affect visibility or viewpoint
 
-Use the provided deterministic static metrics as evidence, but correct them when
-names differ while the scene semantics match, or when static matching misses an
-obvious structural error.
-
 Return only valid JSON with:
 {
   "semantic_score": number from 0 to 1,
@@ -54,6 +51,26 @@ Return only valid JSON with:
   "execution_risk": "low" | "medium" | "high",
   "rationale": "short explanation"
 }
+"""
+
+QA_SYSTEM_PROMPT = """You answer visual-spatial questions from a Blender Python scene reconstruction.
+You are given the agent-generated scene as structured bpy-derived data and a list
+of questions. Answer only from the reconstructed scene, not from prior knowledge.
+
+Return only valid JSON with:
+{
+  "answers": [
+    {
+      "id": string or number matching the input question id,
+      "answer": "short answer"
+    }
+  ]
+}
+
+Use concise answers. For counting questions, answer with a digit such as "3".
+For numeric size/area/distance questions, answer with only the number and no unit.
+For multiple-choice questions with options, answer with only the option letter
+such as "A", "B", "C", or "D".
 """
 
 
@@ -206,6 +223,86 @@ def safe_divide(numerator: float, denominator: float) -> float:
     if denominator == 0:
         return 0.0
     return numerator / denominator
+
+
+def normalize_answer(value: Any) -> str:
+    text = str(value).strip().lower()
+    text = re.sub(r"\s+", " ", text)
+    text = text.strip(" .,:;!?\"'")
+    number_words = {
+        "zero": "0",
+        "one": "1",
+        "two": "2",
+        "three": "3",
+        "four": "4",
+        "five": "5",
+        "six": "6",
+        "seven": "7",
+        "eight": "8",
+        "nine": "9",
+        "ten": "10",
+    }
+    return number_words.get(text, text)
+
+
+def extract_first_number(value: Any) -> float | None:
+    match = re.search(r"-?\d+(?:\.\d+)?", str(value))
+    if not match:
+        return None
+    return float(match.group(0))
+
+
+def option_letter(value: Any) -> str | None:
+    text = normalize_answer(value).upper()
+    match = re.match(r"^([A-Z])(?:\b|[.)])", text)
+    if match:
+        return match.group(1)
+    if len(text) == 1 and "A" <= text <= "Z":
+        return text
+    return None
+
+
+def option_text_by_letter(options: Any) -> dict[str, str]:
+    mapping = {}
+    if not isinstance(options, list):
+        return mapping
+    for option in options:
+        text = str(option).strip()
+        match = re.match(r"^([A-Za-z])\s*[.)]\s*(.*)$", text)
+        if match:
+            mapping[match.group(1).upper()] = normalize_answer(match.group(2))
+    return mapping
+
+
+def numeric_tolerance(question_type: str | None, ground_truth: float) -> float | None:
+    if question_type == "object_size_estimation":
+        return max(10.0, 0.10 * abs(ground_truth))
+    if question_type == "room_size_estimation":
+        return max(1.0, 0.10 * abs(ground_truth))
+    if question_type == "object_abs_distance":
+        return max(0.2, 0.15 * abs(ground_truth))
+    return None
+
+
+def is_correct_answer(answer: Any, ground_truth: Any, question_type: str | None = None, options: Any = None) -> bool:
+    gt_letter = option_letter(ground_truth)
+    option_texts = option_text_by_letter(options)
+    if gt_letter and option_texts:
+        pred_letter = option_letter(answer)
+        if pred_letter:
+            return pred_letter == gt_letter
+        return normalize_answer(answer) == option_texts.get(gt_letter)
+
+    gt_num = extract_first_number(ground_truth)
+    pred_num = extract_first_number(answer)
+    tolerance = numeric_tolerance(question_type, gt_num) if gt_num is not None else None
+    if gt_num is not None and pred_num is not None and tolerance is not None:
+        return abs(pred_num - gt_num) <= tolerance
+
+    if question_type == "object_counting" and gt_num is not None and pred_num is not None:
+        return int(round(pred_num)) == int(round(gt_num))
+
+    return normalize_answer(answer) == normalize_answer(ground_truth)
 
 
 def literal_value(node: ast.AST) -> Any:
@@ -716,6 +813,90 @@ def compact_scene_summary(summary: SceneSummary) -> dict[str, Any]:
     }
 
 
+def load_qa_by_scene(path: Path) -> dict[str, list[dict[str, Any]]]:
+    qa_by_scene: dict[str, list[dict[str, Any]]] = {}
+    for record in read_jsonl(path):
+        scene_name = str(get_first(record, ("scene_name", "scene_id")))
+        qa_by_scene.setdefault(scene_name, []).append(
+            {
+                "id": get_first(record, ("id", "qa_id")),
+                "question_type": record.get("question_type"),
+                "question": get_first(record, ("question",)),
+                "ground_truth": get_first(record, ("ground_truth", "answer")),
+                "options": record.get("options"),
+            }
+        )
+    return qa_by_scene
+
+
+def build_qa_prompt(scene_id: str, pred_summary: dict[str, Any], qa_items: list[dict[str, Any]]) -> str:
+    questions = [
+        {
+            "id": item["id"],
+            "question_type": item.get("question_type"),
+            "question": item["question"],
+            "options": item.get("options"),
+        }
+        for item in qa_items
+    ]
+    return f"""Scene ID: {scene_id}
+
+Agent-generated structured scene summary:
+```json
+{json.dumps(pred_summary, indent=2, ensure_ascii=False)}
+```
+
+Questions to answer from this reconstructed scene:
+```json
+{json.dumps(questions, indent=2, ensure_ascii=False)}
+```
+
+Answer-format rules:
+- Counting questions: return only a digit, e.g. "3".
+- Size/area/distance questions: return only the numeric value, without units.
+- Multiple-choice questions with options: return only the option letter, e.g. "B".
+
+Return one answer for every input question id."""
+
+
+def score_qa_answers(qa_items: list[dict[str, Any]], response: dict[str, Any]) -> dict[str, Any]:
+    answers_by_id = {}
+    for item in response.get("answers", []):
+        if isinstance(item, dict) and "id" in item:
+            answers_by_id[str(item["id"])] = item.get("answer", "")
+
+    rows = []
+    correct_count = 0
+    for item in qa_items:
+        qa_id = str(item["id"])
+        predicted = answers_by_id.get(qa_id, "")
+        correct = is_correct_answer(
+            predicted,
+            item["ground_truth"],
+            str(item.get("question_type")) if item.get("question_type") is not None else None,
+            item.get("options"),
+        )
+        correct_count += int(correct)
+        rows.append(
+            {
+                "id": item["id"],
+                "question_type": item.get("question_type"),
+                "question": item["question"],
+                "ground_truth": item["ground_truth"],
+                "predicted_answer": predicted,
+                "correct": correct,
+            }
+        )
+
+    return {
+        "num_questions": len(qa_items),
+        "num_answered": sum(1 for row in rows if str(row["predicted_answer"]).strip()),
+        "num_correct": correct_count,
+        "code_qa_score": safe_divide(correct_count, len(qa_items)),
+        "rows": rows,
+    }
+
+
 def read_text_limited(path: Path, max_chars: int) -> str:
     text = path.read_text(encoding="utf-8", errors="replace")
     if len(text) <= max_chars:
@@ -728,7 +909,7 @@ def build_user_prompt(
     scene_id: str,
     gt_summary: dict[str, Any],
     pred_summary: dict[str, Any],
-    static_metrics: dict[str, Any],
+    static_metrics: dict[str, Any] | None,
     gt_code: str | None = None,
     pred_code: str | None = None,
 ) -> str:
@@ -742,16 +923,20 @@ Ground-truth structured scene summary:
 Agent-generated structured scene summary:
 ```json
 {json.dumps(pred_summary, indent=2, ensure_ascii=False)}
-```
+```"""
 
+    if static_metrics is not None:
+        prompt += f"""
 Deterministic static metrics:
 ```json
 {json.dumps(static_metrics, indent=2, ensure_ascii=False)}
-```
+```"""
 
+    prompt += """
 Evaluate the agent-generated scene against the ground truth.
-Return semantic_score as the final score; it should reflect scene similarity,
-not just the deterministic static_score."""
+Return semantic_score as the final score. Use a concise score from 0 to 1,
+for example 0.62 rather than 0.6200. Judge semantic scene similarity from
+the structured summaries, not textual similarity or exact object naming."""
 
     if gt_code is not None and pred_code is not None:
         prompt += f"""
@@ -776,7 +961,7 @@ def call_chat_completion(
     model: str,
     system_prompt: str,
     user_prompt: str,
-    temperature: float,
+    temperature: float | None,
 ) -> str:
     url = base_url.rstrip("/") + "/chat/completions"
     payload = {
@@ -785,9 +970,10 @@ def call_chat_completion(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        "temperature": temperature,
         "response_format": {"type": "json_object"},
     }
+    if temperature is not None:
+        payload["temperature"] = temperature
     request = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
@@ -817,20 +1003,63 @@ def resolve_record_path(raw_path: Any, base_dir: Path) -> Path:
     return path
 
 
-def summarize_scores(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    static_scores = [row["static_metrics"]["static_score"] for row in rows]
-    combined_scores = [row.get("combined_score") for row in rows if row.get("combined_score") is not None]
-    semantic_scores = [
-        row["judgment"].get("semantic_score")
+def summarize_scores(rows: list[dict[str, Any]], *, include_static: bool) -> dict[str, Any]:
+    static_scores = [
+        row["static_metrics"]["static_score"]
         for row in rows
-        if isinstance(row.get("judgment"), dict) and isinstance(row["judgment"].get("semantic_score"), (int, float))
+        if isinstance(row.get("static_metrics"), dict)
     ]
-    return {
-        "num_scenes": len(rows),
-        "mean_static_score": safe_divide(sum(static_scores), len(static_scores)),
-        "mean_semantic_score": safe_divide(sum(semantic_scores), len(semantic_scores)),
-        "mean_combined_score": safe_divide(sum(combined_scores), len(combined_scores)),
-    }
+    semantic_scores = []
+    for row in rows:
+        score = row.get("code_semantic_score")
+        if not isinstance(score, (int, float)):
+            judgment = row.get("semantic_judgment") or row.get("judgment")
+            if isinstance(judgment, dict):
+                score = judgment.get("semantic_score")
+        if isinstance(score, (int, float)):
+            semantic_scores.append(score)
+    qa_scores = [
+        row.get("code_qa_score")
+        for row in rows
+        if isinstance(row.get("code_qa_score"), (int, float))
+    ]
+    summary = {"num_scenes": len(rows)}
+    if semantic_scores:
+        summary["mean_code_semantic_score"] = safe_divide(sum(semantic_scores), len(semantic_scores))
+    if qa_scores:
+        summary["mean_code_qa_score"] = safe_divide(sum(qa_scores), len(qa_scores))
+        summary["num_scenes_with_qa"] = len(qa_scores)
+        summary["num_qa_questions"] = sum(
+            row.get("qa_judgment", {}).get("num_questions", 0)
+            for row in rows
+            if isinstance(row.get("qa_judgment"), dict)
+        )
+        summary["num_qa_correct"] = sum(
+            row.get("qa_judgment", {}).get("num_correct", 0)
+            for row in rows
+            if isinstance(row.get("qa_judgment"), dict)
+        )
+    if include_static:
+        combined_scores = [row.get("combined_score") for row in rows if row.get("combined_score") is not None]
+        summary["mean_combined_score"] = safe_divide(sum(combined_scores), len(combined_scores))
+        summary["mean_static_score"] = safe_divide(sum(static_scores), len(static_scores))
+    return summary
+
+
+def load_completed_ids(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
+    completed = set()
+    for record in read_jsonl(path):
+        if "id" in record:
+            completed.add(str(record["id"]))
+    return completed
+
+
+def write_jsonl_row(out: Any, row: dict[str, Any]) -> None:
+    out.write(json.dumps(row, ensure_ascii=False) + "\n")
+    out.flush()
+    os.fsync(out.fileno())
 
 
 def main() -> None:
@@ -842,8 +1071,27 @@ def main() -> None:
     parser.add_argument("--base-url", default=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"))
     parser.add_argument("--api-key", default=os.getenv("OPENAI_API_KEY"))
     parser.add_argument("--max-chars", type=int, default=20000, help="Max chars per script pair when sending code.")
-    parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Optional judge temperature. Omit to use the model default.",
+    )
     parser.add_argument("--static-only", action="store_true", help="Compute deterministic static metrics only.")
+    parser.add_argument(
+        "--metric",
+        choices=("semantic", "qa", "both"),
+        default="semantic",
+        help="Which code-level metric to compute.",
+    )
+    parser.add_argument(
+        "--qa-metadata",
+        type=Path,
+        default=Path(__file__).resolve().parent / "test.jsonl",
+        help="QA metadata JSONL used for --metric qa or both.",
+    )
+    parser.add_argument("--resume", action="store_true", help="Append to output and skip already written ids.")
+    parser.add_argument("--stop-on-error", action="store_true", help="Stop on the first judge API error.")
     parser.add_argument(
         "--include-code",
         action="store_true",
@@ -866,10 +1114,21 @@ def main() -> None:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     rows = []
+    completed_ids = load_completed_ids(args.output) if args.resume else set()
+    records = list(read_jsonl(args.pairs))
+    mode = "a" if args.resume else "w"
+    qa_by_scene = load_qa_by_scene(args.qa_metadata) if args.metric in {"qa", "both"} else {}
 
-    with args.output.open("w", encoding="utf-8") as out:
-        for record in read_jsonl(args.pairs):
+    if completed_ids:
+        print(f"Resuming from {args.output}; skipping {len(completed_ids)} completed ids.", flush=True)
+
+    with args.output.open(mode, encoding="utf-8") as out:
+        for index, record in enumerate(records, start=1):
             scene_id = str(get_first(record, ("id", "scene_id")))
+            if scene_id in completed_ids:
+                continue
+
+            print(f"[{index}/{len(records)}] Judging {scene_id}...", flush=True)
             gt_path = resolve_record_path(
                 get_first(record, ("gt_bpy_path", "ground_truth_bpy_path")),
                 args.pairs.parent,
@@ -881,58 +1140,136 @@ def main() -> None:
 
             gt_summary = parse_bpy_scene(gt_path)
             pred_summary = parse_bpy_scene(pred_path)
-            static_metrics = compute_static_metrics(gt_summary, pred_summary)
+            static_metrics = compute_static_metrics(gt_summary, pred_summary) if args.static_only else None
 
             compact_gt = compact_scene_summary(gt_summary)
             compact_pred = compact_scene_summary(pred_summary)
             gt_code = read_text_limited(gt_path, args.max_chars) if args.include_code else None
             pred_code = read_text_limited(pred_path, args.max_chars) if args.include_code else None
-            user_prompt = build_user_prompt(
-                scene_id,
-                compact_gt,
-                compact_pred,
-                static_metrics,
-                gt_code,
-                pred_code,
-            )
-
-            combined_score = static_metrics["static_score"]
-            if args.dry_run or args.static_only:
-                judgment: dict[str, Any] = {
-                    "dry_run": args.dry_run,
-                    "static_only": args.static_only,
-                    "prompt_chars": len(user_prompt),
-                }
-            else:
-                content = call_chat_completion(
-                    base_url=args.base_url,
-                    api_key=args.api_key,
-                    model=args.model,
-                    system_prompt=SYSTEM_PROMPT,
-                    user_prompt=user_prompt,
-                    temperature=args.temperature,
-                )
-                judgment = json.loads(content)
-                semantic_score = judgment.get("semantic_score")
-                if isinstance(semantic_score, (int, float)):
-                    llm_weight = clamp01(args.llm_weight)
-                    combined_score = clamp01(
-                        llm_weight * float(semantic_score)
-                        + (1.0 - llm_weight) * static_metrics["static_score"]
-                    )
-
             row = {
                 "id": scene_id,
                 "gt_bpy_path": str(gt_path),
                 "pred_bpy_path": str(pred_path),
-                "static_metrics": static_metrics,
-                "judgment": judgment,
-                "combined_score": combined_score,
             }
-            rows.append(row)
-            out.write(json.dumps(row, ensure_ascii=False) + "\n")
+            combined_score = None if static_metrics is None else static_metrics["static_score"]
+            if args.metric in {"semantic", "both"}:
+                user_prompt = build_user_prompt(
+                    scene_id,
+                    compact_gt,
+                    compact_pred,
+                    static_metrics,
+                    gt_code,
+                    pred_code,
+                )
+                if args.dry_run or args.static_only:
+                    semantic_judgment: dict[str, Any] = {
+                        "dry_run": args.dry_run,
+                        "static_only": args.static_only,
+                        "prompt_chars": len(user_prompt),
+                    }
+                else:
+                    try:
+                        content = call_chat_completion(
+                            base_url=args.base_url,
+                            api_key=args.api_key,
+                            model=args.model,
+                            system_prompt=SYSTEM_PROMPT,
+                            user_prompt=user_prompt,
+                            temperature=args.temperature,
+                        )
+                        semantic_judgment = json.loads(content)
+                        semantic_score = semantic_judgment.get("semantic_score")
+                        if isinstance(semantic_score, (int, float)):
+                            normalized_score = clamp01(float(semantic_score))
+                            row["code_semantic_score"] = normalized_score
+                            if static_metrics is not None:
+                                llm_weight = clamp01(args.llm_weight)
+                                combined_score = clamp01(
+                                    llm_weight * normalized_score
+                                    + (1.0 - llm_weight) * static_metrics["static_score"]
+                                )
+                    except KeyboardInterrupt:
+                        print(f"Interrupted while judging {scene_id}; no result was returned for this scene.", file=sys.stderr)
+                        raise
+                    except Exception as exc:
+                        if args.stop_on_error:
+                            raise
+                        semantic_judgment = {
+                            "error": str(exc),
+                            "execution_risk": "high",
+                            "semantic_score": None,
+                        }
+                row["semantic_judgment"] = semantic_judgment
 
-    summary = summarize_scores(rows)
+            if args.metric in {"qa", "both"}:
+                qa_items = qa_by_scene.get(scene_id, [])
+                if not qa_items:
+                    row["qa_judgment"] = {
+                        "num_questions": 0,
+                        "num_answered": 0,
+                        "num_correct": 0,
+                        "code_qa_score": None,
+                        "rows": [],
+                    }
+                else:
+                    qa_prompt = build_qa_prompt(scene_id, compact_pred, qa_items)
+                    if args.dry_run or args.static_only:
+                        qa_judgment = {
+                            "dry_run": args.dry_run,
+                            "prompt_chars": len(qa_prompt),
+                            "num_questions": len(qa_items),
+                        }
+                    else:
+                        try:
+                            content = call_chat_completion(
+                                base_url=args.base_url,
+                                api_key=args.api_key,
+                                model=args.model,
+                                system_prompt=QA_SYSTEM_PROMPT,
+                                user_prompt=qa_prompt,
+                                temperature=args.temperature,
+                            )
+                            qa_response = json.loads(content)
+                            qa_judgment = score_qa_answers(qa_items, qa_response)
+                            row["code_qa_score"] = qa_judgment["code_qa_score"]
+                        except KeyboardInterrupt:
+                            print(f"Interrupted while QA judging {scene_id}; no QA result was returned for this scene.", file=sys.stderr)
+                            raise
+                        except Exception as exc:
+                            if args.stop_on_error:
+                                raise
+                            qa_judgment = {
+                                "error": str(exc),
+                                "num_questions": len(qa_items),
+                                "num_answered": 0,
+                                "num_correct": 0,
+                                "code_qa_score": None,
+                                "rows": [],
+                            }
+                    row["qa_judgment"] = qa_judgment
+
+            if static_metrics is not None:
+                row["static_metrics"] = static_metrics
+                row["combined_score"] = combined_score
+            rows.append(row)
+            write_jsonl_row(out, row)
+            status_parts = []
+            if isinstance(row.get("code_semantic_score"), (int, float)):
+                status_parts.append(f"code_semantic_score={float(row['code_semantic_score']):g}")
+            if isinstance(row.get("code_qa_score"), (int, float)):
+                qa_judgment = row.get("qa_judgment", {})
+                if isinstance(qa_judgment, dict):
+                    correct = qa_judgment.get("num_correct", "?")
+                    total = qa_judgment.get("num_questions", "?")
+                    status_parts.append(f"code_qa_score={float(row['code_qa_score']):g} ({correct}/{total})")
+                else:
+                    status_parts.append(f"code_qa_score={float(row['code_qa_score']):g}")
+            if not status_parts:
+                status_parts.append("dry_run" if args.dry_run else "error")
+            print(f"[{index}/{len(records)}] Wrote {scene_id}: {', '.join(status_parts)}", flush=True)
+
+    summary_rows = list(read_jsonl(args.output))
+    summary = summarize_scores(summary_rows, include_static=args.static_only)
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     if args.summary_output:
         args.summary_output.parent.mkdir(parents=True, exist_ok=True)
