@@ -5,7 +5,7 @@ This folder contains lightweight evaluation utilities for BVB.
 The current evaluation has two levels:
 
 1. Vision-level VQA evaluation: ask the same QA item on the original video and the rendered reconstruction, then compare both answers to the ground truth.
-2. Code-level LLM judge evaluation: compare exported GT `bpy` code against exported agent `bpy` code.
+2. Code-level unit-test evaluation: treat each exported `bpy` scene as a testable scene program.
 
 ## Vision-Level Metrics
 
@@ -82,160 +82,95 @@ python batch_export_blend_to_bpy.py --limit 3 --dry-run
 python batch_export_blend_to_bpy.py --limit 1 --overwrite
 ```
 
-## Code-Level LLM Judge
+## Code Unit Tests
 
-Use `llm_judge_metric.py` after you have exported both ground-truth and agent-generated scenes to `bpy` Python scripts.
+Use `generate_unit_tests.py` and `unit_test_metric.py` after scenes have been exported to `bpy` Python scripts. This is the current code-level evaluation path. Instead of asking the judge model to answer QA freely, scene requirements are materialized once as pass/fail unit tests, then every submission is evaluated against the same test file.
 
-The script supports two code-level scores:
-
-- `code_semantic_score`: compare GT and agent `bpy` scene summaries directly with an LLM judge.
-- `code_qa_score`: ask an LLM to answer all QA pairs for a scene from the agent `bpy` scene summary, then compare those answers to `test.jsonl` ground truth.
-
-Use `--metric semantic`, `--metric qa`, or `--metric both` to choose which score to compute.
-
-### Code Semantic Score
-
-For `code_semantic_score`, the script parses both `bpy` files into structured scene summaries, sends those summaries to an OpenAI-compatible judge model, and asks for one score from 0 to 1:
-
-```json
-{"semantic_score": 0.63}
-```
-
-The score is a semantic scene similarity score from 0 to 1. It should be reported concisely, for example `0.63`, rather than padded with fake precision like `0.6300`.
-
-The judge is instructed to compare:
-
-- major object categories and counts
-- room layout, walls, doors, windows, and connectivity
-- spatial relationships, relative positions, scale, and orientation
-- visible furniture and object groups
-- material/color similarity when it affects recognition
-- lights/camera only when they affect visibility or viewpoint
-
-The judge should compare scene semantics, not raw code text or exact object naming.
-
-### Code QA Score
-
-For `code_qa_score`, the script uses `test.jsonl` as QA metadata. For each scene ID in the pair file, it finds all QA rows whose `scene_name` matches the scene ID, sends the agent-generated scene summary and those questions to the judge model, and asks the model to answer the questions from the reconstructed scene.
-
-QA is batched by scene: one API call contains all questions for that scene. The scene summary is not resent once per question.
-
-The returned answers are compared to `ground_truth` from `test.jsonl` with type-aware matching:
-
-- `object_counting`: numeric exact match after extracting the first number.
-- `object_size_estimation`: numeric match with tolerance `max(10 cm, 10% of GT)`.
-- `room_size_estimation`: numeric match with tolerance `max(1.0 m^2, 10% of GT)`.
-- `object_abs_distance`: numeric match with tolerance `max(0.2 m, 15% of GT)`.
-- multiple-choice questions such as direction and route planning: accepts either the option letter (`A`, `B`, `C`, `D`) or the text of the correct option.
-- other questions: normalized exact string match.
-
-The scene-level score is:
-
-```text
-code_qa_score = number of correctly answered QA pairs / number of QA pairs for that scene
-```
-
-The run-level score is the arithmetic mean of scene-level `code_qa_score` values:
-
-```text
-mean_code_qa_score = average(code_qa_score over scenes with QA)
-```
-
-Input pairs JSONL format:
-
-```json
-{"id": "09c1414f1b", "gt_bpy_path": "gt/09c1414f1b.py", "pred_bpy_path": "results/claude-sonnet-4.6/bpy/09c1414f1b.py"}
-```
-
-Run semantic score only:
+First generate the stable input test suite:
 
 ```bash
-python llm_judge_metric.py \
-  --pairs code_pairs.jsonl \
-  --output results/claude-sonnet-4.6/code_semantic_judge.jsonl \
-  --summary-output results/claude-sonnet-4.6/code_semantic_summary.json \
-  --metric semantic
+python generate_unit_tests.py \
+  --metadata test.jsonl \
+  --output unit_tests.jsonl \
+  --statement-output unit_tests.statements.jsonl \
+  --llm-statements \
+  --statement-batch-size 50
 ```
 
-Run QA score only:
+`unit_tests.jsonl` is the input test set. It should be versioned/reviewed like any other benchmark artifact. The runner does not convert from `test.jsonl` at evaluation time.
+
+Then evaluate any submission against that same test set. `human`, `claude-sonnet-4.6`, or any other result directory is just a submission with scene code. For example, to evaluate the 30 refined scenes for Claude and human:
 
 ```bash
-python llm_judge_metric.py \
-  --pairs code_pairs.jsonl \
-  --output results/claude-sonnet-4.6/code_qa_judge.jsonl \
-  --summary-output results/claude-sonnet-4.6/code_qa_summary.json \
-  --metric qa
-```
-
-Run both scores:
-
-```bash
-python llm_judge_metric.py \
-  --pairs code_pairs.jsonl \
-  --output results/claude-sonnet-4.6/code_both_judge.jsonl \
-  --summary-output results/claude-sonnet-4.6/code_both_summary.json \
-  --metric both
-```
-
-For the current 30 manually refined scenes:
-
-```bash
-python llm_judge_metric.py \
+python unit_test_metric.py \
   --pairs results/claude-sonnet-4.6/code_pairs_refined30.jsonl \
-  --output results/claude-sonnet-4.6/code_both_refined30.jsonl \
-  --summary-output results/claude-sonnet-4.6/code_both_summary_refined30.json \
-  --metric both \
+  --unit-tests unit_tests.jsonl \
+  --output results/claude-sonnet-4.6/unit_tests_refined30.jsonl \
+  --summary-output results/claude-sonnet-4.6/unit_tests_summary_refined30.json \
+  --resume
+
+python unit_test_metric.py \
+  --pairs results/gt/code_pairs_refined30.jsonl \
+  --unit-tests unit_tests.jsonl \
+  --output results/gt/unit_tests_refined30.jsonl \
+  --summary-output results/gt/unit_tests_summary_refined30.json \
   --resume
 ```
 
-Use `--resume` for long runs. The script writes one JSONL row immediately after each scene returns, flushes it to disk, and skips completed IDs on the next run. Do not delete the output JSONL while a run is active; `--resume` uses that file as the checkpoint.
+The generated test suite currently contains:
 
-Configure an OpenAI-compatible API:
+- `basic_validity`: new tests that do not come from QA, such as parse success, non-empty scene, camera exists, and light exists.
+- QA-derived tests: tests converted from `test.jsonl`, keeping the original VSI-Bench `question_type` as the unit-test type.
+
+QA-derived tests use one of three evaluator modes:
+
+- `rule`: direct checks that need no model, currently used for `basic_validity`.
+- `function`: the judge model first finds the relevant scene object/group parameters, then the script calls a deterministic function to compute pass/fail. This is used for `object_counting`, `object_size_estimation`, `room_size_estimation`, and `object_abs_distance`.
+- `proposition`: the judge model directly decides whether the test statement is true for the scene. This is used for QA types that are not yet connected to a deterministic function, such as `route_planning`, `object_rel_direction`, and `object_rel_distance`.
+
+Configure an OpenAI-compatible API before running tests with `function` or `proposition` evaluators:
 
 ```bash
 export OPENAI_API_KEY="..."
 export BVB_JUDGE_MODEL="gpt-5.5"
-# Optional, for OpenAI-compatible providers:
-export OPENAI_BASE_URL="https://api.openai.com/v1"
 ```
 
-Before making API calls, validate the input file with:
+Use `--dry-run` to verify test loading without making model calls. In dry-run mode, only `rule` tests are evaluated; tests that require the judge model are marked as `dry_run`.
 
-```bash
-python llm_judge_metric.py \
-  --pairs code_pairs.jsonl \
-  --output results/claude-sonnet-4.6/code_both_judge.dry_run.jsonl \
-  --metric both \
-  --dry-run
-```
-
-Per-scene output includes:
-
-- `id`: scene ID.
-- `gt_bpy_path`: ground-truth exported `bpy` file.
-- `pred_bpy_path`: agent exported `bpy` file.
-- `code_semantic_score`: scene-level semantic score from 0 to 1, when `--metric semantic` or `--metric both` is used.
-- `semantic_judgment`: LLM semantic judge JSON, including `semantic_score`, differences, spatial errors, execution risk, and rationale.
-- `code_qa_score`: scene-level QA accuracy from 0 to 1, when `--metric qa` or `--metric both` is used.
-- `qa_judgment`: QA scoring details, including `num_questions`, `num_answered`, `num_correct`, and per-question rows.
-
-Example output row:
+Each input test case has a structure like:
 
 ```json
-{"id":"scene0461_00","gt_bpy_path":".../BVB/BVB/bpy/scene0461_00.py","pred_bpy_path":".../results/claude-sonnet-4.6/bpy/scene0461_00.py","code_semantic_score":0.62,"semantic_judgment":{"semantic_score":0.62,"major_differences":["..."],"missing_objects":[],"extra_objects":[],"spatial_errors":["..."],"execution_risk":"low","rationale":"..."},"code_qa_score":0.5,"qa_judgment":{"num_questions":2,"num_answered":2,"num_correct":1,"code_qa_score":0.5,"rows":[{"id":123,"question":"How many chair(s) are in this room?","ground_truth":"4","predicted_answer":"3","correct":false}]}}
+{
+  "test_id": "ut_000123",
+  "scene_name": "scene0461_00",
+  "test_type": "object_counting",
+  "source_qa_id": 123,
+  "evaluator": "function",
+  "function": "count_objects",
+  "expected": {"count": 4},
+  "params": {"object_ref": "chair"}
+}
 ```
 
-The summary file reports the arithmetic mean over all completed scene scores:
+New tests such as `basic_validity` have `source_qa_id: null`.
+
+The summary reports:
 
 ```json
 {
   "num_scenes": 30,
-  "mean_code_semantic_score": 0.6346666666666665,
-  "mean_code_qa_score": 0.5,
-  "num_scenes_with_qa": 30,
-  "num_qa_questions": 80,
-  "num_qa_correct": 40
+  "num_tests": 289,
+  "num_evaluated": 289,
+  "num_passed": 180,
+  "num_unsupported": 0,
+  "unit_test_pass_rate": 0.6228373702422145,
+  "by_test_type": {
+    "basic_validity": {"pass_rate": 0.9916666666666667},
+    "object_counting": {"pass_rate": 0.32432432432432434}
+  }
 }
 ```
 
-Use `mean_code_semantic_score` and/or `mean_code_qa_score` depending on which metric was requested.
+All tests are preserved, including tests where `human` fails. Low `human` scores are diagnostic signals for improving test extraction, object matching, unit calibration, or the scene itself; they are not a reason to remove tests.
+
+This unit-test metric is experimental. It is meant to support the "scene code as a testable artifact" direction. In particular, object matching and unit calibration still need improvement.

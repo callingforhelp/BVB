@@ -42,7 +42,7 @@ Each finished BVB data point is a tuple of:
 
 - the original video (from VSI-Bench)
 - the spatial reasoning QA pairs
-- the human refined `.blend` scene
+- the human submission `.blend` scene
 - (eventually) the exported Python script that reconstructs the scene
 
 The data pipeline combines automated reconstruction with human in the loop refinement:
@@ -52,7 +52,7 @@ The data pipeline combines automated reconstruction with human in the loop refin
 1. Take a VSI-Bench video and its QA pairs.
 2. Extract representative frames.
 3. Use an agent (Cursor + [BlenderMCP](https://github.com/ahujasid/blender-mcp)) to auto build a first pass Blender scene.
-4. **Human refines** the scene in Blender so it preserves the information needed to answer the QA correctly. This is the main contribution of this repo at present.
+4. A human uses Blender to produce a stronger scene-code submission for the same video. This submission is evaluated by the same tests as any agent output.
 5. Export the scene to Python via the custom [Blender Export BPY add-on](addons/README.md); the script can re-import the scene end to end.
 
 External asset libraries (PolyHaven, Sketchfab, etc.) are **disallowed** for benchmark agents. All geometry must be constructed from scratch, so the benchmark measures genuine scene understanding rather than asset retrieval skill.
@@ -72,8 +72,8 @@ BVB uses dual level evaluation:
 | Vision | **Retention rate** = `#(orig ✓ ∧ rendered ✓) / #(orig ✓)` | How much correct info the reconstruction preserves |
 | Vision | **Hallucination rate** = `#(orig ✗ ∧ rendered ✓) / #(orig ✗)` | How much incorrect info the reconstruction introduces |
 | Vision | **Δ accuracy** | Difference between QA accuracy on original vs. rendered video |
-| Code | **Semantic edit distance** | LLM judged structural difference between GT code and agent code |
-| Code | **Executability** | Code that fails to run scores 0, which is a natural sanity check |
+| Code | **Unit-test pass rate** | Whether a submission's exported scene program passes materialized scene tests |
+| Code | **Executability / validity tests** | Basic checks such as parse success, non-empty scene, camera, and light |
 
 ## Benchmark comparison
 
@@ -95,7 +95,7 @@ BVB uses dual level evaluation:
 
 ## Contributing scene refinements
 
-The `.blend` files in this repo are an automated first pass and need human cleanup so that an evaluation model can answer the corresponding QA item correctly using only the reconstructed scene. See [refinement_guidance.md](refinement_guidance.md) for the full workflow, including how to set up Blender and VSI-Bench, claim a scene, run `refine.sh`, edit the scene, and push the result.
+The `.blend` files in this repo are an automated first pass and need human cleanup before they are useful as strong scene-code submissions. See [refinement_guidance.md](refinement_guidance.md) for the full workflow, including how to set up Blender and VSI-Bench, claim a scene, run `refine.sh`, edit the scene, and push the result.
 
 When using Cursor for scene reconstruction or refinement, this repo includes a project skill at [.cursor/skills/bvb-scene-builder/SKILL.md](.cursor/skills/bvb-scene-builder/SKILL.md) with BVB-specific BlenderMCP guidelines.
 
