@@ -1,5 +1,6 @@
 import json
 import subprocess
+from pathlib import Path
 
 import bvb_lib
 
@@ -119,3 +120,30 @@ def test_ground_function_params_room_area():
 
 def test_ground_function_params_other_returns_empty():
     assert bvb_lib.ground_function_params({"function": "count_objects"}, "Floor") == {}
+
+
+def test_evaluate_function_offline_room_area_on_real_scene(tmp_path):
+    """Export the real 41125731.blend → bpy, score its room_area test offline."""
+    import shutil
+    import pytest
+    repo = Path(__file__).resolve().parent.parent
+    blend = repo / "blend" / "41125731.blend"
+    if not blend.is_file():
+        pytest.skip("scene 41125731.blend not present")
+    # batch_export has no single-file flag, so isolate one .blend in its own dir.
+    iso = tmp_path / "in"
+    iso.mkdir()
+    shutil.copy2(blend, iso / "41125731.blend")
+    rc = subprocess.run(
+        ["python", str(repo / "eval" / "batch_export_blend_to_bpy.py"),
+         "--input-dir", str(iso), "--output-dir", str(tmp_path), "--overwrite"],
+        capture_output=True, text=True,
+    )
+    bpy_out = tmp_path / "41125731.py"
+    if not bpy_out.is_file():
+        pytest.skip(f"bpy export unavailable in this env: {rc.stderr[-300:]}")
+    test = {"scene_name": "41125731", "function": "room_area", "evaluator": "function",
+            "expected": {"value": 23.6, "tolerance": 2.36}}
+    res = bvb_lib.evaluate_function_offline(repo, bpy_out, test, floor_group_key=None)
+    assert res["status"] in {"pass", "fail"}
+    assert isinstance(res.get("actual"), (int, float))

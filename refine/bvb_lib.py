@@ -131,3 +131,27 @@ def ground_function_params(test: dict, floor_key) -> dict:
     if test.get("function") == "room_area":
         return {"object_group": floor_key}
     return {}
+
+
+def _import_eval(repo_root):
+    eval_dir = str(Path(repo_root) / "eval")
+    if eval_dir not in sys.path:
+        sys.path.insert(0, eval_dir)
+    import eval_utils  # noqa: E402
+    import unit_test_metric  # noqa: E402
+    return eval_utils, unit_test_metric
+
+
+def evaluate_function_offline(repo_root, bpy_path, test: dict, floor_group_key=None):
+    """Score one `function` unit test deterministically, no LLM.
+
+    Reuses the harness: parse the bpy, build object groups, ground params
+    (floor group), then call the harness's deterministic evaluator.
+    """
+    eu, utm = _import_eval(repo_root)
+    scene_index = eu.parse_bpy_scene(Path(bpy_path))
+    groups = eu.build_groups(scene_index)
+    floor_key = floor_group_key or pick_floor_group(groups)
+    params = ground_function_params(test, floor_key)
+    scene_id = str(test.get("scene_name"))
+    return utm.evaluate_function_test_with_params(scene_id, test, groups, params)
