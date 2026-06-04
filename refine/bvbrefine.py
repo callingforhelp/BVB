@@ -79,7 +79,9 @@ def cmd_start(scene_id: str, n: int) -> int:
     rc = cmd_qa(scene_id)
     if rc:
         return rc
-    cmd_frames(scene_id, n)
+    rc = cmd_frames(scene_id, n)
+    if rc:
+        return rc
     refine_dir(scene_id).mkdir(parents=True, exist_ok=True)
     baseline = refine_dir(scene_id) / f"{scene_id}_v00_baseline.blend"
     print("\nNEXT (Claude runs via BlenderMCP to snapshot the baseline):")

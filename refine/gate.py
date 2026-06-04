@@ -18,7 +18,6 @@ import bvb_lib  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 UNIT_TESTS = REPO / "eval" / "unit_tests.jsonl"
-ADDON = REPO / "addons" / "export_bpy_code.py"
 
 
 def export_bpy(scene_id: str, out_dir: Path):
@@ -31,16 +30,17 @@ def export_bpy(scene_id: str, out_dir: Path):
     with tempfile.TemporaryDirectory() as td:
         one = Path(td) / f"{scene_id}.blend"
         shutil.copy2(blend, one)
-        subprocess.run(
+        result = subprocess.run(
             ["python", str(REPO / "eval" / "batch_export_blend_to_bpy.py"),
              "--input-dir", str(Path(td)), "--output-dir", str(out_dir), "--overwrite"],
-            check=True,
         )
+    if result.returncode != 0:
+        return None
     bpy_path = out_dir / f"{scene_id}.py"
     return bpy_path if bpy_path.is_file() else None
 
 
-def cmd_gate(scene_id: str, judge: bool = False, floor_group=None) -> int:
+def cmd_gate(scene_id: str, judge: bool = False, floor_group: "str | None" = None) -> int:
     refine = REPO / "blend" / f"refine_{scene_id}"
     bpy_dir = refine / "bpy"
     bpy_path = export_bpy(scene_id, bpy_dir)
@@ -65,6 +65,7 @@ def cmd_gate(scene_id: str, judge: bool = False, floor_group=None) -> int:
         print(f"\n→ official (judged) results written to {out} (rc={rc})")
         return rc
 
+    fn_tests = sum(1 for t in tests if t.get("evaluator") == "function")
     print(f"\nOFFLINE GATE for {scene_id} ({len(tests)} tests):")
     failed = 0
     for t in tests:
@@ -77,6 +78,6 @@ def cmd_gate(scene_id: str, judge: bool = False, floor_group=None) -> int:
         else:
             print(f"  [{t['test_id']}] {t['test_type']}: SELF-JUDGED "
                   f"(proposition; rerun with --judge for official)")
-    print(f"\n{len(tests) - failed}/{len(tests)} function tests passing offline "
+    print(f"\n{fn_tests - failed}/{fn_tests} function tests passing offline "
           f"(proposition tests need --judge).")
     return 1 if failed else 0
