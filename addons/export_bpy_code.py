@@ -430,7 +430,7 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             export_scale = self._round_tuple(
                 (mesh_bbox[0] * sx, mesh_bbox[1] * sy, mesh_bbox[2] * sz), dp)
             lines.append(f"# WARNING: Complex mesh '{obj.name}' (verts={vcount}, faces={fcount})")
-            lines.append(f"# Approximated as cube — replace with primitives for exact reconstruction")
+            lines.append(f"# Approximated as cube — replace with primitives or supported procedural modifiers")
             lines.append(f"bpy.ops.mesh.primitive_cube_add(size=1, location={loc})")
             self._write_obj_header(lines, obj, rot)
             lines.append(f"obj.scale = {export_scale}")
@@ -878,7 +878,7 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             for vi in e.vertices:
                 edge_count[vi] = edge_count.get(vi, 0) + 1
         max_edges = max(edge_count.values()) if edge_count else 0
-        # Cone apex connects to all base vertices (32 for 32-side cone)
+        # Cone apex connects to many base vertices.
         return max_edges >= 16
 
 

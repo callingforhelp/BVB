@@ -1,6 +1,6 @@
 # Blender Export BPY Code
 
-A Blender addon that exports your scene as a reproducible Python (`bpy`) script. Run the exported script in any Blender instance to reconstruct the exact same scene.
+A Blender addon that exports your scene as a reproducible Python (`bpy`) script. Run the exported script in any Blender instance to reconstruct supported geometry, materials, lights, cameras, and scene settings.
 
 ![Blender 3.6+](https://img.shields.io/badge/Blender-3.6%2B-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
