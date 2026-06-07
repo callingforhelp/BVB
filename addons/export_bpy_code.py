@@ -76,6 +76,7 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
         lines = []
         self._complex_meshes = []  # Track non-primitive meshes
         self._modifier_warnings = []
+        self._deferred_modifier_refs = []
 
         lines.append('"""')
         lines.append(f"Blender Scene: {bpy.path.basename(bpy.data.filepath) or 'Untitled'}")
@@ -291,6 +292,8 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
 
             lines.append("")
 
+        self._export_deferred_modifier_refs(lines, exported_names)
+
         # --- Parent relationships ---
         parents = [
             (obj.name, obj.parent.name)
@@ -504,7 +507,8 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             elif mod.type == 'BOOLEAN':
                 self._write_modifier_attr(lines, mod, 'operation', dp)
                 if getattr(mod, 'object', None):
-                    lines.append(f"mod.object = bpy.data.objects.get({repr(mod.object.name)})")
+                    self._deferred_modifier_refs.append(
+                        (obj.name, mod.name, 'object', mod.object.name))
             elif mod.type == 'MIRROR':
                 for attr in (
                     'use_axis', 'use_bisect_axis', 'use_bisect_flip_axis',
@@ -512,7 +516,8 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
                 ):
                     self._write_modifier_attr(lines, mod, attr, dp)
                 if getattr(mod, 'mirror_object', None):
-                    lines.append(f"mod.mirror_object = bpy.data.objects.get({repr(mod.mirror_object.name)})")
+                    self._deferred_modifier_refs.append(
+                        (obj.name, mod.name, 'mirror_object', mod.mirror_object.name))
             elif mod.type == 'SCREW':
                 for attr in ('angle', 'screw_offset', 'iterations', 'axis', 'steps', 'render_steps'):
                     self._write_modifier_attr(lines, mod, attr, dp)
@@ -557,6 +562,22 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             else:
                 encoded = repr(tuple(round(v, dp) for v in items))
         lines.append(f"mod.{attr} = {encoded}")
+
+    def _export_deferred_modifier_refs(self, lines, exported_names):
+        refs = [
+            ref for ref in self._deferred_modifier_refs
+            if ref[0] in exported_names and ref[3] in exported_names
+        ]
+        if not refs:
+            return
+        lines.append("# ============================================================")
+        lines.append("# Modifier Object References")
+        lines.append("# ============================================================")
+        for obj_name, mod_name, attr, target_name in refs:
+            lines.append(
+                f"bpy.data.objects[{repr(obj_name)}].modifiers[{repr(mod_name)}].{attr} = "
+                f"bpy.data.objects[{repr(target_name)}]")
+        lines.append("")
 
     # ----------------------------------------------------------------
     # Light export
@@ -608,7 +629,8 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
     # ----------------------------------------------------------------
     def _mat_var(self, name):
         """Convert material name to a valid Python variable name."""
-        return "mat_" + name.replace(".", "_").replace(" ", "_").replace("-", "_")
+        safe = ''.join(c if (c.isascii() and (c.isalnum() or c == '_')) else '_' for c in name)
+        return "mat_" + safe
 
     def _round_tuple(self, values, dp):
         return tuple(round(v, dp) for v in values)
