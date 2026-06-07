@@ -5,19 +5,26 @@ description: Build 3D scenes in Blender via BlenderMCP for the BVB (Blender-Vide
 
 # BVB Scene Builder
 
-Build reproducible 3D scenes in Blender via BlenderMCP for the BVB benchmark. Scenes must use only basic primitives and solid colors so they can be cleanly exported as `bpy` Python code.
+Build reproducible 3D scenes in Blender via BlenderMCP for the BVB benchmark. Prefer basic primitives, solid colors, and exporter-supported procedural details so scenes remain cleanly exportable as compact `bpy` Python code.
 
 ## Quick Reference
 
 Before starting, make sure BlenderMCP is connected. Test with `get_scene_info`.
 
-### Forbidden
+### Export-Safe Modeling
 
 - Imported models (.obj, .fbx, .glTF)
-- Subdivision surfaces, sculpted geometry, booleans
+- Sculpted geometry or arbitrary edited meshes that require full vertex/face serialization
 - Curves, NURBS, text objects
-- Geometry Nodes, modifiers
-- Any node graph beyond a single Principled BSDF
+- Geometry Nodes, simulations, particles, cloth/fluid/hair systems
+- Texture/image-dependent material node graphs
+
+Allowed lightweight details:
+- Basic primitives: cube, plane, cylinder, cone, sphere, torus, plus multi-part assemblies of these.
+- Solid materials using a single Principled BSDF. Keep Base Color, Roughness, Metallic, Alpha, and other simple scalar/color inputs numeric.
+- Exporter-supported procedural modifiers when they add meaningful visual detail without bloating the `.py`: `BEVEL`, `ARRAY`, `MIRROR`, `SOLIDIFY`, `SUBSURF`, `BOOLEAN`, `SCREW`, `SIMPLE_DEFORM`, `TRIANGULATE`, `WEIGHTED_NORMAL`.
+- Use supported modifiers sparingly and keep them parametric. If a detail can be modeled clearly with a few primitives, prefer primitives.
+- Avoid applying supported modifiers into dense mesh geometry unless the final shape is still recognizable as an exporter-supported primitive. Applied arbitrary mesh edits will be approximated.
 
 ---
 ### Grouped Parts
@@ -118,6 +125,7 @@ Execute code via `blender:execute_blender_code` in **small, incremental steps**.
 - Always use `import math` and `math.radians()` for any rotation — NEVER pass raw degree numbers to `rotation_euler`.
 - Start each code block with `bpy.ops.object.select_all(action='DESELECT')` to avoid leftover selection state.
 - For primitive dimensions, prefer setting `obj.dimensions = (...)` and then `bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)` so final mesh scale is `(1, 1, 1)`.
+- For bevels, repeated parts, symmetry, thickness, and simple smoothing, prefer exporter-supported modifiers over hand-editing dense mesh topology.
 - Avoid repeated incremental move/rotate/scale edits on complex multi-part objects. If parts drift or the object feels fragmented, rebuild that object group cleanly at the target location.
 - Do not omit visible lamps or chandeliers just because the ceiling is omitted. If a fixture is visible in the reference, model the fixture body and add an appropriate light source.
 
@@ -132,10 +140,11 @@ After building, take a viewport screenshot and compare with keyframes. Adjust:
 ### Step 4: Final Check
 
 Before telling the user the scene is ready:
-1. Verify NO complex meshes exist (all objects should be basic primitives)
-2. Verify NO linked material nodes (all Base Color should be solid values)
-3. Verify visibility states are correct
-4. **Verify structural integrity: zoom into joints/corners to confirm no floating parts. Hanging lights may float only when the reference clearly shows a suspended fixture.**
+1. Verify no arbitrary complex meshes remain. Objects should be primitives, primitive assemblies, or supported procedural modifier stacks.
+2. Verify no unsupported modifiers or Geometry Nodes remain.
+3. Verify no texture/image-linked material nodes remain; materials should be solid numeric values.
+4. Verify visibility states are correct.
+5. **Verify structural integrity: zoom into joints/corners to confirm no floating parts. Hanging lights may float only when the reference clearly shows a suspended fixture.**
 
 ---
 ### Naming Convention
@@ -157,6 +166,7 @@ Before finishing any scene, verify:
 - [ ] **No orphan objects**: Every multi-part object should be add to a `Collection` (except the light sources and camera)
 - [ ] **Rotations in radians**: All `rotation_euler` values use `math.radians()`, never raw degrees
 - [ ] **Visible lights included**: If the reference shows a chandelier, ceiling light, wall lamp, or floor lamp, the fixture body and light source are both present.
+- [ ] **Exporter-safe detail**: Bevels, arrays, mirrors, solidify, simple deformation, and smoothing use supported modifier parameters rather than dense hand-edited mesh data.
 - [ ] **Viewpoint left/right checked**: For doorway or room-to-room views, define the viewer-facing vector and verify left/right wall placement from that viewpoint, not from Blender world axes or top-down view.
 - [ ] **Connectivity preserved**: Do not create extra doors, openings, or side rooms unless they are visible in the reference video.
 - [ ] if you notice that the walls that are supposed to closure but not, the scale value of the walls should be checked (usually set scale=1 can fix many problems).
@@ -170,5 +180,6 @@ When the user is satisfied, remind them to export using the **Export BPY Code** 
 `File > Export > Blender Python Script (.py)`
 
 This addon exports the scene as reproducible `bpy` Python code. It will warn about:
-- Complex meshes that can't be exactly reconstructed (should be zero if built correctly)
-- Materials with linked nodes (should be zero if using only solid colors)
+- Complex meshes that will be approximated instead of exactly reconstructed (should be zero if built correctly)
+- Unsupported or partially exported modifiers
+- Materials with linked texture/node inputs (should be zero if using only solid colors)
