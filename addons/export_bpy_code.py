@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Export Scene as BPY Code",
     "author": "BVB Tools",
-    "version": (1, 2, 1),
+    "version": (1, 3, 0),
     "blender": (3, 6, 0),
     "location": "File > Export > Blender Python Script (.py)",
     "description": "Export the current scene as a reproducible bpy Python script",
@@ -75,6 +75,8 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
         dp = int(self.decimal_places)
         lines = []
         self._complex_meshes = []  # Track non-primitive meshes
+        self._modifier_warnings = []
+        self._deferred_modifier_refs = []
 
         lines.append('"""')
         lines.append(f"Blender Scene: {bpy.path.basename(bpy.data.filepath) or 'Untitled'}")
@@ -148,14 +150,25 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
         self._linked_materials = []  # Track materials with non-trivial node setups
 
         for mat in bpy.data.materials:
+            var = self._mat_var(mat.name)
+            lines.append(f"{var} = bpy.data.materials.new(name={repr(mat.name)})")
+
             if not mat.use_nodes or not mat.node_tree:
+                dc = self._round_tuple(mat.diffuse_color, dp)
+                lines.append(f"{var}.diffuse_color = {dc}")
+                lines.append("")
                 continue
+
             bsdf = None
             for node in mat.node_tree.nodes:
                 if node.type == 'BSDF_PRINCIPLED':
                     bsdf = node
                     break
             if not bsdf:
+                dc = self._round_tuple(mat.diffuse_color, dp)
+                lines.append(f"{var}.diffuse_color = {dc}")
+                self._linked_materials.append(f"{mat.name} (no Principled BSDF)")
+                lines.append("")
                 continue
 
             # Warn about linked inputs (textures, color ramps, etc.)
@@ -165,10 +178,10 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
                 self._linked_materials.append(
                     f"{mat.name} (Base Color <- {from_node.type})")
 
-            var = self._mat_var(mat.name)
-            lines.append(f"{var} = bpy.data.materials.new(name='{mat.name}')")
             lines.append(f"{var}.use_nodes = True")
             lines.append(f"_bsdf = {var}.node_tree.nodes['Principled BSDF']")
+            dc = self._round_tuple(mat.diffuse_color, dp)
+            lines.append(f"{var}.diffuse_color = {dc}")
 
             # Always export these three core values
             bc = self._round_tuple(bsdf.inputs['Base Color'].default_value, dp)
@@ -230,6 +243,11 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             if tw_name in bsdf.inputs and bsdf.inputs[tw_name].default_value > 0.001:
                 lines.append(f"{var}.blend_method = 'BLEND'")
 
+            if mat.blend_method != 'OPAQUE':
+                lines.append(f"{var}.blend_method = '{mat.blend_method}'")
+            if hasattr(mat, 'use_screen_refraction') and mat.use_screen_refraction:
+                lines.append(f"{var}.use_screen_refraction = True")
+
             lines.append("")
 
         # --- Objects ---
@@ -238,6 +256,7 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
         lines.append("# ============================================================")
 
         self._complex_meshes = []  # Track complex meshes for warning
+        exported_names = set()
 
         for obj in bpy.data.objects:
             if obj.type == 'CAMERA' and not self.include_camera:
@@ -250,32 +269,43 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             loc = self._round_tuple(obj.location, dp)
             rot = self._round_tuple(obj.rotation_euler, dp)
 
+            exported = False
             if obj.type == 'MESH':
                 self._export_mesh(lines, obj, loc, rot, dp)
+                exported = True
             elif obj.type == 'LIGHT':
                 self._export_light(lines, obj, loc, rot, dp)
+                exported = True
             elif obj.type == 'CAMERA':
                 self._export_camera(lines, obj, loc, rot, dp)
+                exported = True
             elif obj.type == 'EMPTY':
                 scale = self._round_tuple(obj.scale, dp)
                 self._export_empty(lines, obj, loc, rot, scale, dp)
+                exported = True
 
-            # Preserve visibility state
-            if obj.hide_viewport:
-                lines.append(f"obj.hide_viewport = True")
-            if obj.hide_render:
-                lines.append(f"obj.hide_render = True")
+            if not exported:
+                continue
+
+            self._export_common_object_settings(lines, obj, dp)
+            exported_names.add(obj.name)
 
             lines.append("")
 
+        self._export_deferred_modifier_refs(lines, exported_names)
+
         # --- Parent relationships ---
-        parents = [(obj.name, obj.parent.name) for obj in bpy.data.objects if obj.parent]
+        parents = [
+            (obj.name, obj.parent.name)
+            for obj in bpy.data.objects
+            if obj.parent and obj.name in exported_names and obj.parent.name in exported_names
+        ]
         if parents:
             lines.append("# ============================================================")
             lines.append("# Parent Relationships")
             lines.append("# ============================================================")
             for child_name, parent_name in parents:
-                lines.append(f"bpy.data.objects['{child_name}'].parent = bpy.data.objects['{parent_name}']")
+                lines.append(f"bpy.data.objects[{repr(child_name)}].parent = bpy.data.objects[{repr(parent_name)}]")
             lines.append("")
 
         # Write file
@@ -294,6 +324,11 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             names = ', '.join(self._linked_materials[:5])
             warnings.append(
                 f"{len(self._linked_materials)} material(s) use textures/nodes (only fallback color exported): {names}")
+        if self._modifier_warnings:
+            names = ', '.join(self._modifier_warnings[:5])
+            suffix = f' (+{len(self._modifier_warnings) - 5} more)' if len(self._modifier_warnings) > 5 else ''
+            warnings.append(
+                f"{len(self._modifier_warnings)} modifier(s) skipped or partially exported: {names}{suffix}")
 
         if warnings:
             self.report({'WARNING'},
@@ -339,10 +374,19 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
 
         elif vcount >= 100 and self._is_torus_like(mesh, vcount, fcount):
             # --- Torus ---
-            major_r = round((mesh_bbox[0] + mesh_bbox[1]) / 4 * max(sx, sy), dp)
-            minor_r = round(mesh_bbox[2] / 2 * sz, dp)
+            eff_x = mesh_bbox[0] * sx
+            eff_y = mesh_bbox[1] * sy
+            eff_z = mesh_bbox[2] * sz
+            outer = max(abs(eff_x), abs(eff_y))
+            minor_r = round(max(abs(eff_z) / 2, 0.0001), dp)
+            major_r = round(max(outer / 2 - minor_r, minor_r), dp)
             lines.append(f"bpy.ops.mesh.primitive_torus_add(major_radius={major_r}, minor_radius={minor_r}, location={loc})")
             self._write_obj_header(lines, obj, rot)
+            base_outer = 2 * (major_r + minor_r)
+            if base_outer > 0.0001:
+                torus_scale = self._round_tuple((eff_x / base_outer, eff_y / base_outer, 1.0), dp)
+                if torus_scale != (1.0, 1.0, 1.0):
+                    lines.append(f"obj.scale = {torus_scale}")
 
         elif (cyl := self._analyze_cylinder(mesh, vcount, fcount)):
             # --- Cylinder / cone (before sphere — cylinders have equidistant
@@ -352,27 +396,33 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             rot_c = self._rotation_for_aligned_cylinder(obj, ax, dp)
             local_depth, local_radius, s_depth, s_r1, s_r2 = (
                 self._cylinder_bbox_scales(mesh_bbox, ax, sx, sy, sz))
-            eff_radius = round(local_radius * max(s_r1, s_r2), dp)
+            base_scale = max(abs(s_r1), abs(s_r2), 0.0001)
+            eff_radius = round(local_radius * base_scale, dp)
             eff_depth = round(local_depth * s_depth, dp)
+            cross_scale = self._round_tuple((s_r1 / base_scale, s_r2 / base_scale, 1.0), dp)
+            vertices = cyl.get('vertices', 32)
             if cyl['is_cone']:
+                radius1 = round(cyl.get('radius1', local_radius) * base_scale, dp)
+                radius2 = round(cyl.get('radius2', 0.0) * base_scale, dp)
                 lines.append(
-                    f"bpy.ops.mesh.primitive_cone_add(vertices=32, radius1={eff_radius}, depth={eff_depth}, location={loc})")
+                    f"bpy.ops.mesh.primitive_cone_add(vertices={vertices}, radius1={radius1}, radius2={radius2}, depth={eff_depth}, location={loc})")
                 self._write_obj_header(lines, obj, rot_c)
+                if cross_scale != (1.0, 1.0, 1.0):
+                    lines.append(f"obj.scale = {cross_scale}")
             else:
                 lines.append(
-                    f"bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius={eff_radius}, depth={eff_depth}, location={loc})")
+                    f"bpy.ops.mesh.primitive_cylinder_add(vertices={vertices}, radius={eff_radius}, depth={eff_depth}, location={loc})")
                 self._write_obj_header(lines, obj, rot_c)
-                # Elliptical cross-section only when height is Z (no extra align);
-                # after X/Y align, non-uniform scale maps messily to local axes.
-                if ax == 2 and abs(sx - sy) > 0.001 and sy != 0:
-                    ratio = round(sx / sy, dp)
-                    lines.append(f"obj.scale = ({ratio}, 1.0, 1.0)")
+                if cross_scale != (1.0, 1.0, 1.0):
+                    lines.append(f"obj.scale = {cross_scale}")
 
         elif vcount >= 100 and self._is_sphere_like(mesh):
             # --- Sphere ---
-            eff_radius = round(max(mesh_bbox) / 2 * max(obj.scale), dp)
-            lines.append(f"bpy.ops.mesh.primitive_uv_sphere_add(radius={eff_radius}, location={loc})")
+            sphere_scale = self._round_tuple(
+                (mesh_bbox[0] * sx / 2, mesh_bbox[1] * sy / 2, mesh_bbox[2] * sz / 2), dp)
+            lines.append(f"bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=1, location={loc})")
             self._write_obj_header(lines, obj, rot)
+            lines.append(f"obj.scale = {sphere_scale}")
 
         else:
             # --- Complex mesh (approximated as cube) ---
@@ -380,25 +430,154 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             export_scale = self._round_tuple(
                 (mesh_bbox[0] * sx, mesh_bbox[1] * sy, mesh_bbox[2] * sz), dp)
             lines.append(f"# WARNING: Complex mesh '{obj.name}' (verts={vcount}, faces={fcount})")
-            lines.append(f"# Approximated as cube — replace with primitives for exact reconstruction")
+            lines.append(f"# Approximated as cube — replace with primitives or supported procedural modifiers")
             lines.append(f"bpy.ops.mesh.primitive_cube_add(size=1, location={loc})")
             self._write_obj_header(lines, obj, rot)
             lines.append(f"obj.scale = {export_scale}")
 
         # Mesh data name
         if obj.data.name != obj.name:
-            lines.append(f"obj.data.name = '{obj.data.name}'")
+            lines.append(f"obj.data.name = {repr(obj.data.name)}")
 
-        # Material
-        if obj.material_slots and obj.material_slots[0].material:
-            mat_name = obj.material_slots[0].material.name
-            lines.append(f"obj.data.materials.append(bpy.data.materials['{mat_name}'])")
+        # Materials. Face-level material indices are intentionally not emitted:
+        # for primitive reconstruction, topology may not match the source mesh.
+        for slot in obj.material_slots:
+            if slot.material:
+                mat_name = slot.material.name
+                lines.append(f"obj.data.materials.append(bpy.data.materials[{repr(mat_name)}])")
+
+        self._export_modifiers(lines, obj, dp)
 
     def _write_obj_header(self, lines, obj, rot):
         """Common lines after creating any object."""
         lines.append(f"obj = bpy.context.active_object")
-        lines.append(f"obj.name = '{obj.name}'")
+        lines.append(f"obj.name = {repr(obj.name)}")
         lines.append(f"obj.rotation_euler = {rot}")
+
+    def _export_common_object_settings(self, lines, obj, dp):
+        """Small object settings that preserve scene appearance without bloating output."""
+        if obj.hide_viewport:
+            lines.append("obj.hide_viewport = True")
+        if obj.hide_render:
+            lines.append("obj.hide_render = True")
+        if obj.display_type != 'TEXTURED':
+            lines.append(f"obj.display_type = '{obj.display_type}'")
+        if obj.show_name:
+            lines.append("obj.show_name = True")
+        if obj.show_in_front:
+            lines.append("obj.show_in_front = True")
+        color = self._round_tuple(obj.color, dp)
+        if color != (1.0, 1.0, 1.0, 1.0):
+            lines.append(f"obj.color = {color}")
+        if hasattr(obj, 'visible_shadow') and not obj.visible_shadow:
+            lines.append("if hasattr(obj, 'visible_shadow'): obj.visible_shadow = False")
+
+    def _export_modifiers(self, lines, obj, dp):
+        """Export common procedural modifiers; skip data-heavy or unsupported ones."""
+        if not obj.modifiers:
+            return
+
+        supported = {
+            'ARRAY', 'BEVEL', 'BOOLEAN', 'MIRROR', 'SCREW', 'SIMPLE_DEFORM',
+            'SOLIDIFY', 'SUBSURF', 'TRIANGULATE', 'WEIGHTED_NORMAL',
+        }
+
+        for mod in obj.modifiers:
+            if mod.type not in supported:
+                self._modifier_warnings.append(f"{obj.name}.{mod.name} ({mod.type})")
+                continue
+
+            lines.append(f"mod = obj.modifiers.new(name={repr(mod.name)}, type='{mod.type}')")
+            for attr in ('show_viewport', 'show_render'):
+                self._write_modifier_attr(lines, mod, attr, dp)
+
+            if mod.type == 'ARRAY':
+                for attr in (
+                    'count', 'use_relative_offset', 'relative_offset_displace',
+                    'use_constant_offset', 'constant_offset_displace',
+                    'use_merge_vertices', 'merge_threshold',
+                ):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+            elif mod.type == 'BEVEL':
+                for attr in (
+                    'width', 'segments', 'profile', 'affect', 'limit_method',
+                    'harden_normals', 'use_clamp_overlap',
+                ):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+            elif mod.type == 'BOOLEAN':
+                self._write_modifier_attr(lines, mod, 'operation', dp)
+                if getattr(mod, 'object', None):
+                    self._deferred_modifier_refs.append(
+                        (obj.name, mod.name, 'object', mod.object.name))
+            elif mod.type == 'MIRROR':
+                for attr in (
+                    'use_axis', 'use_bisect_axis', 'use_bisect_flip_axis',
+                    'use_clip', 'use_mirror_merge', 'merge_threshold',
+                ):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+                if getattr(mod, 'mirror_object', None):
+                    self._deferred_modifier_refs.append(
+                        (obj.name, mod.name, 'mirror_object', mod.mirror_object.name))
+            elif mod.type == 'SCREW':
+                for attr in ('angle', 'screw_offset', 'iterations', 'axis', 'steps', 'render_steps'):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+            elif mod.type == 'SIMPLE_DEFORM':
+                for attr in ('deform_method', 'deform_axis', 'angle', 'factor', 'limits'):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+            elif mod.type == 'SOLIDIFY':
+                for attr in (
+                    'thickness', 'offset', 'use_even_offset', 'use_quality_normals',
+                    'use_rim_only', 'use_rim', 'show_on_cage',
+                ):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+            elif mod.type == 'SUBSURF':
+                for attr in ('levels', 'render_levels', 'subdivision_type', 'quality'):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+            elif mod.type == 'TRIANGULATE':
+                for attr in ('quad_method', 'ngon_method', 'min_vertices'):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+            elif mod.type == 'WEIGHTED_NORMAL':
+                for attr in ('weight', 'keep_sharp'):
+                    self._write_modifier_attr(lines, mod, attr, dp)
+
+    def _write_modifier_attr(self, lines, mod, attr, dp):
+        if not hasattr(mod, attr):
+            return
+        value = getattr(mod, attr)
+        if isinstance(value, str):
+            encoded = repr(value)
+        elif isinstance(value, bool):
+            encoded = 'True' if value else 'False'
+        elif isinstance(value, int):
+            encoded = str(value)
+        elif isinstance(value, float):
+            encoded = str(round(value, dp))
+        else:
+            try:
+                items = tuple(value)
+            except TypeError:
+                return
+            if all(isinstance(v, bool) for v in items):
+                encoded = repr(tuple(bool(v) for v in items))
+            else:
+                encoded = repr(tuple(round(v, dp) for v in items))
+        lines.append(f"mod.{attr} = {encoded}")
+
+    def _export_deferred_modifier_refs(self, lines, exported_names):
+        refs = [
+            ref for ref in self._deferred_modifier_refs
+            if ref[0] in exported_names and ref[3] in exported_names
+        ]
+        if not refs:
+            return
+        lines.append("# ============================================================")
+        lines.append("# Modifier Object References")
+        lines.append("# ============================================================")
+        for obj_name, mod_name, attr, target_name in refs:
+            lines.append(
+                f"bpy.data.objects[{repr(obj_name)}].modifiers[{repr(mod_name)}].{attr} = "
+                f"bpy.data.objects[{repr(target_name)}]")
+        lines.append("")
 
     # ----------------------------------------------------------------
     # Light export
@@ -450,7 +629,8 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
     # ----------------------------------------------------------------
     def _mat_var(self, name):
         """Convert material name to a valid Python variable name."""
-        return "mat_" + name.replace(".", "_").replace(" ", "_").replace("-", "_")
+        safe = ''.join(c if (c.isascii() and (c.isalnum() or c == '_')) else '_' for c in name)
+        return "mat_" + safe
 
     def _round_tuple(self, values, dp):
         return tuple(round(v, dp) for v in values)
@@ -608,7 +788,14 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
         if not candidates:
             return None
         axis = max(candidates, key=lambda t: t[0])[1]
-        return {'axis': axis, 'is_cone': self._is_cone_like(mesh)}
+        profile = self._cylinder_profile(mesh, axis)
+        return {
+            'axis': axis,
+            'is_cone': self._is_cone_like(mesh),
+            'vertices': profile['vertices'],
+            'radius1': profile['radius1'],
+            'radius2': profile['radius2'],
+        }
 
     def _rotation_for_aligned_cylinder(self, obj, axis, dp):
         """`primitive_*_cylinder/cone` is Z-high; rotate object if mesh height is on X/Y."""
@@ -637,6 +824,50 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             return by, max(bx, bz) / 2, sy, sx, sz
         return bz, max(bx, by) / 2, sz, sx, sy
 
+    def _project_from_axis(self, vco, axis):
+        if axis == 0:
+            return (vco[1], vco[2])
+        if axis == 1:
+            return (vco[0], vco[2])
+        return (vco[0], vco[1])
+
+    def _cylinder_profile(self, mesh, axis):
+        """Estimate side count and end radii without serializing mesh topology."""
+        vals = [v.co[axis] for v in mesh.vertices]
+        vmin, vmax = min(vals), max(vals)
+        span = max(vmax - vmin, 1e-6)
+        tol = max(span * 0.02, 1e-5)
+        bottom = [v.co for v in mesh.vertices if abs(v.co[axis] - vmin) <= tol]
+        top = [v.co for v in mesh.vertices if abs(v.co[axis] - vmax) <= tol]
+
+        def ring_radius(points):
+            if not points:
+                return 0.0, 0
+            pts = [self._project_from_axis(p, axis) for p in points]
+            cx = sum(p[0] for p in pts) / len(pts)
+            cy = sum(p[1] for p in pts) / len(pts)
+            dists = [math.hypot(p[0] - cx, p[1] - cy) for p in pts]
+            max_dist = max(dists) if dists else 0.0
+            perimeter = [p for p, d in zip(pts, dists) if d > max_dist * 0.5]
+            if not perimeter:
+                return 0.0, 0
+            radius = sum(math.hypot(p[0] - cx, p[1] - cy) for p in perimeter) / len(perimeter)
+            angles = {
+                round(math.atan2(p[1] - cy, p[0] - cx), 4)
+                for p in perimeter
+            }
+            return radius, len(angles)
+
+        r_bottom, n_bottom = ring_radius(bottom)
+        r_top, n_top = ring_radius(top)
+        vertices = max(n_bottom, n_top, 3)
+        vertices = min(max(vertices, 3), 256)
+        return {
+            'vertices': vertices,
+            'radius1': r_bottom,
+            'radius2': r_top,
+        }
+
     def _is_cone_like(self, mesh):
         """Heuristic: cone has one apex vertex where many edges converge."""
         if len(mesh.vertices) < 10:
@@ -647,7 +878,7 @@ class ExportBpyCode(bpy.types.Operator, ExportHelper):
             for vi in e.vertices:
                 edge_count[vi] = edge_count.get(vi, 0) + 1
         max_edges = max(edge_count.values()) if edge_count else 0
-        # Cone apex connects to all base vertices (32 for 32-side cone)
+        # Cone apex connects to many base vertices.
         return max_edges >= 16
 
 

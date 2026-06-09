@@ -107,11 +107,11 @@ File > Export > Blender Python Script (.py)
 5. Open the exported `.py` file and run it.
 6. Compare the reconstructed scene from the exported script with your refined `.blend` scene.
 
-If the exported-and-reconstructed scene looks meaningfully different from the refined `.blend`, the refinement may be using unsupported structures. Common causes include overly complex geometry, unsupported modifiers, or textures/material nodes that do not export cleanly.
+If the exported-and-reconstructed scene looks meaningfully different from the refined `.blend`, the refinement may be using structures that do not export cleanly. Common causes include arbitrary complex geometry, unsupported or partially exported modifiers, applied dense mesh edits, or textures/material nodes that depend on external image/procedural data.
 
 In that case, simplify the scene before pushing:
 
-- Replace complex structures with simple geometric primitives where possible.
+- Replace complex structures with simple geometric primitives or exporter-supported procedural modifiers where possible.
 - Prefer solid-color materials over textures.
 - Avoid details that look nice in Blender but disappear or change after export.
 
