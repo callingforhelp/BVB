@@ -137,6 +137,19 @@ def test_match_group_none_when_no_match():
     assert bvb_lib._match_group(["Floor", "Wall_Back"], "washer") is None
 
 
+def test_match_group_with_size_picks_largest_body():
+    sizes = {"Sofa_Arm_B": 0.80, "Sofa_Body": 1.03, "Sofa_Cushion": 0.66}
+    got = bvb_lib._match_group(list(sizes), "sofa", size_of=lambda k: sizes[k])
+    assert got == "Sofa_Body"
+
+
+def test_ground_function_params_closest_distance():
+    groups = {"Sofa_Body": None, "Toilet_Tank": None, "Floor": None}
+    test = {"function": "closest_distance", "params": {"object_refs": ["sofa", "toilet"]}}
+    assert bvb_lib.ground_function_params(test, groups) == {
+        "object_a_group": "Sofa_Body", "object_b_group": "Toilet_Tank"}
+
+
 def test_evaluate_function_offline_room_area_on_real_scene(tmp_path):
     """Export the real 41125731.blend → bpy, score its room_area test offline."""
     import shutil

@@ -128,12 +128,14 @@ _SUBPART_TOKENS = ("door", "panel", "handle", "frame", "leg", "divider",
 _REF_STOPWORDS = {"the", "a", "an", "or", "and", "of", "room", "boundary"}
 
 
-def _match_group(group_keys, object_ref):
+def _match_group(group_keys, object_ref, size_of=None):
     """Pick the group key that best matches a unit test's `object_ref` phrase.
 
     Matches by keyword (e.g. object_ref "washer" -> "Washer_Body"), preferring
-    the main component over sub-parts (door/panel/handle/...). Returns None if
-    nothing matches.
+    the main component over sub-parts (door/panel/handle/...). When `size_of`
+    (a callable key->float) is given, pick the LARGEST matching group — the body
+    of a multi-part object (a sofa's body, not its arm). Returns None if nothing
+    matches.
     """
     ref = (object_ref or "").lower()
     tokens = [t for t in re.split(r"[^a-z0-9]+", ref) if t and t not in _REF_STOPWORDS]
@@ -144,7 +146,18 @@ def _match_group(group_keys, object_ref):
         return None
     main = [k for k in candidates if not any(s in k.lower() for s in _SUBPART_TOKENS)]
     pool = main or candidates
+    if size_of is not None:
+        return max(pool, key=lambda k: size_of(k) or 0.0)
     return pool[0]
+
+
+def _group_longest_dim(group):
+    """Longest bbox edge (meters) of a parsed SceneGroup, or 0.0 if unknown."""
+    bmin = getattr(group, "bbox_min", None)
+    bmax = getattr(group, "bbox_max", None)
+    if not bmin or not bmax:
+        return 0.0
+    return max(bmax[i] - bmin[i] for i in range(3))
 
 
 def ground_function_params(test: dict, groups, floor_key=None) -> dict:
@@ -160,10 +173,16 @@ def ground_function_params(test: dict, groups, floor_key=None) -> dict:
     params = test.get("params", {}) if isinstance(test.get("params"), dict) else {}
     ref = params.get("object_ref")
     keys = list(groups)
+    largest = lambda r: _match_group(keys, r, size_of=lambda k: _group_longest_dim(groups.get(k)))
     if fn == "room_area":
         return {"object_group": floor_key or pick_floor_group(groups) or _match_group(keys, ref)}
     if fn == "longest_dimension":
-        return {"object_group": _match_group(keys, ref)}
+        return {"object_group": largest(ref)}
+    if fn == "closest_distance":
+        refs = params.get("object_refs") or []
+        if len(refs) >= 2:
+            return {"object_a_group": largest(refs[0]), "object_b_group": largest(refs[1])}
+        return {}
     return {}
 
 
