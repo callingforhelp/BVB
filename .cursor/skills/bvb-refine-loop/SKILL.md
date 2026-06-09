@@ -52,6 +52,14 @@ The user looks at the video; you don't see what they see. So:
   group so it grabs the body not a sub-part), and **`closest_distance`** (two objects from
   `params.object_refs`). Only `count_objects` still needs `--judge`. A `function` test that
   prints `actual=None` means grounding failed, NOT that the scene is wrong.
+- **`closest_distance` (object_abs_distance) grounds EACH ref to its single LARGEST sub-part by
+  longest bbox edge, then scores the 3-D gap between those two bboxes — built from
+  `location ± obj.scale/2`, NOT mesh/matrix_world.** Gotcha that burned a whole session: a
+  backrest spanning the body's full width can tie/beat the seat and BECOME the grounded "sofa",
+  so the gap is measured from whatever part is largest — and if that part is the one nearest the
+  other object, the distance collapses. Make the part you intend unambiguously the longest, keep
+  the whole object's near edge far enough, and replicate the grounding (or run `gate`) — never
+  trust a matrix_world hand-measure (it disagreed with the gate by ±0.5 m repeatedly).
 - **Size tests measure `obj.scale`, so a size-QA object MUST be a scaled cube.** The harness
   `object_extent` reads each object's `scale`, not its mesh bbox — a complex/cylinder mesh (or
   a cube with applied scale that exports without scale) reads as **1.0 m** and the test prints
@@ -75,6 +83,10 @@ The user looks at the video; you don't see what they see. So:
 | Appliance should be wall-mounted / under-counter | translate the part group in Z (mount) or place under the counter; counter/cabinet extend to it |
 | `object_size` gate prints `actual=100` (or ~1 m) | the object is a complex/cylinder mesh — rebuild it from `primitive_cube_add(size=1)` + `obj.scale` at the target size |
 | QA needs a whole missing room (combined space) | analyze the video first (Workflow over many frames), then build the second room south of the existing one through the door |
+| Distance QA wildly off vs your hand-measure | gate grounds 'sofa'/'toilet' to the LARGEST sub-part (a full-width back can outrank the seat) + uses `location±scale/2` — replicate the grounding, don't measure `matrix_world` |
+| Side/perpendicular walls gap after you deepen/reshape the floor | moving the Floor + back wall doesn't drag the side walls — extend every wall that meets the moved one |
+| Living room "feels small" but room_area is at its cap | shrink the FURNITURE (sofa), not the walls — room_area is the floor bbox, hard-capped at GT±tol |
+| Orphaned door/object floating from an old layout | after any reshape, scan for objects not inside a wall + walls that don't connect; move into a wall or delete |
 
 ## Checkpoint convention
 
@@ -113,6 +125,18 @@ final approval. Roll back by opening any `vNN`.
   cabinets + sink + appliances as one group to sit against that wall, clear of the doors.
 - Match appliances to the video: under-counter front-load washer (round door facing the
   room), wall-mounted water heater near the ceiling; a "table" with a solid base, not legs.
+- A fixed object_abs_distance + a wall choice can over-constrain: putting the object on the wall
+  that minimizes the X-gap to its pair forces ALL the distance onto the other axis, jamming the
+  far object to the far end with no room left. Compute the budget early (dx from the wall →
+  required dy) and flag the trade-off BEFORE iterating; the user may pick video-faithfulness
+  over the distance QA ("不改了，就这样吧"). Moving the toilet "up" can directly fight a sofa↔toilet
+  distance — say so, don't silently thrash.
+- Furniture sub-parts: the user specifies relations precisely ("chaise at the body's upper-LEFT,
+  X within the body — no stick-out", "back on the body's +Y/down edge" — the back's edge sets
+  the facing). Edit one relation, verify with measured bboxes, screenshot; watch for sub-part
+  穿模 (overlap) and re-check the distance gate after every sofa move (the grounded part shifts).
+- "Make the room bigger" when room_area is already near its cap → shrink the furniture so the
+  space reads open; growing walls fails room_area (floor bbox, GT±tol).
 
 ## Delivery (git) — keep tooling personal, ship only the .blend
 
