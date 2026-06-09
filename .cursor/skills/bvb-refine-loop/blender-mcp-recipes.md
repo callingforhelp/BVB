@@ -200,3 +200,74 @@ for o in bpy.context.scene.objects:
     if 'foot' in o.name.lower() or 'outlet' in o.name.lower():
         print(o.name, [round(v, 2) for v in center_xy(o)])
 ```
+
+## Widen a room, anchoring one wall (axis-scale at the cursor)
+
+To make a too-narrow room wider while keeping the left wall at x=0 fixed: scale the floor and
+the perpendicular walls along X about a cursor placed at the fixed wall. This anchors one edge
+and grows the other regardless of each object's origin. Then translate the opposite wall out,
+and move the counter/cabinet/appliance group by the same delta to sit against it.
+
+```python
+import bpy, mathutils
+def scale_axis_anchored(names, target_max, axis=0, anchor=0.0):
+    sc = bpy.context.scene
+    sc.cursor.location = (anchor, 0, 0) if axis == 0 else (0, anchor, 0)
+    old = sc.tool_settings.transform_pivot_point
+    sc.tool_settings.transform_pivot_point = 'CURSOR'
+    for n in names:
+        o = bpy.data.objects[n]
+        cur = [(o.matrix_world @ mathutils.Vector(c))[axis] for c in o.bound_box]
+        f = (target_max - anchor) / (max(cur) - anchor)
+        val = [1, 1, 1]; val[axis] = f
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active = o; o.select_set(True)
+        for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                for region in area.regions:
+                    if region.type == 'WINDOW':
+                        with bpy.context.temp_override(area=area, region=region):
+                            bpy.ops.transform.resize(value=val, orient_type='GLOBAL')
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    sc.tool_settings.transform_pivot_point = old
+# scale_axis_anchored(['Floor'], 2.58); scale_axis_anchored(['Wall_Back','Wall_Front'], 2.68)
+# then: Wall_Right.location.x += 0.98; and shift the counter group +0.98 in X.
+```
+
+## Mount an appliance on the wall / under a counter
+
+Move a multi-part appliance (body + door + panel) as a group. Wall-mount = scale to the GT
+longest dimension about its base, then lift in Z and keep it flush to the wall. Under-counter
+washer = a body box on the floor with a round front door (a cylinder turned to face the room).
+
+```python
+import bpy, mathutils, math
+# --- wall-mount: size to 91cm longest (scale Z about the base), then raise to z=0.9 ---
+parts = [bpy.data.objects[n] for n in ['Water_Heater', 'Water_Heater_Panel']]
+pts = [o.matrix_world @ mathutils.Vector(c) for o in parts for c in o.bound_box]
+cx = (min(p.x for p in pts)+max(p.x for p in pts))/2
+cy = (min(p.y for p in pts)+max(p.y for p in pts))/2
+sc = bpy.context.scene; sc.cursor.location = (cx, cy, min(p.z for p in pts))
+sc.tool_settings.transform_pivot_point = 'CURSOR'
+# ... select parts, bpy.ops.transform.resize(value=(1,1, 0.91/0.85)), transform_apply ...
+for o in parts: o.location.z += 0.9            # lift onto the wall above the counter
+
+# --- under-counter front-load washer (round door faces the room, -X) ---
+bpy.ops.mesh.primitive_cube_add(size=1, location=(2.28, 0.6, 0.425))
+body = bpy.context.active_object; body.name = 'Washer_Body'
+body.scale = (0.60, 0.60, 0.85); bpy.ops.object.transform_apply(scale=True)
+bpy.ops.mesh.primitive_cylinder_add(radius=0.17, depth=0.04, location=(1.975, 0.6, 0.45))
+door = bpy.context.active_object; door.name = 'Washer_Door'
+door.rotation_euler = (0, math.radians(90), 0)   # disc faces ±X (the room)
+bpy.ops.object.transform_apply(rotation=True)
+```
+
+## Solid-base furniture (not legs)
+
+When the user wants a table/cabinet "solid underneath," delete the legs and add one base box
+from the floor to just under the top.
+
+```python
+# delete legs: for o in [x for x in bpy.context.scene.objects if x.name.startswith('Table_Leg')]: bpy.data.objects.remove(o, do_unlink=True)
+# Table_Base = a cube spanning the top's XY footprint, z from 0 to (top_z - top_thickness).
+```

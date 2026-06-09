@@ -14,16 +14,22 @@ verify. Mechanical setup is the `refine/bvbrefine.py` CLI. Reusable Blender snip
 
 The user looks at the video; you don't see what they see. So:
 
-1. **The user names the problem.** Do NOT open with "here are the N things wrong and my
-   plan." Your read of the video is a *hypothesis to verify with them*, not a fact. (We once
-   "knew" a bedroom had one spurious bed — it had two real beds. Verifying saved a bad edit.)
+1. **Follow the user's lead on who drives diagnosis.** Default: the user names the problem.
+   But some users will ask *you* to propose your read first, then discuss high-level before
+   executing — do that when asked. Either way your read is a *hypothesis to verify*, not a
+   fact. (We once "knew" a bedroom had one spurious bed — it had two real beds.)
 2. **Ask before structural edits.** Show *measured* geometry (bounding boxes, the slope line,
    the floor footprint) and confirm direction/amount before moving walls or deleting groups.
 3. **For deletions, list candidates with reasons and let the user veto specific items**
    before removing anything.
-4. **Hiding / isolating ≠ deleting.** Say so every time, or the user thinks you wiped the
+4. **Split a batch of instructions into "do-now" vs "flag-first."** When the user dumps
+   several edits at once, execute the unambiguous ones, but STOP and flag anything that
+   changes what a QA test measures — especially **renaming/reclassifying an object** (e.g.
+   "this is a water heater, not a washer"). Renaming can orphan the QA's named object; check
+   whether a test still has its target before you proceed (see Heuristics).
+5. **Hiding / isolating ≠ deleting.** Say so every time, or the user thinks you wiped the
    scene. Prefer wireframe over hiding.
-5. **One coordinated edit → screenshot → checkpoint.** Then hand back for the next call.
+6. **One coordinated edit → screenshot → checkpoint.** Then hand back for the next call.
 
 ## Loop
 
@@ -41,7 +47,11 @@ The user looks at the video; you don't see what they see. So:
 ## Verification
 
 - `function` tests: compute the quantity live in Blender for instant feedback, then
-  `bvbrefine gate` re-scores offline. `room_area` = the **floor group's** bbox X·Y.
+  `bvbrefine gate` re-scores offline. It auto-grounds **`room_area`** (floor bbox X·Y) and
+  **`longest_dimension`** (object_size — matches the test's `object_ref`, e.g. "washer" →
+  `Washer_Body`, preferring the main body over sub-parts). `count_objects` /
+  `closest_distance` still need `--judge`. A `function` test that prints `actual=None` means
+  grounding failed, NOT that the scene is wrong — verify live and/or rerun with `--judge`.
 - `proposition` tests (route_planning): reason from geometry + frames; `--judge` for official.
 
 ## Common problems → quick fix (all snippets in `blender-mcp-recipes.md`)
@@ -56,6 +66,8 @@ The user looks at the video; you don't see what they see. So:
 | Floating outlets / bed feet / a door behind the bed | stray-object scan → confirm → delete |
 | Baseboard / crown left behind after moving a wall | move/trim the trim with its wall (separate objects!) |
 | Need a doorway in a wall | split the wall into two segments (no booleans) |
+| Room too small/narrow — widen but keep one wall fixed | anchored axis-scale (cursor at the fixed wall, resize on that axis); then move the opposite wall + its furniture group |
+| Appliance should be wall-mounted / under-counter | translate the part group in Z (mount) or place under the counter; counter/cabinet extend to it |
 
 ## Checkpoint convention
 
@@ -77,3 +89,26 @@ final approval. Roll back by opening any `vNN`.
   the leftover region reads as outside.
 - Never infer left/right/front/back from world axes — anchor to the video viewpoint first
   (doorways, sight lines). Don't add doors/openings not seen in the video.
+- Reclassifying an object can orphan a QA target: when the user says the wall box is a water
+  heater (not a washer), the "washer" object_size + route tests lose their object. Add the
+  real appliance the QA names (e.g. a front-load washer under the counter, sized to the GT)
+  AND keep the reclassified one. Name it so the judge finds it (`Washer_Body`).
+- Galley / utility room too narrow: widen by anchored X-scale of the floor + back/front
+  walls (cursor at the fixed wall), move the opposite wall out, and shift the counter +
+  cabinets + sink + appliances as one group to sit against that wall, clear of the doors.
+- Match appliances to the video: under-counter front-load washer (round door facing the
+  room), wall-mounted water heater near the ceiling; a "table" with a solid base, not legs.
+
+## Delivery (git) — keep tooling personal, ship only the .blend
+
+- Work on a personal branch (`andy`); the `refine/` tooling, skill, docs, and checkpoints
+  live there and never go to `main`.
+- Stay current: `git fetch origin` then `git merge origin/main` into your branch periodically
+  (teammates push scenes + export-script fixes to main).
+- Ship a scene: branch clean off `origin/main`, take ONLY the one file, push to main:
+  `git checkout -b deliver-<id> origin/main` → `git checkout <yourbranch> -- blend/<id>.blend`
+  → commit `Refine Blender Scene <id>` → push `deliver-<id>:main` → delete the temp branch.
+- SSH (port 22) may time out here; prefix fetch/push with the gh credential helper:
+  `git -c url."https://github.com/".insteadOf="git@github.com:" -c credential.helper='!gh auth git-credential' <fetch|push> …`
+- After the push lands, the user updates the Notion tracker row: `Refiner` = their name,
+  `Spatial` = `Done` (those two columns only).
