@@ -114,12 +114,27 @@ def test_pick_floor_group_none():
 
 
 def test_ground_function_params_room_area():
-    test = {"function": "room_area"}
-    assert bvb_lib.ground_function_params(test, "Floor") == {"object_group": "Floor"}
+    groups = {"Floor": None, "Wall_Back": None}
+    test = {"function": "room_area", "params": {"object_ref": "floor or room boundary"}}
+    assert bvb_lib.ground_function_params(test, groups, floor_key="Floor") == {"object_group": "Floor"}
 
 
-def test_ground_function_params_other_returns_empty():
-    assert bvb_lib.ground_function_params({"function": "count_objects"}, "Floor") == {}
+def test_ground_function_params_longest_dimension_picks_body():
+    groups = {"Washer_Body": None, "Washer_Door": None, "Sink_Basin": None}
+    test = {"function": "longest_dimension", "params": {"object_ref": "washer"}}
+    assert bvb_lib.ground_function_params(test, groups) == {"object_group": "Washer_Body"}
+
+
+def test_ground_function_params_count_returns_empty():
+    assert bvb_lib.ground_function_params({"function": "count_objects"}, {"X": None}) == {}
+
+
+def test_match_group_prefers_body_over_subpart():
+    assert bvb_lib._match_group(["Washer_Body", "Washer_Door"], "washer") == "Washer_Body"
+
+
+def test_match_group_none_when_no_match():
+    assert bvb_lib._match_group(["Floor", "Wall_Back"], "washer") is None
 
 
 def test_evaluate_function_offline_room_area_on_real_scene(tmp_path):

@@ -121,15 +121,49 @@ def pick_floor_group(groups) -> "str | None":
     return None
 
 
-def ground_function_params(test: dict, floor_key) -> dict:
+# Sub-part name tokens: when an object_ref matches several component groups
+# (e.g. "Washer_Body" + "Washer_Door"), prefer the main body over these parts.
+_SUBPART_TOKENS = ("door", "panel", "handle", "frame", "leg", "divider",
+                   "mirror", "knob", "hinge", "lid", "drawer", "shelf")
+_REF_STOPWORDS = {"the", "a", "an", "or", "and", "of", "room", "boundary"}
+
+
+def _match_group(group_keys, object_ref):
+    """Pick the group key that best matches a unit test's `object_ref` phrase.
+
+    Matches by keyword (e.g. object_ref "washer" -> "Washer_Body"), preferring
+    the main component over sub-parts (door/panel/handle/...). Returns None if
+    nothing matches.
+    """
+    ref = (object_ref or "").lower()
+    tokens = [t for t in re.split(r"[^a-z0-9]+", ref) if t and t not in _REF_STOPWORDS]
+    if not tokens:
+        return None
+    candidates = [k for k in group_keys if any(t in k.lower() for t in tokens)]
+    if not candidates:
+        return None
+    main = [k for k in candidates if not any(s in k.lower() for s in _SUBPART_TOKENS)]
+    pool = main or candidates
+    return pool[0]
+
+
+def ground_function_params(test: dict, groups, floor_key=None) -> dict:
     """Supply grounded_params for offline deterministic function evaluation.
 
-    Only room_area is grounded automatically (the floor group). Other function
-    types need object-specific grounding we do not infer offline; return {} so
-    the deterministic evaluator reports them as unresolved.
+    `room_area` grounds to the floor group; `longest_dimension` grounds to the
+    object named by the test's `object_ref` (e.g. "washer" -> "Washer_Body").
+    `count_objects` / `closest_distance` need multi-object grounding we don't
+    infer offline -> return {} so the evaluator reports them unresolved (use
+    --judge for those).
     """
-    if test.get("function") == "room_area":
-        return {"object_group": floor_key}
+    fn = test.get("function")
+    params = test.get("params", {}) if isinstance(test.get("params"), dict) else {}
+    ref = params.get("object_ref")
+    keys = list(groups)
+    if fn == "room_area":
+        return {"object_group": floor_key or pick_floor_group(groups) or _match_group(keys, ref)}
+    if fn == "longest_dimension":
+        return {"object_group": _match_group(keys, ref)}
     return {}
 
 
@@ -152,6 +186,6 @@ def evaluate_function_offline(repo_root, bpy_path, test: dict, floor_group_key=N
     scene_index = eu.parse_bpy_scene(Path(bpy_path))
     groups = eu.build_groups(scene_index)
     floor_key = floor_group_key or pick_floor_group(groups)
-    params = ground_function_params(test, floor_key)
+    params = ground_function_params(test, groups, floor_key)
     scene_id = str(test.get("scene_name"))
     return utm.evaluate_function_test_with_params(scene_id, test, groups, params)
