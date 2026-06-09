@@ -47,11 +47,16 @@ The user looks at the video; you don't see what they see. So:
 ## Verification
 
 - `function` tests: compute the quantity live in Blender for instant feedback, then
-  `bvbrefine gate` re-scores offline. It auto-grounds **`room_area`** (floor bbox X·Y) and
-  **`longest_dimension`** (object_size — matches the test's `object_ref`, e.g. "washer" →
-  `Washer_Body`, preferring the main body over sub-parts). `count_objects` /
-  `closest_distance` still need `--judge`. A `function` test that prints `actual=None` means
-  grounding failed, NOT that the scene is wrong — verify live and/or rerun with `--judge`.
+  `bvbrefine gate` re-scores offline. It auto-grounds **`room_area`** (floor bbox X·Y),
+  **`longest_dimension`** (object_size — matches `object_ref`, picking the LARGEST matching
+  group so it grabs the body not a sub-part), and **`closest_distance`** (two objects from
+  `params.object_refs`). Only `count_objects` still needs `--judge`. A `function` test that
+  prints `actual=None` means grounding failed, NOT that the scene is wrong.
+- **Size tests measure `obj.scale`, so a size-QA object MUST be a scaled cube.** The harness
+  `object_extent` reads each object's `scale`, not its mesh bbox — a complex/cylinder mesh (or
+  a cube with applied scale that exports without scale) reads as **1.0 m** and the test prints
+  `actual=100`. If an object the QA measures isn't a `primitive_cube_add(size=1)` + `obj.scale`,
+  rebuild it from scaled cubes at the target size (this is also the "primitives only" rule).
 - `proposition` tests (route_planning): reason from geometry + frames; `--judge` for official.
 
 ## Common problems → quick fix (all snippets in `blender-mcp-recipes.md`)
@@ -68,6 +73,8 @@ The user looks at the video; you don't see what they see. So:
 | Need a doorway in a wall | split the wall into two segments (no booleans) |
 | Room too small/narrow — widen but keep one wall fixed | anchored axis-scale (cursor at the fixed wall, resize on that axis); then move the opposite wall + its furniture group |
 | Appliance should be wall-mounted / under-counter | translate the part group in Z (mount) or place under the counter; counter/cabinet extend to it |
+| `object_size` gate prints `actual=100` (or ~1 m) | the object is a complex/cylinder mesh — rebuild it from `primitive_cube_add(size=1)` + `obj.scale` at the target size |
+| QA needs a whole missing room (combined space) | analyze the video first (Workflow over many frames), then build the second room south of the existing one through the door |
 
 ## Checkpoint convention
 
@@ -85,6 +92,14 @@ final approval. Roll back by opening any `vNN`.
   (rotate the wardrobe so its mirrored face points inward, then re-seat it against the wall).
 - room_size too large → resize the Floor and shift the back wall toward the beds by the same
   Δy (recipe), hitting the target area; confirm with `gate`. Floor bbox X·Y is what's scored.
+- room_area scores ONE floor's bbox X·Y — so a multi-room / "combined space" needs a SINGLE
+  rectangular Floor whose bbox = the target area (two separate floors or an L-shape fail: the
+  bbox is one floor or the L's outer rectangle). When the same scene also fixes a distance
+  (e.g. sofa↔toilet 3.9 m), the area + distance constraints can force the proportions (we got
+  a long 2×7.8 m rectangle); flag that trade-off to the user rather than guessing.
+- "Combined space" QA but only one room modeled → the other room is through the door; build it
+  south of the existing room (door wall becomes the shared partition, cut its opening), and
+  analyze the video with a Workflow first since you can't see it.
 - An indented ("凹进") corner = remove the floor there and wall off the adjacent room edge;
   the leftover region reads as outside.
 - Never infer left/right/front/back from world axes — anchor to the video viewpoint first
