@@ -38,6 +38,15 @@ The single biggest failure mode is treating "`execute_blender_code` succeeded" a
 A successful call only means Blender ran the code — not that the scene is right. Every round
 runs the loop below; **do not hand back until step 3 passes.**
 
+<HARD-GATE>
+At the START of every edit round you MUST create one TodoWrite task per step below (0–3) and
+complete them IN ORDER — do not skip a step, do not reorder, do not batch two rounds into one.
+You may NOT report an edit done — no "fixed", no screenshot-as-conclusion, no handing back to
+the user — until the self-verify scan (step 3) has run THIS round and printed clean, OR you have
+fixed every line it printed and re-run it. A successful `execute_blender_code` is NOT a completed
+step. Violating the letter of this gate is violating its spirit.
+</HARD-GATE>
+
 ```dot
 digraph edit_loop {
     "User names a problem" [shape=box];
@@ -98,6 +107,24 @@ objects and most out-of-room strays.
    The reusable straggler+floater+clipping scan is in `blender-mcp-recipes.md` (`self_verify`).
    "I moved it" is **not** a hand-back. "I moved it, scanned stragglers/floaters/clipping,
    re-measured the QA → here are the numbers" is.
+
+### Red flags — STOP, you are about to skip a step
+
+These thoughts mean go back to the TodoWrite list and finish the step you skipped:
+
+| The thought | The reality |
+|---|---|
+| "`execute` succeeded, so the edit is done" | Success = Blender ran the code; the scene is unverified. Run step 3. |
+| "It's a tiny move — no need to scan" | Tiny moves strand accessories and detach wall-mounted items. Scan every time. |
+| "I can tell the orientation from the layout" | The axes flip per scene and you have guessed wrong before. ASK (step 0). |
+| "I'll reshape now and check the QA after" | Reshape-then-discover-it-broke is the slow path. Estimate + state the number BEFORE (step 1). |
+| "I moved the toilet" (and forgot cistern / TP / flush-plate) | Moving = the WHOLE group. Write the name list first (step 2). |
+| "The user is waiting, I'll skip the screenshot + numbers" | They cannot see the result or your numbers without them. That IS the hand-back. |
+
+**Validate the gate holds the way `superpowers:writing-skills` does** — run a pressure scenario
+through a subagent (a multi-part move under "the user is in a hurry") and check it still scans
+before handing back. If it skips, add the new excuse to the table above. The practical proof is
+whether the next scenes need fewer "you forgot to move X / Y is floating" corrections.
 
 ## Loop
 
