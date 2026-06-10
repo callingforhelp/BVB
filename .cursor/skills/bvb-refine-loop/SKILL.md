@@ -29,7 +29,75 @@ The user looks at the video; you don't see what they see. So:
    whether a test still has its target before you proceed (see Heuristics).
 5. **Hiding / isolating ≠ deleting.** Say so every time, or the user thinks you wiped the
    scene. Prefer wireframe over hiding.
-6. **One coordinated edit → screenshot → checkpoint.** Then hand back for the next call.
+6. **One coordinated edit → SELF-VERIFY → screenshot → checkpoint** (see "The edit loop"
+   below — never hand back on a bare `execute_blender_code` success).
+
+## The edit loop — an edit is DONE when VERIFIED, not when the geometry moved
+
+The single biggest failure mode is treating "`execute_blender_code` succeeded" as "edit done."
+A successful call only means Blender ran the code — not that the scene is right. Every round
+runs the loop below; **do not hand back until step 3 passes.**
+
+```dot
+digraph edit_loop {
+    "User names a problem" [shape=box];
+    "Orientation set this scene?" [shape=diamond];
+    "Ask which way +X/+Y point, set view, screenshot" [shape=box];
+    "Structural (resize / reshape / move a wall)?" [shape=diamond];
+    "Estimate the resulting QA number, confirm with user" [shape=box];
+    "ONE coordinated edit — move the WHOLE group" [shape=box];
+    "Self-verify: stragglers? floaters? clipping? QA sizes?" [shape=diamond];
+    "Fix what failed" [shape=box];
+    "Screenshot in their orientation + report numbers + checkpoint" [shape=box];
+
+    "User names a problem" -> "Orientation set this scene?";
+    "Orientation set this scene?" -> "Ask which way +X/+Y point, set view, screenshot" [label="no"];
+    "Orientation set this scene?" -> "Structural (resize / reshape / move a wall)?" [label="yes"];
+    "Ask which way +X/+Y point, set view, screenshot" -> "Structural (resize / reshape / move a wall)?";
+    "Structural (resize / reshape / move a wall)?" -> "Estimate the resulting QA number, confirm with user" [label="yes"];
+    "Structural (resize / reshape / move a wall)?" -> "ONE coordinated edit — move the WHOLE group" [label="no"];
+    "Estimate the resulting QA number, confirm with user" -> "ONE coordinated edit — move the WHOLE group";
+    "ONE coordinated edit — move the WHOLE group" -> "Self-verify: stragglers? floaters? clipping? QA sizes?";
+    "Self-verify: stragglers? floaters? clipping? QA sizes?" -> "Fix what failed" [label="any fail"];
+    "Fix what failed" -> "Self-verify: stragglers? floaters? clipping? QA sizes?";
+    "Self-verify: stragglers? floaters? clipping? QA sizes?" -> "Screenshot in their orientation + report numbers + checkpoint" [label="all pass"];
+}
+```
+
+**0 — Orientation handshake (once per scene, ASK — don't infer).** The user's 2D-plan axes
+**flip per scene** (47332005 was X-left/Y-down; 41125760 was X-right/Y-up). Before the first
+structural edit, ask: *"In your plan, which way is +X and +Y — left/right, up/down?"* Set the
+viewport quaternion so screen = their plan, and screenshot to confirm you both see the same
+thing. Guessing left/right from world axes is the #1 time-sink in this work.
+
+**1 — Estimate BEFORE a structural edit, then confirm.** Before you resize/reshape/move a wall,
+**compute the resulting QA number** (the object's `longest_dimension`, the room bbox X·Y, or the
+`closest_distance`), compare it to GT ± tolerance, and ask the user *"this makes <thing> = <N>,
+reasonable?"* BEFORE editing. Sizes are pinned by the QA — a 165 cm tub needs a 1.65 m alcove;
+if the walls don't fit it, the **room** is mis-sized, not the tub. Reshape-then-discover-the-
+QA-broke is the slow path; the user can't see your numbers unless you state them.
+
+**2 — Move the WHOLE group.** Moving an object means its body **+ every sub-part** (seat / lid /
+tank / faucet / handle / flush-plate) **+ its trim** (baseboard, mosaic border) **+ accessories
+that sit on or beside it** (soap / towel / TP / scale). Build the name list explicitly *before*
+moving. A forgotten part stays stranded where the object used to be — that is most "floating"
+objects and most out-of-room strays.
+
+**3 — SELF-VERIFY (you MUST create a TodoWrite item per line and complete them in order):**
+   1. **Stragglers** — scan every mesh: is any center outside the room (bathroom ∪ hallway
+      bounds)? Is any wall-mounted item now detached from its wall (an X/Y gap)? Re-seat it.
+   2. **Floaters (悬空)** — scan `z_min`: anything off the floor (`z_min > 0.1`) that is NOT
+      against a wall AND NOT resting on a surface (vanity top / cistern / tub rim)? Drop or seat
+      it. (A toilet seat at z=0.65 is too high; ~0.4 m is right.)
+   3. **穿模 (clipping)** — do the moved objects' bboxes overlap each other, or poke past a
+      wall's inner face? Separate them.
+   4. **QA sizes** — re-measure every quantity the edit could touch (longest_dimension, room
+      bbox, closest_distance) vs GT ± tol, or run `bvbrefine gate`. `actual=None` = grounding
+      failed, not a wrong scene.
+
+   The reusable straggler+floater+clipping scan is in `blender-mcp-recipes.md` (`self_verify`).
+   "I moved it" is **not** a hand-back. "I moved it, scanned stragglers/floaters/clipping,
+   re-measured the QA → here are the numbers" is.
 
 ## Loop
 
@@ -137,6 +205,18 @@ final approval. Roll back by opening any `vNN`.
   穿模 (overlap) and re-check the distance gate after every sofa move (the grounded part shifts).
 - "Make the room bigger" when room_area is already near its cap → shrink the furniture so the
   space reads open; growing walls fails room_area (floor bbox, GT±tol).
+- A room that's "too deep/wide for the fixture" is a ROOM-size error, not a fixture error: a
+  165 cm tub that should touch both end walls needs a ~1.65 m-deep alcove; if the room is 2.7 m,
+  shrink THAT dimension (anchored scale at the fixed wall) and lengthen the connected room (the
+  hallway) so the COMBINED area stays in GT±tol. The gate's bbox metric can't sum two floors,
+  but the real combined area must land in band — say so and don't chase the red room_size number.
+- toilet `object_size` → 80 cm via a tall **back-to-wall cistern**: a `primitive_cube_add(size=1)`
+  + `obj.scale=(0.38,0.2,0.8)` whose longest edge is its HEIGHT (~0.8 m). It becomes the grounded
+  "toilet" for BOTH the size test AND `closest_distance`, so position the CISTERN (not just the
+  bowl) for the distance, and drop the bowl so the seat sits ~0.4 m (not floating at 0.65).
+- After ANY anchored wall scale, run BOTH scans: out-of-room (center outside bounds) AND floaters
+  (`z_min` off-floor, not against a wall, not on a surface). A shell scale moves walls/floor but
+  NOT the excluded fixtures, so wall-mounted fixtures detach (gaps) and loose accessories strand.
 
 ## Delivery (git) — keep tooling personal, ship only the .blend
 

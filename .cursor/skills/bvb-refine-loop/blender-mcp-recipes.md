@@ -271,3 +271,31 @@ from the floor to just under the top.
 # delete legs: for o in [x for x in bpy.context.scene.objects if x.name.startswith('Table_Leg')]: bpy.data.objects.remove(o, do_unlink=True)
 # Table_Base = a cube spanning the top's XY footprint, z from 0 to (top_z - top_thickness).
 ```
+
+## self_verify — run after EVERY edit (stragglers + floaters; check clipping by hand)
+
+Set `ROOMS` / `WALLS_*` to the current scene's world bounds, then run this every time you move
+or reshape anything. Anything it prints gets re-seated, dropped, or whitelisted — never ignored.
+
+```python
+import bpy, mathutils
+ROOMS  = [(-2.1, 0.3, -1.05, 0.6), (-0.9, 0.3, 0.6, 5.1)]  # (x0,x1,y0,y1) per room (bath ∪ hall)
+WALLS_X = (-2.1, 0.3); WALLS_Y = (-1.05, 0.6)              # inner faces; bbox touching one = on-wall
+STRUCT  = ('Wall','Floor','Border','Downlight','Hallway','Vent','Ceiling','Light','Camera')
+def bb(o):
+    p=[o.matrix_world@mathutils.Vector(c) for c in o.bound_box]
+    return (min(q.x for q in p),max(q.x for q in p),min(q.y for q in p),
+            max(q.y for q in p),min(q.z for q in p),max(q.z for q in p))
+def in_room(cx,cy):
+    return any(x0-0.2<cx<x1+0.2 and y0-0.2<cy<y1+0.2 for (x0,x1,y0,y1) in ROOMS)
+def on_wall(x0,x1,y0,y1):
+    return x0<WALLS_X[0]+0.15 or x1>WALLS_X[1]-0.15 or y0<WALLS_Y[0]+0.15 or y1>WALLS_Y[1]-0.15
+for o in bpy.context.scene.objects:
+    if o.type!='MESH' or o.hide_get() or any(o.name.startswith(s) for s in STRUCT): continue
+    x0,x1,y0,y1,z0,z1=bb(o); cx,cy=(x0+x1)/2,(y0+y1)/2
+    if not in_room(cx,cy):                     print("OUT-OF-ROOM:", o.name, round(cx,2),round(cy,2))
+    elif z0>0.1 and not on_wall(x0,x1,y0,y1):   print("MAYBE-FLOATING:", o.name, "z_min",round(z0,2),(round(cx,2),round(cy,2)))
+# Whitelist real surfaces by hand (an item resting on the vanity top / cistern / tub rim is fine).
+# Clipping: for the objects you just MOVED, check their bbox vs each wall's inner face and vs
+# each other (overlap on all 3 axes). NB the gate's size/distance use location ± obj.scale/2.
+```
