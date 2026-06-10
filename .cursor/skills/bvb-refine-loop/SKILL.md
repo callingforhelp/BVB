@@ -93,16 +93,31 @@ moving. A forgotten part stays stranded where the object used to be — that is 
 objects and most out-of-room strays.
 
 **3 — SELF-VERIFY (you MUST create a TodoWrite item per line and complete them in order):**
-   1. **Stragglers** — scan every mesh: is any center outside the room (bathroom ∪ hallway
-      bounds)? Is any wall-mounted item now detached from its wall (an X/Y gap)? Re-seat it.
+   1. **Stragglers** — scan every mesh: is any center outside the room(s) bounds (all floors)?
+      Is any wall-mounted item now detached from its wall (an X/Y gap)? Re-seat it.
    2. **Floaters (悬空)** — scan `z_min`: anything off the floor (`z_min > 0.1`) that is NOT
       against a wall AND NOT resting on a surface (vanity top / cistern / tub rim)? Drop or seat
       it. (A toilet seat at z=0.65 is too high; ~0.4 m is right.)
-   3. **穿模 (clipping)** — do the moved objects' bboxes overlap each other, or poke past a
-      wall's inner face? Separate them.
+   3. **穿模 + gaps (BOTH automated, never "by hand").** First confirm SCOPE: both scans print
+      the names + count of meshes they actually scanned (and overlap_scan prints what it EXCLUDED
+      and the wall-poke band) — a clean scan over the wrong/empty/short candidate set is NOT a
+      pass, so check the count matches the fixtures you expect before trusting CLEAN. Run the
+      pairwise AABB overlap scan (`overlap_scan` recipe): any cross-set pair overlapping on all 3
+      axes beyond `TOL_PEN`, or any fixture poking past a wall's inner face, is 穿模 — separate it
+      / report the depth. Then run the connected-set gap scan (`connected_scan` recipe): for every
+      set you DECLARE must touch (fixture sub-parts, enclosure/frame pieces, wall corners,
+      flush-against-wall), it asserts the set forms ONE connected component (prints SET SPLIT if it
+      broke in two) and flags any member with gap > tol (plus a RESIDUAL line to drive each
+      survivor to gap ≈ 0). These fire on exactly the edits you just made (a 180°/mirror flips
+      depth through the wall behind; an anchored scale embeds excluded furniture; moving one
+      sub-part strands its sibling), so re-run after EVERY move/scale/rotate/mirror/shell-scale.
    4. **QA sizes** — re-measure every quantity the edit could touch (longest_dimension, room
       bbox, closest_distance) vs GT ± tol, or run `bvbrefine gate`. `actual=None` = grounding
       failed, not a wrong scene.
+   5. **QA grounding integrity** — confirm each QA `object_ref` still grounds to the intended
+      object: no accessory name embeds another ref's keyword (substring grounding grabs the
+      largest match), and any size-QA object is a `primitive_cube_add(size=1)` + `obj.scale`
+      that is NOT transform_applied.
 
    The reusable straggler+floater+clipping scan is in `blender-mcp-recipes.md` (`self_verify`).
    "I moved it" is **not** a hand-back. "I moved it, scanned stragglers/floaters/clipping,
@@ -120,11 +135,39 @@ These thoughts mean go back to the TodoWrite list and finish the step you skippe
 | "I'll reshape now and check the QA after" | Reshape-then-discover-it-broke is the slow path. Estimate + state the number BEFORE (step 1). |
 | "I moved the toilet" (and forgot cistern / TP / flush-plate) | Moving = the WHOLE group. Write the name list first (step 2). |
 | "The user is waiting, I'll skip the screenshot + numbers" | They cannot see the result or your numbers without them. That IS the hand-back. |
+| It only barely overlaps — that's just touching | Flush faces read ~0; overlap on ALL three axes beyond tolerance is shared volume. The overlap scan prints the penetration depth — separate them. NB it skips same-set siblings and STRUCT-named objects, so a 'barely overlaps' between a declared pair or a Wall_*-named fixture is NOT printed; a clean scan is not 'no overlap anywhere.' |
+| I rotated it in place, the position didn't change | A 180°/mirror rotate flips the object's depth — the back face is now where the front was and pokes the wall behind it. Re-measure with the overlap+wall-poke scan. |
+| I grew the enclosure to the size the QA wants — done | Growing one solid into another's space swallows it. Overlap-scan the grown object against every neighbour it now reaches before handing back. |
+| A 1-2 cm gap is within tolerance, basically touching | Connected members must be at gap ≈ 0 or slight overlap. The tolerance only DECIDES detached; connected_scan prints a RESIDUAL line for any sub-tolerance gap — drive it to 0, don't leave it at 1.5cm. |
+| Each piece touches a neighbour, so the frame is connected | A set can split into two internally-touching halves and still pass a per-member nearness test. Only the connected-components check in connected_scan catches it — read its SET SPLIT line, not just the per-member gaps. |
+| The frame/enclosure pieces are positioned right, they'll read as connected | Pieces that abut exactly leave hairline gaps under any rounding. Rebuild so members SPAN the shared edge and overlap a hair, then run the connected-set gap scan. |
+| overlap_scan reported no WALL-POKE | The wall band may be stale from another scene. Confirm the band the recipe prints each run matches THIS scene's walls (derive it from the Floor/Wall bbox), or the 'no poke' result is meaningless. |
+| The scan passed, so the room is clean | A scan is only as good as its scope. Read the printed scanned-count + EXCLUDED names: a fixture named with a STRUCT token (Wall_Cabinet, Floor_Lamp) or an empty candidate list yields a clean scan that proves nothing. |
+| The eyeballed screenshot looks fine | 穿模 hides behind the front face and a 1cm gap is sub-pixel in a thumbnail. Only the 3-axis AABB scans see both — and only if scope and band are right; the screenshot sees neither. |
 
 **Validate the gate holds the way `superpowers:writing-skills` does** — run a pressure scenario
 through a subagent (a multi-part move under "the user is in a hurry") and check it still scans
 before handing back. If it skips, add the new excuse to the table above. The practical proof is
 whether the next scenes need fewer "you forgot to move X / Y is floating" corrections.
+
+## Spatial integrity — two invariants the screenshot and the gate both miss
+
+Interpenetration (穿模) and unintended gaps are the SAME quantity — per-axis AABB overlap — read with opposite sign. Neither is scored by the gate and both hide in a thumbnail, so they survive to the eval as a broken room. Every move/scale/rotate/mirror/shell-scale silently flips one of them. Two invariants, enforced by automated scans (not "by hand"):
+
+1. **No overlap (穿模).** Two distinct solids must not share interior volume. Boxes interpenetrate iff they overlap on ALL THREE axes by more than `TOL_PEN`; penetration depth = the smallest of the three axis overlaps, reported as a POSITIVE number. Flush faces read ~0 and are fine.
+2. **No unintended gap.** Pieces meant to form one physical thing must actually touch (share a face or overlap a hair). `connected_scan` reports nearest-neighbour gap as a NON-NEGATIVE distance (0 = touching or overlapping; positive = pulled apart). Flag when gap > `TOL_GAP`.
+
+Keep the sign conventions separate: penetration is a positive depth on the overlap scan; gap is a positive distance on the connected scan. There is no signed/negative measure — do not say "gap ≥ −tol."
+
+**Connected set** = a group of objects you DECLARE must touch, named by their object-name prefixes (the prefix is whatever leading substring you declare, not the first underscore token — `Water_Heater` and `Water_Heater_Panel` are ONE set only because you list both prefixes). Declare:
+- a fixture's sub-parts (bowl+tank, body+door+panel),
+- an enclosure / frame's pieces (corner posts + bars, shower walls),
+- two walls meeting at a corner,
+- an object that must sit flush against a wall or floor (wall-normal axis only — in-plane axes are free).
+
+A declared set must form ONE connected component, not merely "every piece touches some sibling" — a frame can split into two internally-touching halves and still have every member touching a neighbour. `connected_scan` checks the whole-set connectivity, not per-member nearness.
+
+**Tolerance band** (cm): penetration > `TOL_PEN` (+1cm) flags 穿模; gap > `TOL_GAP` (+2cm) flags a should-be-connected break; the band in between is flush/touching and is the GOAL. The tolerance only DECIDES detached/clipping — the fix target is gap ≈ 0 (or −0.5cm overlap), never the tolerance, so `connected_scan` also prints a RESIDUAL line for any member sitting in (0, TOL_GAP]. Members of the same declared set are whitelisted from the overlap scan (they're meant to touch — except named accessories you exempt) but are exactly what the gap scan checks; cross-set pairs are the opposite. Build connected members to SPAN their shared edge and overlap a hair, never to abut exactly (rounding opens a hairline gap).
 
 ## Loop
 
@@ -161,6 +204,8 @@ whether the next scenes need fewer "you forgot to move X / Y is floating" correc
   `actual=100`. If an object the QA measures isn't a `primitive_cube_add(size=1)` + `obj.scale`,
   rebuild it from scaled cubes at the target size (this is also the "primitives only" rule).
 - `proposition` tests (route_planning): reason from geometry + frames; `--judge` for official.
+- **Substring grounding is a namespace collision.** Grounding matches a QA `object_ref` to ANY object whose name CONTAINS the keyword, picking the largest match — so a `Toilet_Paper_Roll` or `Towel_Bar` can outrank the real `Toilet`/`Towel` and become the measured object. Rename any accessory whose name embeds another ref's keyword before trusting the gate.
+- **A size-QA cube must NOT be `transform_applied`.** `object_extent` reads `obj.scale`; applying the scale bakes it into the mesh and exports `scale=1.0`, so the test prints `actual=100` (1.0 m read as 100 cm). Keep size-QA objects as `primitive_cube_add(size=1)` + `obj.scale` and leave the scale UN-applied.
 
 ## Common problems → quick fix (all snippets in `blender-mcp-recipes.md`)
 
@@ -182,6 +227,9 @@ whether the next scenes need fewer "you forgot to move X / Y is floating" correc
 | Side/perpendicular walls gap after you deepen/reshape the floor | moving the Floor + back wall doesn't drag the side walls — extend every wall that meets the moved one |
 | Living room "feels small" but room_area is at its cap | shrink the FURNITURE (sofa), not the walls — room_area is the floor bbox, hard-capped at GT±tol |
 | Orphaned door/object floating from an old layout | after any reshape, scan for objects not inside a wall + walls that don't connect; move into a wall or delete |
+| 穿模 — two cross-set solids share volume, or a fixture pokes past a wall's inner face | Run the `overlap_scan` recipe after every edit: overlap on all 3 axes > TOL_PEN = interpenetration (separate / report depth); also test each fixture vs every wall's inner face using the band the recipe derives/prints. Whitelist declared same-set siblings only; exempt named accessories so they ARE scanned vs their host. Apply Mirror/Solidify modifiers (or read the evaluated AABB) first. Re-scan after any move/scale/rotate/mirror/shell-scale. |
+| Connected set floats apart or splits — frame corners, enclosure pieces, fixture sub-parts, side walls short of a moved wall, a fixture detached from its wall, a frame broken into two touching halves | Run the `connected_scan` recipe: declare each set's name prefixes (and any flush-to-wall axis); it asserts ONE connected component (prints SET SPLIT if broken in two) and flags any member with gap > TOL_GAP plus a RESIDUAL for sub-tolerance gaps. Re-extend to gap ≈ 0 / slight overlap; move multi-part fixtures as one prefix group; re-close every corner where a wall meets a moved wall; re-mount fixtures on a scaled wall. |
+| QA `object_ref` grounds to the wrong object (an accessory embedding the keyword outranks the real fixture) | Substring grounding grabs the LARGEST name match — rename any accessory whose name embeds another ref's keyword (Toilet_Paper, Towel_Bar) so it can't be grabbed. Re-run `gate` to confirm the right object grounds. |
 
 ## Checkpoint convention
 
@@ -244,6 +292,9 @@ final approval. Roll back by opening any `vNN`.
 - After ANY anchored wall scale, run BOTH scans: out-of-room (center outside bounds) AND floaters
   (`z_min` off-floor, not against a wall, not on a surface). A shell scale moves walls/floor but
   NOT the excluded fixtures, so wall-mounted fixtures detach (gaps) and loose accessories strand.
+
+- Declare connected SETS up front (fixture parts, enclosure/frame pieces, wall corners, flush-to-wall) and run overlap_scan + connected_scan every edit — 穿模 and gaps are one per-axis-AABB quantity (positive depth vs positive distance), and both pass every check that doesn't explicitly test for them.
+- A clean scan proves nothing until you confirm its scope and band: read the scanned-count + EXCLUDED names, check the wall-poke band matches this scene, and require ONE connected component per set (not just per-member touching).
 
 ## Delivery (git) — keep tooling personal, ship only the .blend
 

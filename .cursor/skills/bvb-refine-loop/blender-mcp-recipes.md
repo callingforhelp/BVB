@@ -299,3 +299,131 @@ for o in bpy.context.scene.objects:
 # Clipping: for the objects you just MOVED, check their bbox vs each wall's inner face and vs
 # each other (overlap on all 3 axes). NB the gate's size/distance use location ± obj.scale/2.
 ```
+
+---
+
+## overlap_scan — pairwise 穿模 + wall-poke (run after EVERY edit)
+
+Automated replacement for "check clipping by hand." Builds each non-structural mesh's world
+AABB and flags any CROSS-SET pair overlapping on all 3 axes beyond `TOL_PEN` (positive depth),
+plus any object poking past a wall's inner face. Same-unit siblings are NOT inferred from the
+first underscore token — they are skipped only when BOTH names are members of a DECLARED set
+(reuse `connected_scan`'s SETS), so `Toilet` vs `Toilet_Paper_Roll` is NOT silently exempted.
+Named accessories you list are scanned even against their host. Call `view_layer.update()` first.
+`bound_box` ignores UNAPPLIED Mirror/Solidify modifiers — apply them or read the evaluated AABB.
+
+```python
+import bpy, mathutils
+TOL_PEN = 0.01                       # +1cm: flush faces read ~0 and stay clean
+# EDIT PER SCENE: the explicit structural-object names to skip (exact match on the leading
+# underscore-delimited TOKEN, so 'Wall' skips Wall_01 but NOT Wallpaper/Wall_Cabinet):
+STRUCT = {'Wall','Floor','Ceiling','Border','Downlight','Vent','Camera','Light','Hallway'}
+# DECLARE the connected sets (same list as connected_scan); only pairs BOTH inside one set skip:
+SETS = []   # e.g. [('Vanity',), ('Shower',), ('Water_Heater','Water_Heater_Panel')]
+def aabb(o):
+    p=[o.matrix_world@mathutils.Vector(c) for c in o.bound_box]   # apply modifiers first
+    return [min(q[i] for q in p) for i in range(3)],[max(q[i] for q in p) for i in range(3)]
+def set_of(n):                                   # the declared set whose prefix n startswith
+    for g in SETS:
+        if any(n.startswith(p) for p in g): return g
+    return None
+bpy.context.view_layer.update()
+def is_struct(n): return n.split('_')[0] in STRUCT
+allm=[o for o in bpy.context.scene.objects if o.type=='MESH' and not o.hide_get()]
+ms=[o for o in allm if not is_struct(o.name)]
+print("SCANNED",len(ms),[o.name for o in ms])
+print("EXCLUDED",[o.name for o in allm if is_struct(o.name)])   # eyeball: no real fixture here
+# derive the wall-poke band from THIS scene's Floor (fallback: the union of Wall_* AABBs):
+flr=bpy.data.objects.get('Floor')
+if flr:
+    (fx0,fy0,_),(fx1,fy1,_)=aabb(flr); WALLS_X=(fx0,fx1); WALLS_Y=(fy0,fy1)
+else:
+    walls=[o for o in allm if o.name.split('_')[0]=='Wall']
+    bs=[aabb(o) for o in walls]
+    WALLS_X=(min(b[0][0] for b in bs),max(b[1][0] for b in bs))
+    WALLS_Y=(min(b[0][1] for b in bs),max(b[1][1] for b in bs))
+print("wall-poke band: X",[round(v,2) for v in WALLS_X],"Y",[round(v,2) for v in WALLS_Y])
+B={o.name:aabb(o) for o in ms}
+for i in range(len(ms)):
+    for j in range(i+1,len(ms)):
+        a,b=ms[i].name,ms[j].name
+        ga,gb=set_of(a),set_of(b)
+        if ga is not None and ga is gb: continue   # both in one declared set — see connected_scan
+        lo_a,hi_a=B[a]; lo_b,hi_b=B[b]
+        ov=[min(hi_a[k],hi_b[k])-max(lo_a[k],lo_b[k]) for k in range(3)]   # per-axis overlap
+        pen=min(ov)                              # interpenetration depth (positive = into volume)
+        if pen>TOL_PEN: print("穿模:",a,b,"depth",round(pen,3),[round(v,3) for v in ov])
+for o in ms:                                     # wall-poke: AABB crosses a wall's inner face
+    (x0,y0,z0),(x1,y1,z1)=B[o.name]
+    if x0<WALLS_X[0]-TOL_PEN or x1>WALLS_X[1]+TOL_PEN or \
+       y0<WALLS_Y[0]-TOL_PEN or y1>WALLS_Y[1]+TOL_PEN:
+        print("WALL-POKE:",o.name)
+```
+
+If any fixture name starts with a STRUCT token it is silently skipped — rename it or drop the
+token from STRUCT; the EXCLUDED print is there to catch exactly that. A child poking THROUGH its
+own body (chaise into sofa body) is still 穿模 even within one declared set — measure those
+sub-part relations directly after a move.
+
+---
+
+## connected_scan — declared-set connectivity + gap scan (run after EVERY edit)
+
+Automated detach check. You DECLARE which object-name prefixes must touch (a fixture's parts, an
+enclosure/frame's pieces, two walls at a corner) and, optionally, a wall an object must be flush
+to (wall-normal axis only). For each set it builds an adjacency edge wherever two members' gap
+≤ `TOL_GAP`, then asserts the whole set is ONE connected component (a frame split into two
+internally-touching halves prints SET SPLIT — a per-member nearness test would miss this). It also
+prints a RESIDUAL line for any member sitting at a sub-tolerance gap so the fix target (≈ 0) is
+enforced, not silently permitted. Call `view_layer.update()` first; apply Mirror/Solidify
+modifiers (or read the evaluated AABB) — `bound_box` ignores unapplied modifiers.
+
+```python
+import bpy, mathutils
+TOL_GAP = 0.02                       # 2cm to DECIDE detached; loosen to 0.05 for hand-built frames
+def aabb(o):
+    p=[o.matrix_world@mathutils.Vector(c) for c in o.bound_box]   # apply modifiers first
+    return [min(q[i] for q in p) for i in range(3)],[max(q[i] for q in p) for i in range(3)]
+def gap(A,B,axes=(0,1,2)):           # euclidean of per-axis POSITIVE separations; 0 => touching
+    (la,ha),(lb,hb)=A,B
+    seps=[max(la[k]-hb[k], lb[k]-ha[k], 0.0) for k in axes]
+    return sum(s*s for s in seps)**0.5
+bpy.context.view_layer.update()
+def members(pfx): return [o for o in bpy.context.scene.objects
+                          if o.type=='MESH' and not o.hide_get() and o.name.startswith(pfx)]
+# DECLARE this scene's units (prefixes whose members must form one connected component):
+SETS = []   # e.g. [('Vanity',), ('Shower',), ('Water_Heater','Water_Heater_Panel')]
+for grp in SETS:
+    objs=[o for p in grp for o in members(p)]
+    if not objs: print("EMPTY SET",grp,"— nothing grounded; check prefixes"); continue
+    print("SET",grp,"scanned",[o.name for o in objs])
+    B={o.name:aabb(o) for o in objs}
+    # connected-components over edges where gap <= TOL_GAP (note: boundary inclusive):
+    comp={o.name:i for i,o in enumerate(objs)}
+    for a in objs:
+        for b in objs:
+            if a is not b and gap(B[a.name],B[b.name])<=TOL_GAP:
+                r=comp[b.name]; o=comp[a.name]
+                for k in comp:
+                    if comp[k]==r: comp[k]=o
+    roots=set(comp.values())
+    if len(roots)>1:
+        for r in roots: print("SET SPLIT",grp,"component",[k for k in comp if comp[k]==r])
+    for o in objs:                                   # surface residual sub-tolerance gaps
+        nn=min((gap(B[o.name],B[s.name]) for s in objs if s is not o), default=0.0)
+        if nn>TOL_GAP:    print("GAP:",o.name,"nearest-sibling",round(nn,3))
+        elif nn>0.0:      print("RESIDUAL:",o.name,"gap",round(nn,3),"— extend to ~0")
+# flush-against-wall: only the wall-normal axis must touch (axis index 0=X,1=Y)
+FLUSH = []   # e.g. [('Vanity', 'Wall_Back', 1)]  -> Vanity must touch Wall_Back on Y
+for opfx,wall,nax in FLUSH:
+    w=bpy.data.objects.get(wall)
+    if not w: print("MISSING WALL",wall); continue
+    for o in members(opfx):
+        g=gap(aabb(o),aabb(w),axes=(nax,))
+        if g>TOL_GAP:  print("DETACHED:",o.name,"from",wall,"axis",nax,round(g,3))
+        elif g>0.0:    print("RESIDUAL:",o.name,"from",wall,"gap",round(g,3),"— extend to ~0")
+```
+
+SET SPLIT / GAP / RESIDUAL all mean re-seat to gap ≈ 0 (or −0.5cm overlap). After deepening a
+room, add the perpendicular walls' corner pairs to `SETS`; after a shell-scale, add every
+wall-mounted fixture↔wall to `FLUSH` — the scale moved the wall but not the fixture.
