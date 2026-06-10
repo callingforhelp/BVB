@@ -15,7 +15,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bvb_lib  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
-CSV = REPO / "Private & Shared" / "BVB Scene Tracker a61a82bfca12838b9c9c817395be4718.csv"
+# The tracker is a Notion export; its filename carries the page id and changes on every
+# re-export, so glob for the newest "BVB Scene Tracker*.csv" (preferring the non-_all view)
+# instead of hardcoding one — a stale hardcoded path silently breaks `start`/`qa`.
+_TRACKERS = sorted((REPO / "Private & Shared").glob("BVB Scene Tracker*.csv"),
+                   key=lambda p: p.stat().st_mtime, reverse=True)
+CSV = next((p for p in _TRACKERS if not p.name.endswith("_all.csv")),
+           _TRACKERS[0] if _TRACKERS else REPO / "Private & Shared" / "tracker.csv")
 UNIT_TESTS = REPO / "eval" / "unit_tests.jsonl"
 DATASET = REPO / "VSI-Bench"
 
