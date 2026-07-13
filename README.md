@@ -59,6 +59,30 @@ External asset libraries (PolyHaven, Sketchfab, etc.) are **disallowed** for ben
 
 **Paired Modality Editing (PME)** applies parallel edits to the video (via video to video editing / inpainting) and the Blender scene (via keyframe animation) to produce event aligned pairs that test dynamic and temporal understanding without cross modal generation artifacts.
 
+## Baseline Results
+
+Large Stage-1 agent artifacts are not committed to GitHub. They are stored in the
+private Hugging Face dataset repo `yunlong10/BVB-results`, whose root mirrors
+`sandbox/results/`.
+
+To restore all previously generated runs on a new machine:
+
+```bash
+pip install -U huggingface_hub hf_transfer
+hf auth login
+HF_HUB_ENABLE_HF_TRANSFER=1 python scripts/download_results.py
+```
+
+To download only selected runs:
+
+```bash
+HF_HUB_ENABLE_HF_TRANSFER=1 python scripts/download_results.py \
+  --run mini-harness-gpt-5.6-sol-reasoning-high-run01
+```
+
+After restoration, `sandbox/run_model.sh --resume` will see the downloaded
+`blends/*.blend` files and skip completed scenes.
+
 ## Evaluation
 
 The vision-level evaluation runs the same question through a frozen VLM on both the original and the agent-reconstructed video, then crosses the two outcomes into a 2x2 contingency table from which retention and hallucination rates are computed.

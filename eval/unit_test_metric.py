@@ -30,6 +30,11 @@ from eval_utils import (
     read_jsonl,
     safe_divide,
 )
+from exec_scene import (
+    groups_from_payload,
+    introspect_scene,
+    scene_index_from_payload,
+)
 
 
 BATCH_SYSTEM_PROMPT = """You help run unit tests for a Blender scene.
@@ -377,6 +382,29 @@ def main() -> None:
     parser.add_argument("--temperature", type=float, default=None)
     parser.add_argument("--max-chars", type=int, default=60000, help="Max chars of bpy code sent per scene.")
     parser.add_argument("--test-types", nargs="*")
+    parser.add_argument(
+        "--mode",
+        choices=("static", "execute"),
+        default="static",
+        help="static: AST-parse the bpy source (default). execute: run the "
+        "submission in Blender and read real geometry from the depsgraph.",
+    )
+    parser.add_argument(
+        "--blender",
+        default=os.getenv("BLENDER_BIN"),
+        help="Blender executable for --mode execute (or set BLENDER_BIN).",
+    )
+    parser.add_argument(
+        "--exec-timeout",
+        type=float,
+        default=180.0,
+        help="Per-scene Blender timeout in seconds for --mode execute.",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        help="Optional cache directory for introspection JSON (--mode execute).",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true", help="Append to output and skip completed scene ids.")
     parser.add_argument("--stop-on-error", action="store_true")
@@ -403,8 +431,18 @@ def main() -> None:
                 get_first(record, ("pred_bpy_path", "generated_bpy_path", "agent_bpy_path", "gt_bpy_path")),
                 args.pairs.parent,
             )
-            scene_index = parse_bpy_scene(pred_path)
-            groups = build_groups(scene_index)
+            if args.mode == "execute":
+                payload = introspect_scene(
+                    pred_path,
+                    blender_bin=args.blender,
+                    timeout=args.exec_timeout,
+                    cache_dir=args.cache_dir,
+                )
+                scene_index = scene_index_from_payload(payload, pred_path)
+                groups = groups_from_payload(payload)
+            else:
+                scene_index = parse_bpy_scene(pred_path)
+                groups = build_groups(scene_index)
             bpy_code = read_text_limited(pred_path, args.max_chars)
             candidate_tests = global_tests + tests_by_scene.get(scene_id, [])
             unit_tests = []

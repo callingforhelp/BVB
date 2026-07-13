@@ -10,4 +10,11 @@ __pycache__/
 eval/results/
 misc
 misc/
+sandbox/.venv/
+sandbox/results/
+sandbox/log/
+.conda/
+.tmp
+
+
 
