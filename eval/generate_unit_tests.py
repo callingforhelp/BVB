@@ -104,6 +104,88 @@ def option_text(options: Any, letter: Any) -> str | None:
     return None
 
 
+def direction_refs(question: str) -> tuple[str, str, str] | None:
+    match = re.search(
+        r"standing by the\s+(.+?)\s+and facing the\s+(.+?),\s+is the\s+(.+?)\s+to",
+        question,
+        flags=re.I | re.S,
+    )
+    if not match:
+        return None
+    return tuple(canonical_object_name(match.group(index)) for index in range(1, 4))  # type: ignore[return-value]
+
+
+def relative_distance_refs(question: str) -> tuple[str, list[str]] | None:
+    match = re.search(
+        r"which of these objects\s*\((.+?)\)\s+is the closest to the\s+(.+?)\?",
+        question,
+        flags=re.I | re.S,
+    )
+    if not match:
+        return None
+    candidates = [canonical_object_name(item) for item in match.group(1).split(",")]
+    return canonical_object_name(match.group(2)), candidates
+
+
+def appearance_categories(question: str) -> list[str] | None:
+    match = re.search(r"following categories in the video:\s*(.+?)\?", question, flags=re.I | re.S)
+    if not match:
+        return None
+    return [canonical_object_name(item) for item in match.group(1).split(",")]
+
+
+def appearance_answer_order(answer: str | None) -> list[str] | None:
+    if not answer:
+        return None
+    normalized = re.sub(r"\bthen\b", ",", answer, flags=re.I)
+    values = [canonical_object_name(item) for item in normalized.split(",") if item.strip()]
+    return values or None
+
+
+def route_spec(question: str) -> dict[str, Any] | None:
+    start_match = re.search(
+        r"beginning at the\s+(.+?)\s+(?:and\s+)?facing the\s+(.+?)\.",
+        question,
+        flags=re.I | re.S,
+    )
+    route_steps = []
+    for match in re.finditer(
+        r"Go\s+f(?:or|o)ward\s+(until|passing|past)\s+(.*?)(?=\s+\d+\.|\s+You have reached|$)",
+        question,
+        flags=re.I | re.S,
+    ):
+        movement = match.group(1).lower()
+        raw = match.group(2).strip().rstrip(".")
+        raw = re.sub(r"^(the|a)\s+", "", raw, flags=re.I)
+        if re.search(r"\b(?:on|to)\s+your\s+right\b|\bon\s+the\s+right\b", raw, flags=re.I):
+            relation = "right"
+        elif re.search(r"\b(?:on|to)\s+your\s+left\b|\bon\s+the\s+left\b", raw, flags=re.I):
+            relation = "left"
+        elif movement in {"passing", "past"} or re.search(
+            r"\bpassing\b|\bpassed\b|\bpast\b",
+            raw,
+            flags=re.I,
+        ):
+            relation = "pass"
+        else:
+            relation = "near"
+        route_steps.append({"ref": raw.lower(), "relation": relation})
+    if not route_steps:
+        return None
+    return {
+        "start_ref": canonical_object_name(start_match.group(1)) if start_match else None,
+        "facing_ref": canonical_object_name(start_match.group(2)) if start_match else None,
+        "route_steps": route_steps,
+    }
+
+
+def turn_sequence(answer: str | None) -> list[str] | None:
+    if not answer:
+        return None
+    turns = [f"turn_{value}" for value in re.findall(r"turn\s+(back|left|right)", answer.lower())]
+    return turns or None
+
+
 def make_case(
     *,
     scene_name: str,
@@ -138,7 +220,7 @@ def basic_validity_tests() -> list[dict[str, Any]]:
         make_case(
             scene_name="*",
             test_type="basic_validity",
-            statement="The Blender Python file can be parsed by the evaluator.",
+            statement="The Blender submission loads successfully.",
             evaluator="rule",
             params={"check": "parse_ok"},
         ),
@@ -237,6 +319,85 @@ def qa_to_unit_test(record: dict[str, Any]) -> dict[str, Any]:
         )
 
     correct_option = option_text(record.get("options"), ground_truth)
+    if direction_match:
+        refs = direction_refs(question)
+        return make_case(
+            scene_name=scene_name,
+            test_type=test_type,
+            statement=correct_option or question,
+            evaluator="function",
+            function="relative_direction",
+            source_qa_id=qa_id,
+            expected={
+                "ground_truth": ground_truth,
+                "answer": correct_option.lower() if correct_option else None,
+            },
+            params={
+                "anchor_ref": refs[0] if refs else None,
+                "facing_ref": refs[1] if refs else None,
+                "query_ref": refs[2] if refs else None,
+            },
+            difficulty=difficulty,
+        )
+
+    if question_type == "object_rel_distance":
+        refs = relative_distance_refs(question)
+        return make_case(
+            scene_name=scene_name,
+            test_type=test_type,
+            statement=correct_option or question,
+            evaluator="function",
+            function="closest_among",
+            source_qa_id=qa_id,
+            expected={
+                "ground_truth": ground_truth,
+                "answer": canonical_object_name(correct_option) if correct_option else None,
+            },
+            params={
+                "anchor_ref": refs[0] if refs else None,
+                "candidate_refs": refs[1] if refs else None,
+            },
+        )
+
+    if question_type == "route_planning":
+        spec = route_spec(question)
+        turns = turn_sequence(correct_option)
+        supported = bool(spec and turns)
+        return make_case(
+            scene_name=scene_name,
+            test_type=test_type,
+            statement=correct_option or question,
+            evaluator="function" if supported else "unsupported",
+            function="route_planning" if supported else None,
+            source_qa_id=qa_id,
+            expected={"ground_truth": ground_truth, "turns": turns},
+            params={
+                "question": question,
+                "start_ref": spec.get("start_ref") if spec else None,
+                "facing_ref": spec.get("facing_ref") if spec else None,
+                "route_steps": spec.get("route_steps") if spec else None,
+                "unsupported_reason": None if supported else "unparseable_route_instruction",
+            },
+        )
+
+    if question_type == "obj_appearance_order":
+        return make_case(
+            scene_name=scene_name,
+            test_type=test_type,
+            statement=correct_option or question,
+            evaluator="function",
+            function="appearance_order",
+            source_qa_id=qa_id,
+            expected={
+                "ground_truth": ground_truth,
+                "order": appearance_answer_order(correct_option),
+            },
+            params={
+                "category_refs": appearance_categories(question),
+                "question": question,
+            },
+        )
+
     statement = correct_option if correct_option else f"For the question '{question}', the correct answer is '{ground_truth}'."
     return make_case(
         scene_name=scene_name,

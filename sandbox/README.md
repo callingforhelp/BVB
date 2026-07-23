@@ -58,18 +58,21 @@ test scenes currently have a video.
 ## 3. Score the run (Stage 2)
 
 ```bash
-python make_pairs.py --run results/run_001
-export BLENDER_BIN="/path/to/blender" OPENAI_API_KEY=... BVB_JUDGE_MODEL=...
+export BLENDER_BIN="/path/to/blender" OPENAI_API_KEY=...
 python ../eval/unit_test_metric.py \
-    --pairs results/run_001/code_pairs.jsonl \
+    --run results/run_001 \
     --mode execute \
-    --output results/run_001/unit_tests.jsonl \
-    --summary-output results/run_001/summary.json
+    --model gpt-5.4-mini \
+    --cache-dir results/run_001/introspection-cache \
+    --resume
 ```
 
-`--mode execute` loads each `.blend` in Blender and reads real geometry
-(`matrix_world @ bound_box` on the evaluated depsgraph), so any scene is scored
-against the same `unit_tests.jsonl` regardless of how the agent authored it.
+`--mode execute` loads each `.blend` in Blender, reads real geometry
+(`matrix_world @ bound_box` on the evaluated depsgraph), sends only a compact
+manifest to the grounding model, and computes pass/fail deterministically.
+The evaluator automatically scans `blends/` and writes `unit_tests.jsonl` and
+`summary.json` into the run directory. Use `--dry-run --limit 10` before a paid
+smoke test.
 
 ## Philosophy: the model decides effort, cost is the only budget
 

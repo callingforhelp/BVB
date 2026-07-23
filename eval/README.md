@@ -84,7 +84,11 @@ python batch_export_blend_to_bpy.py --limit 1 --overwrite
 
 ## Code Unit Tests
 
-Use `generate_unit_tests.py` and `unit_test_metric.py` after scenes have been exported to `bpy` Python scripts. This is the current code-level evaluation path. Instead of asking the judge model to answer QA freely, scene requirements are materialized once as pass/fail unit tests, then every submission is evaluated against the same test file.
+Use `generate_unit_tests.py` and `unit_test_metric.py` to evaluate either a
+`.blend` or `.py` submission. In execute mode Blender produces a structured
+scene manifest (names, collections, materials, world-space AABBs, and camera
+trajectory). The judge only grounds semantic references to manifest group keys;
+host-side deterministic code computes pass/fail.
 
 First generate the stable input test suite:
 
@@ -99,43 +103,124 @@ python generate_unit_tests.py \
 
 `unit_tests.jsonl` is the input test set. It should be versioned/reviewed like any other benchmark artifact. The runner does not convert from `test.jsonl` at evaluation time.
 
-Then evaluate any submission against that same test set. `human`, `claude-sonnet-4.6`, or any other result directory is just a submission with scene code. For example, to evaluate the 30 refined scenes for Claude and human:
+Then evaluate any submission against that same test set. `human`,
+`claude-sonnet-4.6`, or any agent result is simply another submission:
 
 ```bash
 python unit_test_metric.py \
-  --pairs results/claude-sonnet-4.6/code_pairs_refined30.jsonl \
+  --run ../sandbox/results/mini-harness-claude-sonnet-4-6-run01 \
   --unit-tests unit_tests.jsonl \
-  --output results/claude-sonnet-4.6/unit_tests_refined30.jsonl \
-  --summary-output results/claude-sonnet-4.6/unit_tests_summary_refined30.json \
-  --resume
-
-python unit_test_metric.py \
-  --pairs results/gt/code_pairs_refined30.jsonl \
-  --unit-tests unit_tests.jsonl \
-  --output results/gt/unit_tests_refined30.jsonl \
-  --summary-output results/gt/unit_tests_summary_refined30.json \
+  --mode execute \
+  --cache-dir ../sandbox/results/mini-harness-claude-sonnet-4-6-run01/introspection-cache \
   --resume
 ```
+
+`--run` scans `blends/` directly and writes `unit_tests.jsonl` plus
+`summary.json` into the same run. For submissions outside the Stage-1 directory
+layout, pass `--submissions manifest.jsonl`; each row must contain `id` and
+`submission_path`. Execute mode accepts `.blend` by default. Trusted `.py`
+submissions require explicit `--allow-python-exec`; never enable it for
+untrusted code outside an isolated container.
 
 The generated test suite currently contains:
 
 - `basic_validity`: new tests that do not come from QA, such as parse success, non-empty scene, camera exists, and light exists.
 - QA-derived tests: tests converted from `test.jsonl`, keeping the original VSI-Bench `question_type` as the unit-test type.
 
-QA-derived tests use one of three evaluator modes:
+QA-derived tests use these evaluator modes:
 
 - `rule`: direct checks that need no model, currently used for `basic_validity`.
-- `function`: the judge model first finds the relevant scene object/group parameters, then the script calls a deterministic function to compute pass/fail. This is used for `object_counting`, `object_size_estimation`, `room_size_estimation`, and `object_abs_distance`.
-- `proposition`: the judge model directly decides whether the test statement is true for the scene. This is used for QA types that are not yet connected to a deterministic function, such as `route_planning`, `object_rel_direction`, and `object_rel_distance`.
+- `function`: the judge maps semantic references to exact scene group keys;
+  deterministic code evaluates counting, size, absolute/relative distance,
+  egocentric direction, route turns, and appearance order.
+- `unsupported`: the selected evaluator mode cannot provide required evidence
+  (for example running exact spatial functions in `--mode static`). In execute
+  mode a submission with no camera motion fails temporal tests rather than
+  being excluded. Direct LLM proposition guessing is disabled.
 
-Configure an OpenAI-compatible API before running tests with `function` or `proposition` evaluators:
+Configure an OpenAI-compatible API before running function tests. The recommended
+judge is the inexpensive `gpt-5.4-mini`:
 
 ```bash
 export OPENAI_API_KEY="..."
-export BVB_JUDGE_MODEL="gpt-5.5"
 ```
 
-Use `--dry-run` to verify test loading without making model calls. In dry-run mode, only `rule` tests are evaluated; tests that require the judge model are marked as `dry_run`.
+Pass the non-secret model name explicitly for reproducible commands:
+
+```bash
+python unit_test_metric.py \
+  --run ../sandbox/results/mini-harness-claude-sonnet-4-6-run01 \
+  --mode execute \
+  --model gpt-5.4-mini \
+  --limit 10
+```
+
+Use `--dry-run --limit 10` to validate loading and Blender introspection without
+model calls, then remove `--dry-run` for a paid smoke test. Each output row and
+the summary record judge prompt/completion tokens and estimated USD cost.
+
+For comparable random smoke tests across multiple agent runs, use one seed:
+
+```bash
+python smoke_matrix.py \
+  --runs \
+    ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
+    ../sandbox/results/mini-harness-minimax-m3-run01 \
+    ../sandbox/results/mini-harness-seed-2.0-lite-run01 \
+  --model gpt-5.4-mini \
+  --sample 10 \
+  --seed 42 \
+  --stop-on-error
+```
+
+Every run receives the same sorted scene-ID sample. Add `--dry-run` to validate
+the matrix without API calls.
+
+Use exact scene IDs and selected test types for targeted evaluator debugging:
+
+```bash
+python smoke_matrix.py \
+  --runs \
+    ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
+    ../sandbox/results/mini-harness-minimax-m3-run01 \
+  --model gpt-5.4-mini \
+  --scene-ids 09c1414f1b 0d2ee665be \
+  --test-types obj_appearance_order route_planning
+```
+
+Compare the resulting score, token, and cost summaries:
+
+```bash
+python compare_smoke.py \
+  --runs \
+    ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
+    ../sandbox/results/mini-harness-minimax-m3-run01 \
+    ../sandbox/results/mini-harness-seed-2.0-lite-run01 \
+  --model gpt-5.4-mini \
+  --sample 10 \
+  --seed 42
+```
+
+For full-scale evaluation, run independent scene shards (each command writes
+separate output files):
+
+```bash
+for i in $(seq 1 8); do
+  python unit_test_metric.py \
+    --run ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
+    --mode execute \
+    --model gpt-5.4-mini \
+    --shard "$i/8" &
+done
+wait
+
+python merge_eval_shards.py \
+  --inputs ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01/unit_tests.shard-*-of-8.jsonl \
+  --output ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01/unit_tests.jsonl \
+  --summary-output ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01/summary.json
+```
+
+If a shard is interrupted, rerun that same shard command with `--resume`.
 
 Each input test case has a structure like:
 
@@ -164,6 +249,11 @@ The summary reports:
   "num_passed": 180,
   "num_unsupported": 0,
   "unit_test_pass_rate": 0.6228373702422145,
+  "judge_usage": {
+    "prompt_tokens": 12345,
+    "completion_tokens": 678,
+    "cost_usd": 0.01231
+  },
   "by_test_type": {
     "basic_validity": {"pass_rate": 0.9916666666666667},
     "object_counting": {"pass_rate": 0.32432432432432434}
@@ -172,5 +262,18 @@ The summary reports:
 ```
 
 All tests are preserved, including tests where `human` fails. Low `human` scores are diagnostic signals for improving test extraction, object matching, unit calibration, or the scene itself; they are not a reason to remove tests.
+
+### Current geometric approximations
+
+- Object dimensions use evaluated Blender dimensions for single meshes; a
+  multi-part semantic object falls back to its union world AABB.
+- Closest surface distance currently uses world AABB separation, which can
+  underestimate distance for rotated or concave meshes.
+- Room area uses the evaluated mesh's projected horizontal footprint and avoids
+  double-counting overlapping floor parts; bbox area is a last-resort fallback.
+- Appearance visibility uses camera projection plus Blender ray casts. Materials
+  with low alpha or Principled transmission are treated as transparent.
+- Camera trajectories are sampled at up to 600 coarse frames, then each detected
+  first-visible interval is refined frame-by-frame.
 
 This unit-test metric is experimental. It is meant to support the "scene code as a testable artifact" direction. In particular, object matching and unit calibration still need improvement.

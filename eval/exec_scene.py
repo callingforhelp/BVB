@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +28,7 @@ RESULT_START = "===BVB_INTROSPECT_START==="
 RESULT_END = "===BVB_INTROSPECT_END==="
 INTROSPECT_SCRIPT = Path(__file__).resolve().parent / "scene_introspect.py"
 # Bump when scene_introspect.py output changes so stale caches are ignored.
-INTROSPECT_VERSION = "1"
+INTROSPECT_VERSION = "7"
 
 
 def resolve_blender_executable(value: str | None) -> str:
@@ -55,9 +57,18 @@ def resolve_blender_executable(value: str | None) -> str:
     )
 
 
-def _cache_key(input_path: Path) -> str:
+def _cache_key(input_path: Path, blender: str, profile: str) -> str:
     digest = hashlib.sha256()
     digest.update(INTROSPECT_VERSION.encode("utf-8"))
+    digest.update(profile.encode("utf-8"))
+    digest.update(INTROSPECT_SCRIPT.read_bytes())
+    blender_path = Path(blender)
+    digest.update(str(blender_path.resolve()).encode("utf-8"))
+    try:
+        stat = blender_path.stat()
+        digest.update(f"{stat.st_size}:{stat.st_mtime_ns}".encode("utf-8"))
+    except OSError:
+        pass
     digest.update(input_path.read_bytes())
     return digest.hexdigest()
 
@@ -80,6 +91,7 @@ def introspect_scene(
     blender_bin: str | None = None,
     timeout: float = 180.0,
     cache_dir: Path | None = None,
+    profile: str = "geometry",
 ) -> dict[str, Any]:
     """Return the introspection payload for a submission file.
 
@@ -90,17 +102,17 @@ def introspect_scene(
     if not input_path.exists():
         return {"exec_ok": False, "exec_error": f"missing file: {input_path}", "objects": [], "materials": {}}
 
+    blender = resolve_blender_executable(blender_bin)
     cache_path = None
     if cache_dir is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)
-        cache_path = cache_dir / f"{_cache_key(input_path)}.json"
+        cache_path = cache_dir / f"{_cache_key(input_path, blender, profile)}.json"
         if cache_path.exists():
             try:
                 return json.loads(cache_path.read_text(encoding="utf-8"))
             except json.JSONDecodeError:
                 pass
 
-    blender = resolve_blender_executable(blender_bin)
     command = [
         blender,
         "--background",
@@ -110,6 +122,8 @@ def introspect_scene(
         "--",
         "--input",
         str(input_path),
+        "--profile",
+        profile,
     ]
     try:
         completed = subprocess.run(
@@ -133,8 +147,20 @@ def introspect_scene(
             "materials": {},
         }
 
-    if cache_path is not None:
-        cache_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    if cache_path is not None and payload.get("exec_ok"):
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=cache_path.parent,
+            prefix=cache_path.name + ".",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temp_path = Path(handle.name)
+            json.dump(payload, handle, ensure_ascii=False)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, cache_path)
     return payload
 
 
@@ -204,5 +230,52 @@ def groups_from_payload(payload: dict[str, Any]) -> dict[str, SceneGroup]:
             bbox_min=bbox_min,
             bbox_max=bbox_max,
             object_names=names,
+            footprint_area=(
+                float(entry["footprint_area"])
+                if entry.get("footprint_area") is not None
+                else None
+            ),
+            dimensions=_as_tuple(entry.get("dimensions")),
         )
     return groups
+
+
+def temporal_from_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
+    temporal = payload.get("temporal")
+    return temporal if isinstance(temporal, dict) else None
+
+
+def scene_manifest(
+    scene_index: SceneIndex,
+    groups: dict[str, SceneGroup],
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return compact, deterministic evidence for semantic grounding.
+
+    The judge only needs stable semantic names to map natural-language
+    references to scene groups. Geometry and camera trajectories remain
+    host-side for deterministic evaluation.
+    """
+    objects = []
+    payload_entries = {
+        str(entry.get("name")): entry
+        for entry in (payload or {}).get("objects", [])
+        if isinstance(entry, dict)
+    }
+    for key in sorted(groups):
+        group = groups[key]
+        entry = payload_entries.get(key, {})
+        objects.append(
+            [
+                group.key,
+                entry.get("collection"),
+                entry.get("material"),
+                bool(entry.get("animated")),
+            ]
+        )
+    return {
+        "parse_ok": scene_index.parse_ok,
+        "parse_error": scene_index.parse_error,
+        "group_fields": ["group_key", "collection", "material", "animated"],
+        "groups": objects,
+    }
