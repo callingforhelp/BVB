@@ -5,7 +5,8 @@ This folder contains lightweight evaluation utilities for BVB.
 The current evaluation has two levels:
 
 1. Vision-level VQA evaluation: ask the same QA item on the original video and the rendered reconstruction, then compare both answers to the ground truth.
-2. Code-level unit-test evaluation: treat each exported `bpy` scene as a testable scene program.
+2. Executable unit-test evaluation: load each `.blend` (or trusted `.py`) in
+   Blender, introspect the resulting scene, and run materialized tests.
 
 ## Vision-Level Metrics
 
@@ -38,9 +39,11 @@ Reported metrics:
 
 Hallucination rate is intentionally not included yet. We should refine its definition before treating it as an official metric.
 
-## Batch Export Blend Results To BPY
+## Optional: Batch Export Blend Results To BPY
 
-Use `batch_export_blend_to_bpy.py` when an agent run produced `.blend` files and you want code-level evaluation.
+The unit-test evaluator reads `.blend` files directly; BPY export is not
+required. Use `batch_export_blend_to_bpy.py` only when you explicitly need
+portable source code for inspection or another tool.
 
 The default result layout is:
 
@@ -89,6 +92,59 @@ Use `generate_unit_tests.py` and `unit_test_metric.py` to evaluate either a
 scene manifest (names, collections, materials, world-space AABBs, and camera
 trajectory). The judge only grounds semantic references to manifest group keys;
 host-side deterministic code computes pass/fail.
+
+### How evaluation works
+
+```text
+Stage-1 run/blends/*.blend
+          |
+          v
+unit_test_metric.py --run <run>
+          |
+          +-- select global + scene-specific tests from unit_tests.jsonl
+          |
+          +-- launch Blender with the minimum required introspection profile
+          |     geometry   -> objects, evaluated dimensions/AABBs, floor footprint
+          |     route      -> geometry + camera trajectory
+          |     appearance -> route profile + per-frame ray-cast visibility
+          |
+          +-- build a compact semantic manifest
+          |     [group_key, collection, material, animated]
+          |
+          +-- gpt-5.4-mini grounds semantic refs to exact group keys
+          |     "chair" -> ["ChairSeat", "ChairBack"]
+          |
+          +-- host validates grounding with aliases/exact-key checks
+          |
+          +-- deterministic Python computes pass/fail
+                count, size, distance, direction, room area,
+                route turns, appearance order
+```
+
+The model that created a submission and the judge are different roles. For
+example, `mini-harness-gpt-5.6-sol-...` means GPT-5.6 Sol created the `.blend`;
+`--model gpt-5.4-mini` means Mini only grounds names during evaluation. Mini
+does not generate or modify the scene and does not decide pass/fail.
+
+One full 288-scene run makes at most one grounding batch per scene (split only
+when an API response is truncated or incomplete). Rule tests never call an API.
+Every output row records judge tokens, estimated cost, grounding evidence,
+deterministic actual values, and pass/fail status.
+
+### Test branches
+
+- `basic_validity`: Blender load success, non-empty mesh scene, camera, light.
+- `object_counting`: judge returns physical instances and their part group keys;
+  host counts validated instances.
+- `object_size_estimation`: evaluated object dimensions for one mesh; multi-part
+  objects use union geometry.
+- `object_abs_distance` / `object_rel_distance`: world-AABB surface separation.
+- `object_rel_direction`: deterministic egocentric XY geometry.
+- `room_size_estimation`: projected horizontal mesh footprint; bbox fallback
+  only when no footprint is available.
+- `route_planning`: ordered camera-trajectory landmark events and turn sequence.
+- `obj_appearance_order`: first visible frame from camera projection plus
+  Blender ray casts; transparent materials do not block the ray.
 
 First generate the stable input test suite:
 

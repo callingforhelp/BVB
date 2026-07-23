@@ -99,6 +99,23 @@ BVB uses dual level evaluation:
 | Code | **Unit-test pass rate** | Whether a submission's exported scene program passes materialized scene tests |
 | Code | **Executability / validity tests** | Basic checks such as parse success, non-empty scene, camera, and light |
 
+The executable evaluator reads Stage-1 `.blend` artifacts directly. Blender
+extracts geometry and camera evidence, a small judge model grounds semantic
+object names, and deterministic code computes every pass/fail result. See
+[`eval/README.md`](eval/README.md) for the full data flow, test branches,
+smoke-matrix workflow, cost accounting, caching, resume, and sharded execution.
+
+Minimal example:
+
+```bash
+export OPENAI_API_KEY="..."
+python eval/unit_test_metric.py \
+  --run sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
+  --mode execute \
+  --model gpt-5.4-mini \
+  --limit 10
+```
+
 ## Benchmark comparison
 
 | Benchmark | Task | # Samples | Beyond Simple QA | Executable Output | Spatial Understanding | Temporal Understanding | Date |
