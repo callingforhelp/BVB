@@ -154,6 +154,46 @@ class JudgeUsageTest(unittest.TestCase):
         self.assertEqual(summary["judge_usage"]["completion_tokens"], 300)
         self.assertEqual(summary["judge_usage"]["cost_usd"], 0.002475)
 
+    def test_basic_validity_is_all_or_nothing_per_scene(self) -> None:
+        summary = summarize(
+            [
+                {
+                    "judge_model": "gpt-5.4-mini",
+                    "judge_usage": {},
+                    "unit_tests": [
+                        {"test_type": "basic_validity", "status": "pass"},
+                        {"test_type": "basic_validity", "status": "pass"},
+                        {"test_type": "basic_validity", "status": "fail"},
+                        {"test_type": "basic_validity", "status": "pass"},
+                        {"test_type": "object_counting", "status": "pass"},
+                    ],
+                },
+                {
+                    "judge_model": "gpt-5.4-mini",
+                    "judge_usage": {},
+                    "unit_tests": [
+                        {"test_type": "basic_validity", "status": "pass"},
+                        {"test_type": "basic_validity", "status": "pass"},
+                        {"test_type": "basic_validity", "status": "pass"},
+                        {"test_type": "basic_validity", "status": "pass"},
+                        {"test_type": "object_counting", "status": "fail"},
+                    ],
+                },
+            ]
+        )
+        # Two scenes + two non-basic tests; only one scene earns the basic credit.
+        self.assertEqual(summary["num_evaluated"], 4)
+        self.assertEqual(summary["num_passed"], 2)
+        self.assertAlmostEqual(summary["unit_test_pass_rate"], 0.5)
+        self.assertAlmostEqual(summary["unit_test_pass_rate_without_basic_validity"], 0.5)
+        basic = summary["by_test_type"]["basic_validity"]
+        self.assertEqual(basic["aggregation"], "scene_all_or_nothing")
+        self.assertEqual(basic["num_evaluated"], 2)
+        self.assertEqual(basic["num_passed"], 1)
+        self.assertAlmostEqual(basic["pass_rate"], 0.5)
+        self.assertEqual(basic["num_atomic_evaluated"], 8)
+        self.assertEqual(basic["num_atomic_passed"], 7)
+
     def test_appearance_summary_separates_coverage_from_order_accuracy(self) -> None:
         summary = summarize(
             [
@@ -271,6 +311,47 @@ class JudgeUsageTest(unittest.TestCase):
                 ],
                 usage,
             )
+
+    @patch("unit_test_metric.call_json_judge")
+    def test_missing_grounding_ids_are_retried_as_split_batches(self, mocked_judge) -> None:
+        mocked_judge.side_effect = [
+            (
+                {"results": [{"grounding_id": "g1", "grounded_params": {}}]},
+                {"prompt_tokens": 100, "completion_tokens": 40, "finish_reason": "stop"},
+            ),
+            (
+                {"results": [{"grounding_id": "g1", "grounded_params": {"ok": True}}]},
+                {"prompt_tokens": 60, "completion_tokens": 10, "finish_reason": "stop"},
+            ),
+            (
+                {"results": [{"grounding_id": "g2", "grounded_params": {"ok": True}}]},
+                {"prompt_tokens": 70, "completion_tokens": 20, "finish_reason": "stop"},
+            ),
+        ]
+        args = Namespace(
+            base_url="https://example.test/v1",
+            api_key="test",
+            model="gpt-5.4-mini",
+            temperature=None,
+            max_completion_tokens=8192,
+            reasoning_effort="none",
+        )
+        results, usage = call_grounding_requests(
+            scene_id="scene",
+            manifest={"groups": []},
+            grounding_requests=[
+                {"grounding_id": "g1", "function": "count_objects"},
+                {"grounding_id": "g2", "function": "count_objects"},
+            ],
+            args=args,
+        )
+        self.assertEqual(
+            [(item["grounding_id"], item["grounded_params"]) for item in results],
+            [("g1", {"ok": True}), ("g2", {"ok": True})],
+        )
+        self.assertEqual(usage["prompt_tokens"], 230)
+        self.assertEqual(usage["completion_tokens"], 70)
+        self.assertEqual(mocked_judge.call_count, 3)
 
     def test_resume_rejects_changed_evaluation_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

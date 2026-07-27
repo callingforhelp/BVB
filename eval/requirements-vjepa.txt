@@ -1,0 +1,10 @@
+# Optional deps for the V-JEPA vision similarity metric (GPU Linux recommended).
+# Install into a dedicated env, not the sandbox Stage-1 agent venv:
+#   pip install -r eval/requirements-vjepa.txt
+
+torch>=2.2
+transformers>=4.51
+accelerate>=0.30
+safetensors>=0.4
+opencv-python-headless>=4.8
+numpy>=1.24

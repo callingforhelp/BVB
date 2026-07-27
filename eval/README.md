@@ -4,40 +4,86 @@ This folder contains lightweight evaluation utilities for BVB.
 
 The current evaluation has two levels:
 
-1. Vision-level VQA evaluation: ask the same QA item on the original video and the rendered reconstruction, then compare both answers to the ground truth.
+1. Vision-level V-JEPA similarity: render each submission from the scene camera,
+   encode the original video and the render with a frozen V-JEPA 2.1 encoder, and
+   report one paired cosine-similarity score.
 2. Executable unit-test evaluation: load each `.blend` (or trusted `.py`) in
    Blender, introspect the resulting scene, and run materialized tests.
 
-## Vision-Level Metrics
+Code-level unit tests are unchanged and remain the primary deterministic scorer.
+Vision sim writes separate artifacts (`vision_sim.jsonl`, `vision_sim_summary.json`)
+and never overwrites `unit_tests.jsonl` / `summary.json`.
 
-Use `videoqa_metric.py` after you have VQA answers for both the original video and the rendered video.
+## Vision-Level Metric (V-JEPA similarity)
 
-Input prediction JSONL format:
-
-```json
-{"id": 0, "original_answer": "4", "rendered_answer": "3"}
-{"id": 1, "original_answer": "2", "rendered_answer": "2"}
-```
-
-The `id` field should match `test.jsonl`. The script joins each prediction with the QA metadata and ground truth.
-
-Run:
+Requires a GPU machine for encoding, plus Blender on `PATH` (or `BLENDER_BIN`)
+unless `camera_renders/` was precomputed. Install:
 
 ```bash
-python videoqa_metric.py \
-  --metadata test.jsonl \
-  --predictions predictions.jsonl \
-  --output results/vqa_metrics.json
+pip install -r requirements-vjepa.txt
 ```
 
-Reported metrics:
+Default encoder: `apiantonio/vjepa2.1-vit-gigantic-384` (V-JEPA 2.1 ViT-G/16 @ 384).
+Default clip length: **64** sparse frames (matches V-JEPA 2.1 pretrain `frames_per_clip`).
 
-- `original_accuracy`: accuracy of the VQA model on the source videos.
-- `rendered_accuracy`: accuracy of the same VQA model on rendered reconstruction videos.
-- `delta_accuracy`: `rendered_accuracy - original_accuracy`.
-- `retention_rate`: `#(original correct and rendered correct) / #(original correct)`.
+### Recommended: Mac render → HF → cluster encode
 
-Hallucination rate is intentionally not included yet. We should refine its definition before treating it as an official metric.
+```bash
+# Mac / CPU node
+python batch_render_camera.py --run ../sandbox/results/<run> --num-frames 64 --resume
+python ../scripts/sync_eval_results.py --run <run> --camera-renders-only
+
+# GPU cluster
+HF_HUB_ENABLE_HF_TRANSFER=1 python ../scripts/download_results.py --run <run>
+python vjepa_sim_metric.py \
+  --run ../sandbox/results/<run> \
+  --vsi-bench ../VSI-Bench \
+  --device cuda \
+  --dtype bfloat16
+```
+
+### One-shot on a GPU box
+
+```bash
+python vjepa_sim_metric.py \
+  --run ../sandbox/results/mini-harness-claude-sonnet-4-6-run01 \
+  --vsi-bench ../VSI-Bench \
+  --device cuda \
+  --dtype bfloat16 \
+  --limit 2
+```
+
+Per scene the runner:
+
+1. Sparsely renders `--num-frames` EEVEE frames across the full camera timeline
+   (cached as `<run>/camera_renders/<id>.mp4` by default; reused on resume/rerun).
+2. Uniformly samples the same number of frames from the original VSI-Bench video.
+3. Encodes both clips with V-JEPA 2.1; averages layout + motion cosine into one
+   `vision_sim`.
+4. Features are never written to disk. Use `--no-keep-renders` only if you truly
+   want to delete the PNG cache after scoring.
+
+See [`VJEPA_SIM_HANDOFF.md`](VJEPA_SIM_HANDOFF.md) for cluster-agent context and
+measured render cost.
+
+Outputs (inside the run directory by default):
+
+- `vision_sim.jsonl` — one row per scene with `vision_sim` (or an error status)
+- `vision_sim_summary.json` — mean `vision_sim` over successfully scored scenes
+
+Useful flags: `--resume`, `--shard i/N`, `--scene-ids`, `--sample`, `--keep-renders`
+(debug only; default is to delete renders).
+
+Standalone camera render (without the encoder):
+
+```bash
+python render_blend_video.py \
+  --blend ../sandbox/results/.../blends/41069025.blend \
+  --output /tmp/41069025.mp4
+```
+
+The older VQA retention helper `videoqa_metric.py` is deprecated and kept only
+for reproducing legacy prediction files.
 
 ## Optional: Batch Export Blend Results To BPY
 
@@ -270,13 +316,25 @@ for i in $(seq 1 8); do
 done
 wait
 
+# Merge into unit_tests.jsonl + summary.json, then delete shard intermediates.
 python merge_eval_shards.py \
-  --inputs ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01/unit_tests.shard-*-of-8.jsonl \
-  --output ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01/unit_tests.jsonl \
-  --summary-output ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01/summary.json
+  --run ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
+  --cleanup
+```
+
+To evaluate many completed Stage-1 runs in one go (skips runs that already
+have `summary.json`, auto-merges, and cleans shard intermediates):
+
+```bash
+cd ../sandbox
+caffeinate -i ./run_eval_batch.sh
+# or preview the queue first:
+./run_eval_batch.sh --dry-run
 ```
 
 If a shard is interrupted, rerun that same shard command with `--resume`.
+`run_eval_batch.sh` resumes a shard only when that shard's `.config.json`
+already exists, so fresh runs and interrupted runs both work.
 
 Each input test case has a structure like:
 
@@ -300,22 +358,29 @@ The summary reports:
 ```json
 {
   "num_scenes": 30,
-  "num_tests": 289,
-  "num_evaluated": 289,
-  "num_passed": 180,
+  "num_tests": 149,
+  "num_evaluated": 149,
+  "num_passed": 80,
   "num_unsupported": 0,
-  "unit_test_pass_rate": 0.6228373702422145,
+  "unit_test_pass_rate": 0.5369127516778524,
+  "basic_validity_aggregation": "scene_all_or_nothing",
   "judge_usage": {
     "prompt_tokens": 12345,
     "completion_tokens": 678,
     "cost_usd": 0.01231
   },
   "by_test_type": {
-    "basic_validity": {"pass_rate": 0.9916666666666667},
+    "basic_validity": {
+      "aggregation": "scene_all_or_nothing",
+      "pass_rate": 0.9666666666666667,
+      "atomic_pass_rate": 0.9916666666666667
+    },
     "object_counting": {"pass_rate": 0.32432432432432434}
   }
 }
 ```
+
+`basic_validity` is aggregated **per scene**: the four atomic checks (parse / mesh / camera / light) contribute a single credit that passes only when every evaluated check for that scene passes. This avoids saturating the overall micro-average with many easy basic tests. Atomic rates remain available under `atomic_pass_rate`.
 
 All tests are preserved, including tests where `human` fails. Low `human` scores are diagnostic signals for improving test extraction, object matching, unit calibration, or the scene itself; they are not a reason to remove tests.
 

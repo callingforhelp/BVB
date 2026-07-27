@@ -439,6 +439,31 @@ def validate_grounding_results(
         )
 
 
+def _split_call_grounding_requests(
+    *,
+    scene_id: str,
+    manifest: dict[str, Any],
+    grounding_requests: list[dict[str, Any]],
+    args: argparse.Namespace,
+    prior_usage: dict[str, Any] | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    midpoint = len(grounding_requests) // 2
+    left, left_usage = call_grounding_requests(
+        scene_id=scene_id,
+        manifest=manifest,
+        grounding_requests=grounding_requests[:midpoint],
+        args=args,
+    )
+    right, right_usage = call_grounding_requests(
+        scene_id=scene_id,
+        manifest=manifest,
+        grounding_requests=grounding_requests[midpoint:],
+        args=args,
+    )
+    usages = [usage for usage in (prior_usage, left_usage, right_usage) if usage is not None]
+    return left + right, merge_raw_usage(*usages)
+
+
 def call_grounding_requests(
     *,
     scene_id: str,
@@ -461,20 +486,13 @@ def call_grounding_requests(
     except JudgeResponseError as exc:
         if len(grounding_requests) <= 1:
             raise
-        midpoint = len(grounding_requests) // 2
-        left, left_usage = call_grounding_requests(
+        return _split_call_grounding_requests(
             scene_id=scene_id,
             manifest=manifest,
-            grounding_requests=grounding_requests[:midpoint],
+            grounding_requests=grounding_requests,
             args=args,
+            prior_usage=exc.usage,
         )
-        right, right_usage = call_grounding_requests(
-            scene_id=scene_id,
-            manifest=manifest,
-            grounding_requests=grounding_requests[midpoint:],
-            args=args,
-        )
-        return left + right, merge_raw_usage(exc.usage, left_usage, right_usage)
 
     results = [
         item for item in response.get("results", []) if isinstance(item, dict)
@@ -482,21 +500,25 @@ def call_grounding_requests(
     if usage.get("finish_reason") == "length":
         if len(grounding_requests) <= 1:
             raise JudgeResponseError("Judge response truncated for one grounding request", usage)
-        midpoint = len(grounding_requests) // 2
-        left, left_usage = call_grounding_requests(
+        return _split_call_grounding_requests(
             scene_id=scene_id,
             manifest=manifest,
-            grounding_requests=grounding_requests[:midpoint],
+            grounding_requests=grounding_requests,
             args=args,
+            prior_usage=usage,
         )
-        right, right_usage = call_grounding_requests(
+    try:
+        validate_grounding_results(grounding_requests, results, usage)
+    except JudgeResponseError:
+        if len(grounding_requests) <= 1:
+            raise
+        return _split_call_grounding_requests(
             scene_id=scene_id,
             manifest=manifest,
-            grounding_requests=grounding_requests[midpoint:],
+            grounding_requests=grounding_requests,
             args=args,
+            prior_usage=usage,
         )
-        return left + right, merge_raw_usage(usage, left_usage, right_usage)
-    validate_grounding_results(grounding_requests, results, usage)
     return results, usage
 
 
@@ -871,30 +893,108 @@ def run_judged_tests_batch(
     return outputs, usage
 
 
+def _empty_type_stats() -> dict[str, Any]:
+    return {
+        "num_tests": 0,
+        "num_evaluated": 0,
+        "num_passed": 0,
+        "num_unsupported": 0,
+        "num_error": 0,
+    }
+
+
+def scene_basic_validity_bundle(tests: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Collapse per-scene basic_validity checks into one all-or-nothing credit.
+
+    A scene contributes one evaluated basic bundle iff it has at least one
+    basic_validity test with status pass/fail. The bundle passes only when every
+    such evaluated check passes.
+    """
+    basic = [test for test in tests if test.get("test_type") == "basic_validity"]
+    if not basic:
+        return None
+    evaluated = [test for test in basic if test.get("status") in {"pass", "fail"}]
+    if not evaluated:
+        return {
+            "evaluated": False,
+            "passed": False,
+            "num_atomic_tests": len(basic),
+            "num_atomic_evaluated": 0,
+            "num_atomic_passed": 0,
+            "num_unsupported": sum(1 for test in basic if test.get("status") == "unsupported"),
+            "num_error": sum(1 for test in basic if test.get("status") == "error"),
+        }
+    return {
+        "evaluated": True,
+        "passed": all(test.get("status") == "pass" for test in evaluated),
+        "num_atomic_tests": len(basic),
+        "num_atomic_evaluated": len(evaluated),
+        "num_atomic_passed": sum(1 for test in evaluated if test.get("status") == "pass"),
+        "num_unsupported": sum(1 for test in basic if test.get("status") == "unsupported"),
+        "num_error": sum(1 for test in basic if test.get("status") == "error"),
+    }
+
+
 def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    tests = [test for row in rows for test in row["unit_tests"]]
-    evaluated = [test for test in tests if test["status"] in {"pass", "fail"}]
-    passed = [test for test in tests if test["status"] == "pass"]
+    tests = [test for row in rows for test in row.get("unit_tests", [])]
     non_basic_tests = [test for test in tests if test.get("test_type") != "basic_validity"]
-    non_basic_evaluated = [test for test in non_basic_tests if test["status"] in {"pass", "fail"}]
-    non_basic_passed = [test for test in non_basic_tests if test["status"] == "pass"]
+    non_basic_evaluated = [test for test in non_basic_tests if test.get("status") in {"pass", "fail"}]
+    non_basic_passed = [test for test in non_basic_tests if test.get("status") == "pass"]
+
     by_type: dict[str, dict[str, Any]] = {}
-    for test in tests:
-        item = by_type.setdefault(
-            str(test.get("test_type")),
-            {"num_tests": 0, "num_evaluated": 0, "num_passed": 0, "num_unsupported": 0, "num_error": 0},
-        )
+    for test in non_basic_tests:
+        item = by_type.setdefault(str(test.get("test_type")), _empty_type_stats())
         item["num_tests"] += 1
-        if test["status"] in {"pass", "fail"}:
+        if test.get("status") in {"pass", "fail"}:
             item["num_evaluated"] += 1
-        if test["status"] == "pass":
+        if test.get("status") == "pass":
             item["num_passed"] += 1
-        if test["status"] == "unsupported":
+        if test.get("status") == "unsupported":
             item["num_unsupported"] += 1
-        if test["status"] == "error":
+        if test.get("status") == "error":
             item["num_error"] += 1
+
+    basic_type = _empty_type_stats()
+    basic_type.update(
+        {
+            "aggregation": "scene_all_or_nothing",
+            "num_atomic_tests": 0,
+            "num_atomic_evaluated": 0,
+            "num_atomic_passed": 0,
+        }
+    )
+    scene_basic_evaluated = 0
+    scene_basic_passed = 0
+    for row in rows:
+        bundle = scene_basic_validity_bundle(row.get("unit_tests", []))
+        if bundle is None:
+            continue
+        basic_type["num_tests"] += 1
+        basic_type["num_atomic_tests"] += int(bundle["num_atomic_tests"])
+        basic_type["num_atomic_evaluated"] += int(bundle["num_atomic_evaluated"])
+        basic_type["num_atomic_passed"] += int(bundle["num_atomic_passed"])
+        basic_type["num_unsupported"] += int(bundle["num_unsupported"])
+        basic_type["num_error"] += int(bundle["num_error"])
+        if bundle["evaluated"]:
+            basic_type["num_evaluated"] += 1
+            scene_basic_evaluated += 1
+            if bundle["passed"]:
+                basic_type["num_passed"] += 1
+                scene_basic_passed += 1
+    if basic_type["num_tests"]:
+        by_type["basic_validity"] = basic_type
+
     for item in by_type.values():
         item["pass_rate"] = safe_divide(item["num_passed"], item["num_evaluated"])
+        if "num_atomic_evaluated" in item:
+            item["atomic_pass_rate"] = safe_divide(
+                item["num_atomic_passed"],
+                item["num_atomic_evaluated"],
+            )
+
+    # Overall counts one basic_validity credit per scene (all checks must pass).
+    num_evaluated = len(non_basic_evaluated) + scene_basic_evaluated
+    num_passed = len(non_basic_passed) + scene_basic_passed
 
     judge_prompt_tokens = sum(int(row.get("judge_usage", {}).get("prompt_tokens") or 0) for row in rows)
     judge_completion_tokens = sum(int(row.get("judge_usage", {}).get("completion_tokens") or 0) for row in rows)
@@ -902,18 +1002,19 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     judge_models = sorted({str(row["judge_model"]) for row in rows if row.get("judge_model")})
     summary = {
         "num_scenes": len(rows),
-        "num_tests": len(tests),
-        "num_evaluated": len(evaluated),
-        "num_passed": len(passed),
-        "num_unsupported": sum(1 for test in tests if test["status"] == "unsupported"),
-        "num_error": sum(1 for test in tests if test["status"] == "error"),
-        "unit_test_pass_rate": safe_divide(len(passed), len(evaluated)),
+        "num_tests": len(non_basic_tests) + basic_type["num_tests"],
+        "num_evaluated": num_evaluated,
+        "num_passed": num_passed,
+        "num_unsupported": sum(1 for test in tests if test.get("status") == "unsupported"),
+        "num_error": sum(1 for test in tests if test.get("status") == "error"),
+        "unit_test_pass_rate": safe_divide(num_passed, num_evaluated),
         "unit_test_pass_rate_without_basic_validity": safe_divide(
             len(non_basic_passed),
             len(non_basic_evaluated),
         ),
         "num_evaluated_without_basic_validity": len(non_basic_evaluated),
         "num_passed_without_basic_validity": len(non_basic_passed),
+        "basic_validity_aggregation": "scene_all_or_nothing",
         "judge_usage": {
             "model": judge_models[0] if len(judge_models) == 1 else judge_models,
             "prompt_tokens": judge_prompt_tokens,
@@ -1226,15 +1327,21 @@ def main() -> None:
                             finish_test(test, scene_id=scene_id, status="error", evidence={"error": str(exc)})
                             for test in judged_tests
                         )
+            non_basic = [test for test in unit_tests if test.get("test_type") != "basic_validity"]
+            non_basic_evaluated = sum(1 for test in non_basic if test["status"] in {"pass", "fail"})
+            non_basic_passed = sum(1 for test in non_basic if test["status"] == "pass")
+            basic_bundle = scene_basic_validity_bundle(unit_tests)
+            basic_evaluated = 1 if basic_bundle and basic_bundle["evaluated"] else 0
+            basic_passed = 1 if basic_bundle and basic_bundle["passed"] else 0
             row = {
                 "id": scene_id,
                 "submission_path": str(pred_path),
                 "unit_tests": unit_tests,
                 "judge_model": args.model,
                 "judge_usage": judge_usage,
-                "num_tests": len(unit_tests),
-                "num_passed": sum(1 for test in unit_tests if test["status"] == "pass"),
-                "num_evaluated": sum(1 for test in unit_tests if test["status"] in {"pass", "fail"}),
+                "num_tests": len(non_basic) + (1 if basic_bundle is not None else 0),
+                "num_passed": non_basic_passed + basic_passed,
+                "num_evaluated": non_basic_evaluated + basic_evaluated,
             }
             row["unit_test_pass_rate"] = safe_divide(row["num_passed"], row["num_evaluated"])
             rows.append(row)

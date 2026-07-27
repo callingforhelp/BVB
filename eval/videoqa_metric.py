@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Compute vision-level BVB metrics from VQA prediction files.
+"""DEPRECATED: older vision-level VQA retention metric.
+
+BVB vision evaluation now uses frozen V-JEPA similarity between the original
+video and a camera-view render of the submission (see ``vjepa_sim_metric.py``).
+This script is kept only for reproducing older prediction files.
+"""
 
 Expected prediction JSONL fields:
   - id or qa_id: QA id matching metadata

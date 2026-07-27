@@ -12,9 +12,11 @@ misc
 misc/
 sandbox/.venv/
 sandbox/results/
+sandbox/eval_plots/
 sandbox/log/
 .conda/
 .tmp
+.vscode/
 
 
 
