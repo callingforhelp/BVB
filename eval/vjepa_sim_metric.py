@@ -4,11 +4,12 @@
 For each Stage-1 ``.blend`` submission:
   1. Sparse-render the scene camera (cached as ``camera_renders/<id>.mp4`` by default).
   2. Encode original + rendered clips with a frozen V-JEPA 2.1 encoder.
-  3. Compute one similarity score (mean of layout + motion cosine sims).
+  3. Compute layout / motion / combined similarity scores.
   4. Never write features to disk; use ``--no-keep-renders`` to skip caching.
 
 Does not modify code-level unit-test outputs (``unit_tests.jsonl`` / ``summary.json``).
-Writes ``vision_sim.jsonl`` + ``vision_sim_summary.json`` into the run directory.
+Writes ``vision_sim.jsonl`` + ``vision_sim_summary.json`` into the run directory
+(per-scene rows include ``layout_sim``, ``motion_sim``, and ``vision_sim``).
 
 Intended to run on a GPU Linux box::
 
@@ -249,11 +250,13 @@ def compute_vjepa_similarity(
     processor: Any,
     device: str,
     dtype: Any,
-) -> float:
-    """Return a single vision similarity in ``[-1, 1]`` (typically near ``[0, 1]``).
+) -> dict[str, float]:
+    """Return layout / motion / combined vision similarities.
 
-    Internally averages layout (spatially pooled patch cosine) and motion
-    (global clip-embedding cosine). Only the combined score is returned.
+    ``layout_sim``: temporally pooled spatial patch-map cosine.
+    ``motion_sim``: global token-mean cosine.
+    ``vision_sim``: ``0.5 * (layout_sim + motion_sim)``.
+    Scores are typically in ``[0, 1]`` (cosine range ``[-1, 1]``).
     """
     import torch
 
@@ -291,7 +294,12 @@ def compute_vjepa_similarity(
     else:
         layout_sim = motion_sim
 
-    return float(0.5 * (layout_sim + motion_sim))
+    vision_sim = float(0.5 * (layout_sim + motion_sim))
+    return {
+        "layout_sim": float(layout_sim),
+        "motion_sim": float(motion_sim),
+        "vision_sim": vision_sim,
+    }
 
 
 def load_encoder(model_id: str, device: str, dtype_name: str) -> tuple[Any, Any, Any]:
@@ -348,6 +356,8 @@ def evaluate_scene(
         "original_video": str(original_video),
         "status": "error",
         "vision_sim": None,
+        "layout_sim": None,
+        "motion_sim": None,
     }
 
     try:
@@ -402,7 +412,7 @@ def evaluate_scene(
             return row
 
         original_frames = decode_video_frames(original_video, num_frames)
-        row["vision_sim"] = compute_vjepa_similarity(
+        sims = compute_vjepa_similarity(
             original_frames,
             rendered_frames,
             model=model,
@@ -410,9 +420,17 @@ def evaluate_scene(
             device=device,
             dtype=dtype,
         )
+        row["layout_sim"] = sims["layout_sim"]
+        row["motion_sim"] = sims["motion_sim"]
+        row["vision_sim"] = sims["vision_sim"]
         row["status"] = "ok"
         row["render_cached"] = bool(meta.get("cached"))
         row["render_source"] = meta.get("source")
+        return row
+    except SystemExit as exc:  # noqa: BLE001 — e.g. missing Blender must not kill the shard
+        # SystemExit is BaseException, not Exception; convert to a scored row.
+        row["status"] = "missing_render"
+        row["error"] = str(exc) or "SystemExit (often: no camera_renders cache and no Blender)"
         return row
     except Exception as exc:  # noqa: BLE001 — per-scene isolation for cluster runs
         row["status"] = "error"
@@ -423,12 +441,33 @@ def evaluate_scene(
 def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     ok_rows = [row for row in rows if row.get("status") == "ok" and row.get("vision_sim") is not None]
     scores = [float(row["vision_sim"]) for row in ok_rows]
+    layout_scores = [
+        float(row["layout_sim"]) for row in ok_rows if row.get("layout_sim") is not None
+    ]
+    motion_scores = [
+        float(row["motion_sim"]) for row in ok_rows if row.get("motion_sim") is not None
+    ]
+
+    def _mean_std(values: list[float]) -> tuple[float | None, float | None]:
+        if not values:
+            return None, None
+        mean = float(statistics.fmean(values))
+        std = float(statistics.pstdev(values)) if len(values) > 1 else 0.0
+        return mean, std
+
+    vision_mean, vision_std = _mean_std(scores)
+    layout_mean, layout_std = _mean_std(layout_scores)
+    motion_mean, motion_std = _mean_std(motion_scores)
     return {
         "num_scenes": len(rows),
         "num_ok": len(ok_rows),
         "num_error": sum(row.get("status") != "ok" for row in rows),
-        "vision_sim": float(statistics.fmean(scores)) if scores else None,
-        "vision_sim_std": float(statistics.pstdev(scores)) if len(scores) > 1 else (0.0 if scores else None),
+        "vision_sim": vision_mean,
+        "vision_sim_std": vision_std,
+        "layout_sim": layout_mean,
+        "layout_sim_std": layout_std,
+        "motion_sim": motion_mean,
+        "motion_sim_std": motion_std,
         "by_status": {
             status: sum(row.get("status") == status for row in rows)
             for status in sorted({str(row.get("status")) for row in rows})
@@ -609,6 +648,8 @@ def main() -> None:
                     "submission_path": str(blend_path),
                     "status": "missing_original_video",
                     "vision_sim": None,
+                    "layout_sim": None,
+                    "motion_sim": None,
                 }
             else:
                 row = evaluate_scene(

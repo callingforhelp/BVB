@@ -4,7 +4,8 @@
 Mirrors into the same run directories under yunlong10/BVB-results, alongside any
 existing Stage-1 config/agent_meta/blends files.
 
-By default uploads ``summary.json`` / ``unit_tests.jsonl``. Pass
+By default uploads ``summary.json`` / ``unit_tests.jsonl`` and, when present,
+``vision_sim.jsonl`` / ``vision_sim_summary.json``. Pass
 ``--include-camera-renders`` to also push Mac-precomputed ``camera_renders/``
 for cluster-side V-JEPA scoring without re-rendering.
 """
@@ -18,7 +19,12 @@ from huggingface_hub import HfApi
 
 DEFAULT_REPO_ID = "yunlong10/BVB-results"
 DEFAULT_RESULTS_DIR = Path("sandbox/results")
-EVAL_PATTERNS = ["summary.json", "unit_tests.jsonl"]
+EVAL_PATTERNS = [
+    "summary.json",
+    "unit_tests.jsonl",
+    "vision_sim.jsonl",
+    "vision_sim_summary.json",
+]
 CAMERA_PATTERNS = ["camera_renders/*.mp4", "camera_renders/*.error.json"]
 
 
@@ -28,8 +34,9 @@ def discover_runs(results_dir: Path, *, include_camera_renders: bool) -> list[Pa
         if not path.is_dir():
             continue
         has_eval = (path / "summary.json").is_file()
+        has_vision = (path / "vision_sim_summary.json").is_file()
         has_renders = (path / "camera_renders").is_dir()
-        if has_eval or (include_camera_renders and has_renders):
+        if has_eval or has_vision or (include_camera_renders and has_renders):
             runs.append(path)
     return runs
 
@@ -107,7 +114,7 @@ def main() -> None:
             commit_message=(
                 f"Upload camera_renders for {run_name}"
                 if args.camera_renders_only
-                else f"Upload Stage-2 eval artifacts for {run_name}"
+                else f"Upload Stage-2 eval / vision_sim artifacts for {run_name}"
             ),
         )
         uploaded_runs += 1
