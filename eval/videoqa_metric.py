@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""DEPRECATED: older vision-level VQA retention metric.
+"""DEPRECATED: offline aggregator over legacy Dual VQA prediction JSONL.
 
-BVB vision evaluation now uses frozen V-JEPA similarity between the original
-video and a camera-view render of the submission (see ``vjepa_sim_metric.py``).
-This script is kept only for reproducing older prediction files.
+The live Dual VQA metric lives in ``dual_vqa_metric.py`` (writes
+``dual_vqa.jsonl`` / ``dual_vqa_summary.json``). Video Similarity uses
+``vjepa_sim_metric.py``. This script is kept only for reproducing older
+prediction files that already store paired original/rendered answers.
 """
 
 Expected prediction JSONL fields:

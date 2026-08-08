@@ -4,9 +4,12 @@
 Mirrors into the same run directories under yunlong10/BVB-results, alongside any
 existing Stage-1 config/agent_meta/blends files.
 
-By default uploads ``summary.json`` / ``unit_tests.jsonl`` and, when present,
-``vision_sim.jsonl`` / ``vision_sim_summary.json``. Pass
-``--include-camera-renders`` to also push Mac-precomputed ``camera_renders/``
+By default uploads ``summary.json`` / ``unit_tests.jsonl``, and when present
+``vision_sim.jsonl`` / ``vision_sim_summary.json`` and
+``dual_vqa.jsonl`` / ``dual_vqa_summary.json``. Also uploads the shared Dual
+VQA answer banks under ``_dual_vqa_shared/`` when that directory exists.
+
+Pass ``--include-camera-renders`` to also push Mac-precomputed ``camera_renders/``
 for cluster-side V-JEPA scoring without re-rendering.
 """
 
@@ -24,8 +27,16 @@ EVAL_PATTERNS = [
     "unit_tests.jsonl",
     "vision_sim.jsonl",
     "vision_sim_summary.json",
+    "dual_vqa.jsonl",
+    "dual_vqa_summary.json",
 ]
 CAMERA_PATTERNS = ["camera_renders/*.mp4", "camera_renders/*.error.json"]
+SHARED_DIRNAME = "_dual_vqa_shared"
+SHARED_PATTERNS = [
+    "original_answers.jsonl",
+    "text_only_answers.jsonl",
+    "import_report.json",
+]
 
 
 def discover_runs(results_dir: Path, *, include_camera_renders: bool) -> list[Path]:
@@ -35,10 +46,62 @@ def discover_runs(results_dir: Path, *, include_camera_renders: bool) -> list[Pa
             continue
         has_eval = (path / "summary.json").is_file()
         has_vision = (path / "vision_sim_summary.json").is_file()
+        has_dual_vqa = (path / "dual_vqa_summary.json").is_file()
         has_renders = (path / "camera_renders").is_dir()
-        if has_eval or has_vision or (include_camera_renders and has_renders):
+        if (
+            has_eval
+            or has_vision
+            or has_dual_vqa
+            or (include_camera_renders and has_renders)
+        ):
             runs.append(path)
     return runs
+
+
+def present_patterns(run_dir: Path, allow_patterns: list[str]) -> list[str]:
+    present = []
+    for pattern in allow_patterns:
+        if pattern == "camera_renders/*.mp4":
+            if any((run_dir / "camera_renders").glob("*.mp4")):
+                present.append(pattern)
+        elif pattern == "camera_renders/*.error.json":
+            if any((run_dir / "camera_renders").glob("*.error.json")):
+                present.append(pattern)
+        elif pattern.endswith("/**"):
+            root = run_dir / pattern[:-3]
+            if root.is_dir() and any(root.rglob("*")):
+                present.append(pattern)
+        elif (run_dir / pattern).is_file():
+            present.append(pattern)
+    return present
+
+
+def upload_folder(
+    api: HfApi,
+    *,
+    folder_path: Path,
+    path_in_repo: str,
+    repo_id: str,
+    allow_patterns: list[str],
+    commit_message: str,
+    dry_run: bool,
+) -> bool:
+    present = present_patterns(folder_path, allow_patterns)
+    if not present:
+        print(f"[skip] nothing to upload: {path_in_repo}")
+        return False
+    print(f"[upload] {path_in_repo}/ {{{', '.join(present)}}}")
+    if dry_run:
+        return True
+    api.upload_folder(
+        folder_path=str(folder_path),
+        path_in_repo=path_in_repo,
+        repo_id=repo_id,
+        repo_type="dataset",
+        allow_patterns=allow_patterns,
+        commit_message=commit_message,
+    )
+    return True
 
 
 def main() -> None:
@@ -61,6 +124,11 @@ def main() -> None:
         action="store_true",
         help="Upload only camera_renders/** (implies --include-camera-renders).",
     )
+    parser.add_argument(
+        "--skip-shared",
+        action="store_true",
+        help="Do not upload sandbox/results/_dual_vqa_shared/.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -76,7 +144,7 @@ def main() -> None:
         runs = [args.results_dir / name for name in args.run]
     else:
         runs = discover_runs(args.results_dir, include_camera_renders=include_renders)
-    if not runs:
+    if not runs and (args.skip_shared or args.camera_renders_only):
         raise SystemExit(f"No matching runs found under {args.results_dir}")
 
     api = HfApi()
@@ -85,40 +153,45 @@ def main() -> None:
         if not run_dir.is_dir():
             raise SystemExit(f"Missing run directory: {run_dir}")
         run_name = run_dir.name
-        present = []
-        for pattern in allow_patterns:
-            if pattern == "camera_renders/*.mp4":
-                if any((run_dir / "camera_renders").glob("*.mp4")):
-                    present.append(pattern)
-            elif pattern == "camera_renders/*.error.json":
-                if any((run_dir / "camera_renders").glob("*.error.json")):
-                    present.append(pattern)
-            elif pattern.endswith("/**"):
-                root = run_dir / pattern[:-3]
-                if root.is_dir() and any(root.rglob("*")):
-                    present.append(pattern)
-            elif (run_dir / pattern).is_file():
-                present.append(pattern)
-        if not present:
-            print(f"[skip] nothing to upload: {run_name}")
-            continue
-        print(f"[upload] {run_name}/ {{{', '.join(present)}}}")
-        if args.dry_run:
-            continue
-        api.upload_folder(
-            folder_path=str(run_dir),
+        ok = upload_folder(
+            api,
+            folder_path=run_dir,
             path_in_repo=run_name,
             repo_id=args.repo_id,
-            repo_type="dataset",
             allow_patterns=allow_patterns,
             commit_message=(
                 f"Upload camera_renders for {run_name}"
                 if args.camera_renders_only
-                else f"Upload Stage-2 eval / vision_sim artifacts for {run_name}"
+                else f"Upload Stage-2 eval / vision_sim / dual_vqa for {run_name}"
             ),
+            dry_run=args.dry_run,
         )
-        uploaded_runs += 1
-    print(f"Done. uploaded_runs={uploaded_runs} dry_run={args.dry_run}")
+        if ok:
+            uploaded_runs += 1
+
+    shared = args.results_dir / SHARED_DIRNAME
+    uploaded_shared = False
+    if (
+        not args.skip_shared
+        and not args.camera_renders_only
+        and shared.is_dir()
+    ):
+        uploaded_shared = upload_folder(
+            api,
+            folder_path=shared,
+            path_in_repo=SHARED_DIRNAME,
+            repo_id=args.repo_id,
+            allow_patterns=SHARED_PATTERNS,
+            commit_message="Upload Dual VQA shared answer banks",
+            dry_run=args.dry_run,
+        )
+
+    if uploaded_runs == 0 and not uploaded_shared:
+        raise SystemExit(f"No matching runs found under {args.results_dir}")
+    print(
+        f"Done. uploaded_runs={uploaded_runs} "
+        f"uploaded_shared={uploaded_shared} dry_run={args.dry_run}"
+    )
 
 
 if __name__ == "__main__":

@@ -2,17 +2,20 @@
 
 This folder contains lightweight evaluation utilities for BVB.
 
-The current evaluation has two levels:
+The current evaluation has three levels:
 
 1. Vision-level V-JEPA similarity: render each submission from the scene camera,
    encode the original video and the render with a frozen V-JEPA 2.1 encoder, and
-   report one paired cosine-similarity score.
-2. Executable unit-test evaluation: load each `.blend` (or trusted `.py`) in
+   report layout / motion / combined cosine similarity.
+2. Vision-level Dual VQA: ask a judge VLM the same VSI-Bench questions on the
+   original video and on each camera render; report retention
+   \(R = P(\text{render correct}\mid\text{original correct})\).
+3. Executable unit-test evaluation: load each `.blend` (or trusted `.py`) in
    Blender, introspect the resulting scene, and run materialized tests.
 
-Code-level unit tests are unchanged and remain the primary deterministic scorer.
-Vision sim writes separate artifacts (`vision_sim.jsonl`, `vision_sim_summary.json`)
-and never overwrites `unit_tests.jsonl` / `summary.json`.
+Code-level unit tests remain the primary deterministic scorer. Vision sim and
+Dual VQA write separate artifacts and never overwrite `unit_tests.jsonl` /
+`summary.json`.
 
 ## Vision-Level Metric (V-JEPA similarity)
 
@@ -82,8 +85,39 @@ python render_blend_video.py \
   --output /tmp/41069025.mp4
 ```
 
-The older VQA retention helper `videoqa_metric.py` is deprecated and kept only
-for reproducing legacy prediction files.
+## Vision-Level Metric (Dual VQA)
+
+Requires an OpenAI-compatible API key for the judge VLM (default
+`gpt-5.4-mini`) and precomputed `camera_renders/`. Shared original-video
+answers (and optional text-only chance floor) live once under
+`sandbox/results/_dual_vqa_shared/`.
+
+```bash
+# Import already-paid pilot logs into official artifacts (no API calls)
+python import_dual_vqa_from_pilot.py --force
+
+# Or score live
+python dual_vqa_metric.py --ensure-originals-only
+python dual_vqa_metric.py --run ../sandbox/results/<run>
+# Batch:
+./run_dual_vqa_batch.sh --all-local
+
+# Sync scored Dual VQA (+ shared banks) to HF
+python ../scripts/sync_eval_results.py --run <run>
+```
+
+Outputs (inside the run directory):
+
+- `dual_vqa.jsonl` — one row per QA with rendered answer + retention flags
+- `dual_vqa_summary.json` — mean retention / rendered accuracy / by type
+
+Shared banks under `sandbox/results/_dual_vqa_shared/`:
+
+- `original_answers.jsonl`
+- `text_only_answers.jsonl` (optional; for chance-corrected variants)
+
+The older offline helper `videoqa_metric.py` is deprecated and kept only for
+reproducing legacy paired-prediction files.
 
 ## Optional: Batch Export Blend Results To BPY
 
