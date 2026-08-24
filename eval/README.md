@@ -432,3 +432,9 @@ All tests are preserved, including tests where `human` fails. Low `human` scores
   first-visible interval is refined frame-by-frame.
 
 This unit-test metric is experimental. It is meant to support the "scene code as a testable artifact" direction. In particular, object matching and unit calibration still need improvement.
+
+## Blind human ranking
+
+Nine ranking questions (3 sources × 3 scenes) in one self-contained HTML.
+Raters order n family-representative reconstructions against the original
+video and return a JSON file. See [`human/README.md`](human/README.md).

@@ -2,7 +2,7 @@
 """DEPRECATED: offline aggregator over legacy Dual VQA prediction JSONL.
 
 The live Dual VQA metric lives in ``dual_vqa_metric.py`` (writes
-``dual_vqa.jsonl`` / ``dual_vqa_summary.json``). Video Similarity uses
+``dual_vqa.jsonl`` / ``dual_vqa_summary.json``). Latent Similarity uses
 ``vjepa_sim_metric.py``. This script is kept only for reproducing older
 prediction files that already store paired original/rendered answers.
 """

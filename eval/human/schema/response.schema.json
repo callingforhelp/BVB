@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BVB ranking response",
+  "type": "object",
+  "required": ["instrument_id", "pack_id", "rater_id", "rankings"],
+  "properties": {
+    "instrument_id": { "const": "bvb-human-rank-v1" },
+    "instrument_version": { "type": "string" },
+    "pack_id": { "type": "string" },
+    "rater_id": { "type": "string" },
+    "completed_utc": { "type": "string" },
+    "rankings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["scene_id", "rank"],
+        "properties": {
+          "scene_id": { "type": "string" },
+          "source": { "type": "string" },
+          "rank": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Candidate codes, best match first."
+          }
+        }
+      }
+    }
+  }
+}

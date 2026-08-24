@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bvb.local/human/pack.schema.json",
+  "title": "BVB human-rating stimulus pack",
+  "type": "object",
+  "required": [
+    "pack_id",
+    "instrument_id",
+    "instrument_version",
+    "language",
+    "items"
+  ],
+  "properties": {
+    "pack_id": { "type": "string" },
+    "wave_id": { "type": "string" },
+    "rater_slot": { "type": ["string", "null"] },
+    "instrument_id": { "const": "bvb-human-v1" },
+    "instrument_version": { "type": "string" },
+    "language": { "enum": ["zh", "en"] },
+    "created_utc": { "type": "string" },
+    "instructions_zh": { "type": "string" },
+    "instructions_en": { "type": "string" },
+    "practice_item_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": [
+        "item_id",
+        "scene_id",
+        "reference_video",
+        "candidate_video",
+        "candidate_code"
+      ],
+      "properties": {
+        "item_id": { "type": "string" },
+        "scene_id": { "type": "string" },
+        "source": { "type": "string" },
+        "reference_video": { "type": "string" },
+        "candidate_video": { "type": "string" },
+        "candidate_code": { "type": "string" },
+        "is_practice": { "type": "boolean" },
+        "is_attention": { "type": "boolean" },
+        "attention_type": {
+          "type": ["string", "null"],
+          "enum": ["cross_scene", null]
+        }
+      }
+    }
+  }
+}

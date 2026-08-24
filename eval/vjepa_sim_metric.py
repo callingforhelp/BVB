@@ -440,13 +440,6 @@ def evaluate_scene(
 
 def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     ok_rows = [row for row in rows if row.get("status") == "ok" and row.get("vision_sim") is not None]
-    scores = [float(row["vision_sim"]) for row in ok_rows]
-    layout_scores = [
-        float(row["layout_sim"]) for row in ok_rows if row.get("layout_sim") is not None
-    ]
-    motion_scores = [
-        float(row["motion_sim"]) for row in ok_rows if row.get("motion_sim") is not None
-    ]
 
     def _mean_std(values: list[float]) -> tuple[float | None, float | None]:
         if not values:
@@ -455,9 +448,25 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         std = float(statistics.pstdev(values)) if len(values) > 1 else 0.0
         return mean, std
 
-    vision_mean, vision_std = _mean_std(scores)
-    layout_mean, layout_std = _mean_std(layout_scores)
-    motion_mean, motion_std = _mean_std(motion_scores)
+    def _filled(key: str) -> list[float]:
+        # A scene that never scored counts as 0 rather than dropping out of the
+        # mean: otherwise a submission that fails to render is rewarded for it.
+        return [
+            float(row[key])
+            if row.get("status") == "ok" and row.get(key) is not None
+            else 0.0
+            for row in rows
+        ]
+
+    def _scored(key: str) -> list[float]:
+        return [float(row[key]) for row in ok_rows if row.get(key) is not None]
+
+    vision_mean, vision_std = _mean_std(_filled("vision_sim"))
+    layout_mean, layout_std = _mean_std(_filled("layout_sim"))
+    motion_mean, motion_std = _mean_std(_filled("motion_sim"))
+    scored_vision, _ = _mean_std(_scored("vision_sim"))
+    scored_layout, _ = _mean_std(_scored("layout_sim"))
+    scored_motion, _ = _mean_std(_scored("motion_sim"))
     return {
         "num_scenes": len(rows),
         "num_ok": len(ok_rows),
@@ -468,6 +477,11 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "layout_sim_std": layout_std,
         "motion_sim": motion_mean,
         "motion_sim_std": motion_std,
+        "scored_only": {
+            "vision_sim": scored_vision,
+            "layout_sim": scored_layout,
+            "motion_sim": scored_motion,
+        },
         "by_status": {
             status: sum(row.get("status") == status for row in rows)
             for status in sorted({str(row.get("status")) for row in rows})
