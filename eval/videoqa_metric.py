@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Compute vision-level BVB metrics from VQA prediction files.
+"""DEPRECATED: offline aggregator over legacy Dual VQA prediction JSONL.
+
+The live Dual VQA metric lives in ``dual_vqa_metric.py`` (writes
+``dual_vqa.jsonl`` / ``dual_vqa_summary.json``). Latent Similarity uses
+``vjepa_sim_metric.py``. This script is kept only for reproducing older
+prediction files that already store paired original/rendered answers.
+"""
 
 Expected prediction JSONL fields:
   - id or qa_id: QA id matching metadata

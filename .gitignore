@@ -10,4 +10,14 @@ __pycache__/
 eval/results/
 misc
 misc/
+sandbox/.venv/
+.venv-vjepa/
+sandbox/results/
+sandbox/eval_plots/
+sandbox/log/
+.conda/
+.tmp
+.vscode/
+
+
 

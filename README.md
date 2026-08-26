@@ -1,9 +1,9 @@
-# BVB: Blender-VideoBench
+# BVB: Benchmarking Video Agents with Programmatic Reconstruction
 <p align="center">
   <img src="assets/bvb-logo.png" alt="BVB Logo" width="240">
 </p>
 
-**BVB (Blender-VideoBench)** is a benchmark for evaluating fine-grained video understanding through programmatic reconstruction. Instead of relying solely on QA accuracy, which is a necessary but insufficient measure of understanding, BVB asks an agent to generate Blender Python code that reconstructs the scene and events depicted in a video — both its spatial layout and temporal dynamics. Because code is precise, structured, executable, and verifiable, a successful reconstruction provides a *computational proof* of understanding.
+**BVB** is a benchmark for evaluating fine-grained video understanding through programmatic reconstruction. Instead of relying solely on QA accuracy, which is a necessary but insufficient measure of understanding, BVB asks an agent to generate executable code that reconstructs the content and events depicted in a video — both its spatial layout and temporal dynamics. Because code is precise, structured, executable, and verifiable, a successful reconstruction provides a *computational proof* of understanding.
 
 This repository hosts the dataset and refinement tooling for BVB.
 
@@ -19,7 +19,7 @@ Existing video LLMs are typically evaluated on multiple choice or open ended QA.
 - **Language** is descriptive but ambiguous.
 - **Code** is precise, structured, executable, and *verifiable*.
 
-If an agent can write Blender Python that, when executed, produces a scene matching the original video on the relevant geometric and spatial properties, that is much stronger evidence of understanding than picking option (C) on a multiple choice question.
+If an agent can write a program that, when executed, reconstructs the video's content on the relevant spatial and temporal properties, that is much stronger evidence of understanding than picking option (C) on a multiple choice question.
 
 ## Pipeline
 
@@ -27,16 +27,16 @@ If an agent can write Blender Python that, when executed, produces a scene match
 
 The benchmark supports two complementary uses:
 
-1. **Evaluation** *(near-term focus)*: measure how well scene reconstruction agents (e.g., BlenderMCP-style systems and future methods) reconstruct scenes from video.
+1. **Evaluation** *(near-term focus)*: measure how well video agents reconstruct video content as executable programs (e.g., BlenderMCP-style systems and future methods).
 2. **Enhancement** *(medium-term direction)*: use code execution feedback (executes? renders correctly? preserves QA-relevant info?) as a reward signal for RL training (e.g., GRPO).
 
-## Why Blender?
+## Execution backend
 
-Blender is a universal 3D playground covering modeling, animation, rendering, and simulation, with a full Python API and a permissive open source license. It has a high learning curve for humans, which is precisely what makes agent mastery of it valuable.
+We use Blender as the default execution and rendering backend: it provides modeling, animation, rendering, and simulation through a full Python API under a permissive open source license. The benchmark target is programmatic reconstruction of video content, not Blender expertise per se.
 
 ## Data
 
-The source videos come from **VSI-Bench** ([Visual Spatial Intelligence Benchmark](https://vision-x-nyu.github.io/thinking-in-space.github.io/)), real indoor 3D scenes from ArkitScenes, ScanNet, and ScanNet++ with spatial reasoning QA pairs. VSI-Bench is not committed to this repo and should be cloned locally.
+The source videos come from **VSI-Bench** ([Visual Spatial Intelligence Benchmark](https://vision-x-nyu.github.io/thinking-in-space.github.io/)), real indoor videos from ArkitScenes, ScanNet, and ScanNet++ with spatial reasoning QA pairs. VSI-Bench is not committed to this repo and should be cloned locally.
 
 Each finished BVB data point is a tuple of:
 
@@ -59,21 +59,71 @@ External asset libraries (PolyHaven, Sketchfab, etc.) are **disallowed** for ben
 
 **Paired Modality Editing (PME)** applies parallel edits to the video (via video to video editing / inpainting) and the Blender scene (via keyframe animation) to produce event aligned pairs that test dynamic and temporal understanding without cross modal generation artifacts.
 
+## Baseline Results
+
+Large Stage-1 agent artifacts are not committed to GitHub. They are stored in the
+private Hugging Face dataset repo `yunlong10/BVB-results`, whose root mirrors
+`sandbox/results/`.
+
+To restore all previously generated runs on a new machine:
+
+```bash
+pip install -U huggingface_hub hf_transfer
+hf auth login
+HF_HUB_ENABLE_HF_TRANSFER=1 python scripts/download_results.py
+```
+
+To download only selected runs:
+
+```bash
+HF_HUB_ENABLE_HF_TRANSFER=1 python scripts/download_results.py \
+  --run mini-harness-gpt-5.6-sol-reasoning-high-run01
+```
+
+After restoration, `sandbox/run_model.sh --resume` will see the downloaded
+`blends/*.blend` files and skip completed scenes.
+
 ## Evaluation
 
-The vision-level evaluation runs the same question through a frozen VLM on both the original and the agent-reconstructed video, then crosses the two outcomes into a 2x2 contingency table from which retention and hallucination rates are computed.
-
-![BVB vision-level evaluation pipeline](assets/metrics.png)
-
-BVB uses dual level evaluation:
+BVB uses dual-level evaluation:
 
 | Level | Metric | What it measures |
 |------|--------|-------------------|
-| Vision | **Retention rate** = `#(orig ✓ ∧ rendered ✓) / #(orig ✓)` | How much correct info the reconstruction preserves |
-| Vision | **Hallucination rate** = `#(orig ✗ ∧ rendered ✓) / #(orig ✗)` | How much incorrect info the reconstruction introduces |
-| Vision | **Δ accuracy** | Difference between QA accuracy on original vs. rendered video |
-| Code | **Unit-test pass rate** | Whether a submission's exported scene program passes materialized scene tests |
+| Vision | **Vision sim** (V-JEPA) | Paired cosine similarity between the original video and a camera-view render of the submission |
+| Code | **Unit-test pass rate** | Whether a submission's scene passes materialized spatial/temporal tests |
 | Code | **Executability / validity tests** | Basic checks such as parse success, non-empty scene, camera, and light |
+
+The vision metric renders each Stage-1 `.blend` from its scene camera, encodes both the original VSI-Bench clip and the render with a frozen **V-JEPA 2.1 ViT-G** encoder, and reports one similarity score (mean of layout and motion cosine sims). Intermediate renders and features are deleted after scoring. See [`eval/README.md`](eval/README.md).
+
+The executable code-level evaluator reads Stage-1 `.blend` artifacts directly. Blender extracts geometry and camera evidence, a small judge model grounds semantic object names, and deterministic code computes every pass/fail result.
+
+Minimal code-level example:
+
+```bash
+export OPENAI_API_KEY="..."
+python eval/unit_test_metric.py \
+  --run sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
+  --mode execute \
+  --model gpt-5.4-mini \
+  --limit 10
+```
+
+Minimal vision-sim example (GPU Linux; does not touch `summary.json`).
+Prefer pre-rendering on Mac then syncing `camera_renders/` — see [`eval/VJEPA_SIM_HANDOFF.md`](eval/VJEPA_SIM_HANDOFF.md):
+
+```bash
+# Mac: render 64 sparse camera frames per scene
+python eval/batch_render_camera.py --run sandbox/results/<run> --resume
+python scripts/sync_eval_results.py --run <run> --camera-renders-only
+
+# Cluster: download + encode
+HF_HUB_ENABLE_HF_TRANSFER=1 python scripts/download_results.py --run <run>
+pip install -r eval/requirements-vjepa.txt
+python eval/vjepa_sim_metric.py \
+  --run sandbox/results/<run> \
+  --vsi-bench VSI-Bench \
+  --device cuda
+```
 
 ## Benchmark comparison
 
@@ -88,10 +138,10 @@ BVB uses dual level evaluation:
 |---|---|---:|:---:|:---:|:---:|:---:|---:|
 | BlenderBench | Blender inverse-graphics tasks | 30 tasks | ✅ | ✅ | ✅ | ❌ | 01/26 |
 | Code-as-Room | Top-down image to Blender room | 41 scenes | ✅ | ✅ | ✅ | ❌ | 05/26 |
-| EZBlender | Efficient natural-language 3D editing | 85 episodes across five dimensions | ✅ | ✅ | ✅ | ❌ | 01/26 |
+| EZBlender | Efficient natural-language graphics editing | 85 episodes across five dimensions | ✅ | ✅ | ✅ | ❌ | 01/26 |
 | VisPhyWorld / VisPhyBench | Video-to-simulator reconstruction | 209 videos from 108 physical templates | ✅ | ✅ | ❌ | ✅ | 02/26 |
 | BlenderGym | Start-to-goal Blender editing | 245 start-goal scene pairs | ✅ | ✅ | ✅ | ❌ | 04/25 |
-| **BVB (ours)** | **Video-to-Blender reconstruction** | **300-500 planned scene/video samples** | **✅** | **✅** | **✅** | **✅** | **---** |
+| **BVB (ours)** | **Video programmatic reconstruction** | **300-500 planned video samples** | **✅** | **✅** | **✅** | **✅** | **---** |
 
 ## Contributing scene refinements
 
@@ -101,7 +151,7 @@ When using Cursor for scene reconstruction or refinement, this repo includes a p
 
 ## Status
 
-Active development. About 450 VSI-Bench scenes are currently tracked, with Blender reconstructions in progress. Dataset, evaluation framework, and baseline numbers for reconstruction agents are targeted for release alongside the BVB paper.
+Active development. About 450 VSI-Bench videos are currently tracked, with programmatic reconstructions in progress. Dataset, evaluation framework, and baseline numbers for video agents are targeted for release alongside the BVB paper.
 
 ## License
 

@@ -5,7 +5,9 @@ from __future__ import annotations
 import ast
 import json
 import math
+import random
 import re
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -34,6 +36,16 @@ class SceneGroup:
     bbox_min: tuple[float, float, float] | None
     bbox_max: tuple[float, float, float] | None
     object_names: list[str] = field(default_factory=list)
+    footprint_area: float | None = None
+    dimensions: tuple[float, float, float] | None = None
+
+
+@dataclass
+class ChatCompletionResult:
+    content: str
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    finish_reason: str | None = None
 
 
 @dataclass
@@ -318,7 +330,33 @@ def call_chat_completion(
     system_prompt: str,
     user_prompt: str,
     temperature: float | None,
+    max_completion_tokens: int | None = None,
+    reasoning_effort: str | None = None,
 ) -> str:
+    return call_chat_completion_with_usage(
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        temperature=temperature,
+        max_completion_tokens=max_completion_tokens,
+        reasoning_effort=reasoning_effort,
+    ).content
+
+
+def call_chat_completion_with_usage(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+    system_prompt: str,
+    user_prompt: str,
+    temperature: float | None,
+    max_completion_tokens: int | None = None,
+    reasoning_effort: str | None = None,
+    max_retries: int = 4,
+) -> ChatCompletionResult:
     url = base_url.rstrip("/") + "/chat/completions"
     payload = {
         "model": model,
@@ -330,6 +368,10 @@ def call_chat_completion(
     }
     if temperature is not None:
         payload["temperature"] = temperature
+    if max_completion_tokens is not None:
+        payload["max_completion_tokens"] = max_completion_tokens
+    if reasoning_effort is not None:
+        payload["reasoning_effort"] = reasoning_effort
     request = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
@@ -339,11 +381,36 @@ def call_chat_completion(
         },
         method="POST",
     )
-    try:
-        with urllib.request.urlopen(request, timeout=120) as response:
-            data = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"Judge API request failed: {exc.code} {body}") from exc
+    retryable_codes = {408, 409, 429, 500, 502, 503, 504}
+    for attempt in range(max_retries + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response:
+                data = json.loads(response.read().decode("utf-8"))
+            choice = data["choices"][0]
+            content = choice["message"]["content"]
+            if not isinstance(content, str):
+                raise TypeError("message.content is not a string")
+            break
+        except urllib.error.HTTPError as exc:
+            if exc.code not in retryable_codes or attempt >= max_retries:
+                body = exc.read().decode("utf-8", errors="replace")
+                raise RuntimeError(f"Judge API request failed: {exc.code} {body}") from exc
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+            delay = float(retry_after) if retry_after else min(30.0, 2**attempt + random.random())
+            time.sleep(max(0.0, delay))
+        except (urllib.error.URLError, TimeoutError) as exc:
+            if attempt >= max_retries:
+                raise RuntimeError(f"Judge API request failed after retries: {exc}") from exc
+            time.sleep(min(30.0, 2**attempt + random.random()))
+        except (json.JSONDecodeError, KeyError, IndexError, TypeError) as exc:
+            if attempt >= max_retries:
+                raise RuntimeError(f"Malformed judge API response after retries: {exc}") from exc
+            time.sleep(min(30.0, 2**attempt + random.random()))
 
-    return data["choices"][0]["message"]["content"]
+    usage = data.get("usage") or {}
+    return ChatCompletionResult(
+        content=content,
+        prompt_tokens=int(usage.get("prompt_tokens") or 0),
+        completion_tokens=int(usage.get("completion_tokens") or 0),
+        finish_reason=choice.get("finish_reason"),
+    )
