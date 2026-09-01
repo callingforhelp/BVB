@@ -10,8 +10,6 @@
 
 <p align="center">
   <a href="https://yoloytang.me/BVB/"><img src="https://img.shields.io/badge/Project-Page-8B5CF6" alt="Project page"></a>
-  <a href="https://yoloytang.me/BVB/paper.pdf"><img src="https://img.shields.io/badge/Paper-PDF-D55E00" alt="Paper PDF"></a>
-  <a href="https://discord.gg/n86Zycpz"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-0F766E" alt="MIT License"></a>
 </p>
 
@@ -188,9 +186,6 @@ Reference-scene refinement is still active. Please read
 Cursor users can also follow the repository's BVB scene-builder skill at
 `.cursor/skills/bvb-scene-builder/SKILL.md`.
 
-## Paper and license
-
-Read the [BVB paper](https://yoloytang.me/BVB/paper.pdf) for the complete
-benchmark definition, 43-configuration study, analysis, and human validation.
+## License
 
 BVB is released under the [MIT License](LICENSE).
