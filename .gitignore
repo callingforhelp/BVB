@@ -30,3 +30,6 @@ texput.log
 .env.*
 !.env.example
 .staticrypt.json
+
+# Local recoverable archives (not published)
+/_archive/

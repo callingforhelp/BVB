@@ -35,11 +35,9 @@ Inside the container, `blender_run --python script.py` wraps
 `xvfb-run -a blender --background`.
 
 Prepare the source videos as `../VSI-Bench/<dataset>/<scene>.mp4`; see the
-[repository README](../README.md#1-prepare-the-source-videos). The existing
-task loader uses `../eval/unit_tests.jsonl` to enumerate scenes and joins them
-with `../eval/test.jsonl`. It does not expose the test questions or their
-answers to the agent. This enumeration dependency does not make Scene Test
-part of the current evaluation score.
+[repository README](../README.md#1-prepare-the-source-videos). The task loader
+enumerates the 288 scenes directly from `../eval/test.jsonl`, using scene IDs
+and dataset names. It does not expose questions or answers to the agent.
 
 ## 2. Reconstruct videos
 
@@ -100,9 +98,6 @@ Continue with the [evaluation guide](../eval/README.md) for:
 - **LS:** frozen V-JEPA 2.1 ViT-G features of 64 sampled frames, measuring
   layout and motion.
 - **Overall:** `((sqrt(DV) + sqrt(LS)) / 2) ** 2` on the 0–100 scale.
-
-The older code-level evaluator remains available in the
-[experimental Scene Test guide](../eval/LEGACY_SCENE_TESTS.md).
 
 ## The model decides effort
 

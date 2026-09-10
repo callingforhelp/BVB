@@ -17,6 +17,10 @@ from huggingface_hub import snapshot_download
 
 DEFAULT_REPO_ID = "yunlong10/BVB-results"
 DEFAULT_LOCAL_DIR = Path("sandbox/results")
+RETIRED_PATTERNS = [
+    "*/unit_tests*.jsonl", "*/summary.json", "*/summary_*.json",
+    "*/summary.shard-*.json", "*/introspection-cache*/**",
+]
 
 
 def main() -> None:
@@ -38,6 +42,7 @@ def main() -> None:
         repo_type="dataset",
         local_dir=str(args.local_dir),
         allow_patterns=allow_patterns,
+        ignore_patterns=RETIRED_PATTERNS,
     )
 
 

@@ -94,10 +94,10 @@ After finishing a scene:
    object relations and camera motion against the source video.
 4. Check for missing external assets so the saved scene opens on another machine.
 
-Keep the native scene as the authoritative artifact. The historical scripts
-in `bpy/` and the optional exporter in `addons/` are retained for older workflows;
-current reconstruction, camera rendering, Dual VQA, and Latent Similarity do
-not require those exports.
+Keep the native scene as the authoritative artifact. Earlier Python exports
+are available in Git history or a local `_archive/` copy. The optional exporter
+in `addons/` remains available for older workflows; current reconstruction,
+camera rendering, Dual VQA, and Latent Similarity do not require those exports.
 
 ## 7. Save and Push
 

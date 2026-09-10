@@ -3,7 +3,7 @@
 
 Does not invent numbers. Unblinds with BLIND_MAP.json and writes mean rank,
 pairwise wins, and optional Spearman vs Dual VQA, Latent Similarity, and
-their two-axis Overall. Scene Test is retained as a legacy diagnostic only.
+their two-axis Overall.
 """
 from __future__ import annotations
 
@@ -88,34 +88,6 @@ def spearman(xs: list[float], ys: list[float]) -> float | None:
     return pearson(ranks(xs), ranks(ys))
 
 
-def scene_basic_bundle(tests: list[dict]) -> dict | None:
-    basic = [t for t in tests if t.get("test_type") == "basic_validity"]
-    if not basic:
-        return None
-    evaluated = [t for t in basic if t.get("status") in {"pass", "fail"}]
-    if not evaluated:
-        return {"evaluated": False, "passed": False}
-    return {
-        "evaluated": True,
-        "passed": all(t.get("status") == "pass" for t in evaluated),
-    }
-
-
-def scene_test_rate(tests: list[dict]) -> float | None:
-    non_basic = [t for t in tests if t.get("test_type") != "basic_validity"]
-    ev = [t for t in non_basic if t.get("status") in {"pass", "fail"}]
-    passed = sum(1 for t in ev if t["status"] == "pass")
-    n = len(ev)
-    bundle = scene_basic_bundle(tests)
-    if bundle and bundle["evaluated"]:
-        n += 1
-        if bundle["passed"]:
-            passed += 1
-    if n == 0:
-        return None
-    return passed / n
-
-
 def dual_vqa_retention(records: list[dict]) -> float | None:
     orig_ok = [r for r in records if r.get("original_correct") is True]
     if not orig_ok:
@@ -142,16 +114,6 @@ def auto_scores(blind: dict, scenes: list[str]) -> dict[tuple[str, str], dict]:
         run, label = model.get("run"), model.get("label")
         if not run or not label:
             continue
-        tests_by: dict[str, list] = defaultdict(list)
-        for rec in _iter_jsonl(RESULTS / run / "unit_tests.jsonl"):
-            scene = scene_key_from_record(rec)
-            if not scene:
-                continue
-            nested = rec.get("unit_tests")
-            if nested:
-                tests_by[scene].extend(nested)
-            elif rec.get("test_type"):
-                tests_by[scene].append(rec)
         dual_by = defaultdict(list)
         for rec in _iter_jsonl(RESULTS / run / "dual_vqa.jsonl"):
             scene = str(rec.get("scene_name") or scene_key_from_record(rec) or "")
@@ -163,7 +125,6 @@ def auto_scores(blind: dict, scenes: list[str]) -> dict[tuple[str, str], dict]:
             if scene:
                 vis[scene] = rec.get("vision_sim")
         for scene in scenes:
-            st = scene_test_rate(tests_by.get(scene, []))
             orig_ok = dual_by.get(scene, [])
             retention = dual_vqa_retention(orig_ok)
             ls = vis.get(scene)
@@ -175,7 +136,6 @@ def auto_scores(blind: dict, scenes: list[str]) -> dict[tuple[str, str], dict]:
                 ) / 2.0
                 overall = mean_root**2
             out[(scene, label)] = {
-                "scene_test": st,
                 "dual_vqa": retention,
                 "vision_sim": ls,
                 "overall": overall,
@@ -259,7 +219,7 @@ def main() -> None:
 
     auto = auto_scores(blind, sorted(scenes))
     cal_rows = []
-    h_over, st, dual, vis, ovr = [], [], [], [], []
+    dual, vis, ovr = [], [], []
     for (scene, label), ranks_ in sorted(scene_rank.items()):
         human = mean(ranks_)
         auto_row = auto.get((scene, label), {})
@@ -273,9 +233,6 @@ def main() -> None:
             continue
         # Lower rank is better; flip for correlation with accuracy-like scores.
         score = -human
-        if auto_row.get("scene_test") is not None:
-            h_over.append(score)
-            st.append(float(auto_row["scene_test"]))
         if auto_row.get("dual_vqa") is not None:
             dual.append((score, float(auto_row["dual_vqa"])))
         if auto_row.get("vision_sim") is not None:
@@ -285,7 +242,7 @@ def main() -> None:
     write_csv(
         out_dir / "human_by_scene_model.csv",
         cal_rows,
-        ["scene_id", "model", "human_mean_rank", "scene_test", "dual_vqa", "vision_sim", "overall"],
+        ["scene_id", "model", "human_mean_rank", "dual_vqa", "vision_sim", "overall"],
     )
 
     corr_rows = []
@@ -304,7 +261,6 @@ def main() -> None:
         corr_rows.append(row)
         return row
 
-    st_row = corr_report("scene_test", [(x, y) for x, y in zip(h_over, st)])
     dual_row = corr_report("dual_vqa", dual)
     vis_row = corr_report("latent_sim", vis)
     ovr_row = corr_report("overall", ovr)
@@ -318,7 +274,6 @@ def main() -> None:
         "n_scenes": len(scenes),
         "n_models": len(models),
         "mean_rank": {r["model"]: r["mean_rank"] for r in by_model},
-        "spearman_neg_rank_vs_scene_test": None if not st_row else st_row["spearman_rho"],
         "spearman_neg_rank_vs_dual_vqa": None if not dual_row else dual_row["spearman_rho"],
         "spearman_neg_rank_vs_vision_sim": None if not vis_row else vis_row["spearman_rho"],
         "spearman_neg_rank_vs_overall": None if not ovr_row else ovr_row["spearman_rho"],

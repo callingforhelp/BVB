@@ -28,6 +28,7 @@ TEST_JSONL = REPO / "eval" / "test.jsonl"
 VSI_BENCH = REPO / "VSI-Bench"
 INSTRUMENT_ID = "bvb-human-rank-v1"
 INSTRUMENT_VERSION = "1.0"
+SAMPLING_POLICY = "source_balanced_random_v1"
 SOURCE_ORDER = ["arkitscenes", "scannet", "scannetpp"]
 
 DEFAULT_MODELS = [
@@ -101,62 +102,6 @@ def render_path(run_name: str, scene: str) -> Path:
 
 def video_ok(path: Path) -> bool:
     return path.is_file() and path.stat().st_size > 0
-
-
-def scene_basic_bundle(tests: list[dict]) -> dict | None:
-    basic = [t for t in tests if t.get("test_type") == "basic_validity"]
-    if not basic:
-        return None
-    evaluated = [t for t in basic if t.get("status") in {"pass", "fail"}]
-    if not evaluated:
-        return {"evaluated": False, "passed": False}
-    return {
-        "evaluated": True,
-        "passed": all(t.get("status") == "pass" for t in evaluated),
-    }
-
-
-def scene_test_rate(tests: list[dict]) -> float | None:
-    non_basic = [t for t in tests if t.get("test_type") != "basic_validity"]
-    ev = [t for t in non_basic if t.get("status") in {"pass", "fail"}]
-    passed = sum(1 for t in ev if t["status"] == "pass")
-    n = len(ev)
-    bundle = scene_basic_bundle(tests)
-    if bundle and bundle["evaluated"]:
-        n += 1
-        if bundle["passed"]:
-            passed += 1
-    if n == 0:
-        return None
-    return passed / n
-
-
-def mean_scene_test(scene: str, run_names: list[str]) -> float | None:
-    rates = []
-    for run in run_names:
-        path = RESULTS / run / "unit_tests.jsonl"
-        tests = [t for t in _iter_jsonl(path) if str(t.get("id") or t.get("scene_name")) == scene]
-        if not tests:
-            continue
-        rate = scene_test_rate(tests)
-        if rate is not None:
-            rates.append(rate)
-    if not rates:
-        return None
-    return sum(rates) / len(rates)
-
-
-def tertile(values: list[float], value: float) -> int:
-    ordered = sorted(values)
-    if not ordered:
-        return 1
-    lo = ordered[max(0, len(ordered) // 3 - 1)]
-    hi = ordered[max(0, (2 * len(ordered)) // 3 - 1)]
-    if value <= lo:
-        return 0
-    if value <= hi:
-        return 1
-    return 2
 
 
 def parse_models(raw: list[str] | None) -> list[tuple[str, str]]:
@@ -296,35 +241,20 @@ def sample_scenes(
         return picked
 
     run_names = [m[0] for m in models]
-    need = len(models)
-    by_source: dict[str, list[tuple[str, float | None]]] = defaultdict(list)
-    for scene, source in sources.items():
+    by_source: dict[str, list[str]] = defaultdict(list)
+    for scene, source in sorted(sources.items()):
         if locate_reference(scene, source) is None:
             continue
-        if sum(1 for run, _ in models if video_ok(render_path(run, scene))) < need:
+        if not all(video_ok(render_path(run, scene)) for run in run_names):
             continue
-        by_source[source].append((scene, mean_scene_test(scene, run_names)))
+        by_source[source].append(scene)
     picked = []
     for source in SOURCE_ORDER:
         pool = list(by_source.get(source, []))
         if len(pool) < per_source:
             print(f"[warn] only {len(pool)} eligible scenes for {source}")
-        scores = [row[1] for row in pool if row[1] is not None]
-        buckets: dict[int, list[tuple[str, float | None]]] = defaultdict(list)
-        for row in pool:
-            bucket = tertile(scores, row[1]) if row[1] is not None and scores else 1
-            buckets[bucket].append(row)
-        take: list[str] = []
-        for bucket in range(3):
-            candidates = buckets.get(bucket, [])
-            rng.shuffle(candidates)
-            if candidates and len(take) < per_source:
-                take.append(candidates[0][0])
-        if len(take) < per_source:
-            leftover = [row[0] for row in pool if row[0] not in take]
-            rng.shuffle(leftover)
-            take.extend(leftover[: per_source - len(take)])
-        picked.extend(take[:per_source])
+        rng.shuffle(pool)
+        picked.extend(pool[:per_source])
     return picked
 
 
@@ -457,6 +387,7 @@ def build(args: argparse.Namespace) -> None:
     elif args.scenes:
         scene_ids = args.scenes
 
+    sampling_policy = "explicit_scene_ids" if scene_ids else SAMPLING_POLICY
     pool_scenes = sample_scenes(rng, sources, models, pool_per, scene_ids)
     if len(pool_scenes) < 3:
         raise SystemExit("Not enough scenes with original + all model renders.")
@@ -548,13 +479,18 @@ def build(args: argparse.Namespace) -> None:
             "instrument_id": INSTRUMENT_ID,
             "instrument_version": INSTRUMENT_VERSION,
             "created_utc": created,
+            "sampling_policy": sampling_policy,
+            "seed": args.seed,
             "models": [{"run": run, "label": label} for run, label in models],
             "pool_size": len(pool_scenes),
             "scenes": blind,
             "warning": "Experimenter only. Do not send this file or _clips_cache.",
         },
     )
-    write_json(out / "assignments.json", {"wave_id": wave_id, "assignments": assignments})
+    write_json(out / "assignments.json", {
+        "wave_id": wave_id, "sampling_policy": sampling_policy,
+        "seed": args.seed, "assignments": assignments,
+    })
     (out / "pool_scene_ids.txt").write_text("\n".join(pool_scenes) + "\n", encoding="utf-8")
 
     if multi:

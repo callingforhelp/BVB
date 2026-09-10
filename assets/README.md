@@ -17,6 +17,6 @@ square-root mean. See [the evaluation guide](../eval/README.md) for definitions
 and coverage requirements, and the [interactive leaderboard](https://yoloytang.me/BVB/#leaderboard)
 for filtering and plots.
 
-`bvb-teaser-frontier.png`, `bvb-diagnostics.png`, `teaser.png`, and `metrics.png`
-are older assets retained for historical references. They are not the current
-leaderboard or metric specification.
+Earlier teaser, diagnostics, metrics, and curation illustrations have been
+retired from the active directory. They remain available in Git history or a
+local `_archive/` copy. Use the figures listed above for current results.

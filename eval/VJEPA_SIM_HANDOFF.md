@@ -3,7 +3,7 @@
 LS is one of the two current BVB axes, alongside Dual VQA. It averages layout
 and motion similarity from a frozen V-JEPA 2.1 ViT-G encoder. See the
 [evaluation guide](README.md) for the score definition, coverage requirements,
-and two-axis Overall. Scene Test is a legacy diagnostic.
+and two-axis Overall.
 
 Run all commands below from the repository root. Use a separate evaluation
 environment for [the GPU dependencies](requirements-vjepa.txt); the Stage-1
@@ -106,7 +106,7 @@ results. A full benchmark run covers all 288 scenes, including failure rows.
   `--no-keep-renders` uses temporary frames and disables reuse of that cache;
   it does not remove previously cached camera MP4s.
 - Encoder features are not saved. Evaluation writes separate metric files and
-  does not edit Stage-1 blends or legacy Scene Test outputs.
+  does not edit Stage-1 blends.
 
 Resume only within the same encoder, sampling, and rendering protocol. See
 [README.md](README.md#4-check-coverage-and-compute-overall) before combining LS

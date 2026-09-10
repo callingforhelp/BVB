@@ -10,7 +10,7 @@ For each Stage-1 run with ``camera_renders/<scene>.mp4``:
 3. Score with ``dual_vqa_scoring.semantic_correct``.
 4. Write ``dual_vqa.jsonl`` + ``dual_vqa_summary.json`` into the run directory.
 
-Does not modify ``unit_tests.jsonl`` / ``summary.json`` / ``vision_sim_*``.
+Writes separate Dual VQA files and leaves Latent Similarity outputs unchanged.
 
 Requires ``OPENAI_API_KEY`` (or ``--api-key``). Optional dotenv:
 ``misc/videoqa_pilot/.env`` or ``eval/.env``.

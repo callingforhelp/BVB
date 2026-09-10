@@ -7,7 +7,6 @@ For each Stage-1 ``.blend`` submission:
   3. Compute layout / motion / combined similarity scores.
   4. Never write features to disk; use ``--no-keep-renders`` to skip caching.
 
-Does not modify code-level unit-test outputs (``unit_tests.jsonl`` / ``summary.json``).
 Writes ``vision_sim.jsonl`` + ``vision_sim_summary.json`` into the run directory
 (per-scene rows include ``layout_sim``, ``motion_sim``, and ``vision_sim``).
 

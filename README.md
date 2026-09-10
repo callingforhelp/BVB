@@ -83,9 +83,7 @@ $$
 $$
 
 More uneven performance receives a larger penalty. Failed reconstructions
-remain in the evaluation pool and score zero on both axes. The earlier
-experimental Scene Test is retained for diagnostics and is not part of the
-current Overall score.
+remain in the evaluation pool and score zero on both axes.
 
 ## What current agents reveal
 
@@ -187,9 +185,11 @@ HF_HUB_ENABLE_HF_TRANSFER=1 python scripts/download_results.py \
 - [`sandbox/`](sandbox/README.md): Stage-1 agent harness and Blender Docker sandbox.
 - [`eval/`](eval/README.md): Dual VQA and V-JEPA evaluation.
 - [`blend/`](blend/): human-refined Blender reference scenes.
-- [`bpy/`](bpy/README.md): historical Python exports, unused by the current benchmark pipeline.
 - [`addons/`](addons/README.md): optional Blender-to-Python exporter for legacy workflows.
 - [`refinement_guidance.md`](refinement_guidance.md): scene-refinement workflow.
+
+Historical Python exports and retired illustrations remain available in Git
+history. Local archival copies under `_archive/` are excluded from Git.
 
 ## Contributing
 

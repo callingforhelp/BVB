@@ -8,9 +8,8 @@ The current BVB protocol evaluates reconstructions along **two axes**:
 | **Latent Similarity (LS)** | Mean layout and motion similarity from frozen V-JEPA 2.1 features | `vision_sim_summary.json` |
 
 **Overall** is `((sqrt(DV) + sqrt(LS)) / 2) ** 2`, with both scores on a
-0–100 scale. The earlier code-level Scene Test is an experimental diagnostic;
-it is not part of the current Overall score. Its complete instructions are
-retained in [LEGACY_SCENE_TESTS.md](LEGACY_SCENE_TESTS.md).
+0–100 scale. Both axes evaluate the rendered reconstruction against the source
+video, independently of the reconstruction agent.
 
 All commands below start from the **repository root**. The paper evaluates
 288 scenes and 5,130 questions from [`test.jsonl`](test.jsonl), using the same
@@ -77,7 +76,8 @@ The reported overall DV is pooled over questions rather than an unweighted
 mean of scene percentages.
 
 `--text-only` optionally builds a chance-floor bank; the current leaderboard
-uses retention directly. `videoqa_metric.py` is a legacy offline helper.
+uses retention directly. The deprecated offline prediction aggregator has
+been retired to Git history and local archives.
 `import_dual_vqa_from_pilot.py` is only for migrating existing pilot logs and
 is not a required setup step for a fresh checkout.
 

@@ -8,8 +8,7 @@ import json
 import re
 from pathlib import Path
 
-from eval_utils import read_jsonl
-from vjepa_sim_metric import summarize
+from vjepa_sim_metric import read_jsonl, summarize
 
 _SHARD_JSONL_RE = re.compile(r"^vision_sim\.shard-(\d+)-of-(\d+)\.jsonl$")
 

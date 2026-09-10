@@ -2,7 +2,7 @@
 """Batch-render scene-camera videos for Stage-1 runs (CPU / Blender only).
 
 Writes ``<run>/camera_renders/<scene_id>.mp4`` (64 sparse frames by default).
-Does not modify ``blends/``, ``summary.json``, or ``unit_tests.jsonl``.
+Does not modify the submitted ``blends/`` files.
 
 Mac → HF → cluster workflow::
 

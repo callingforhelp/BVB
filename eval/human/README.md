@@ -8,6 +8,10 @@
 Claude Opus 4.6 high 和 Qwen3.5-397B-A17B high。Astra 和 Opus 5 未参加该轮盲评。
 具体设计见 [PROTOCOL.md](PROTOCOL.md)。以下命令均从仓库根目录运行。
 
+新问卷在每个数据来源内按固定种子随机抽样，不读取任何模型评分。
+抽样策略和种子记录在 `BLIND_MAP.json` 与 `assignments.json` 中。
+已有研究的场景分配以保存的问卷为准，不会因重新使用原种子而自动重现。
+
 ## 生成问卷
 
 需要 FFmpeg，以及所选模型完整的相机渲染和原始视频。生成器使用 Python 标准库。
@@ -54,10 +58,10 @@ python eval/human/score_human.py \
 
 当前 **Overall 仅由 DV 和 LS 计算**：`((sqrt(DV) + sqrt(LS)) / 2) ** 2`。
 脚本保存 0–1 分数，LS 的负余弦值在开平方前截为零。
-旧 Scene Test 列仍可用于诊断，但不参与 Overall；缺少 Scene Test 文件不会阻止计算。
+自动指标输出仅包含 DV、LS 和 Overall。
 缺少 DV 或 LS 时 Overall 留空。某场景没有 source-correct 问题时，其 DV 也留空。
 
 该脚本的相关系数以**场景—模型**为单位。论文另行比较了五个配置的整体排序；
 那一项 Overall 的 ρ = 1.00 不能与这里的场景—模型相关系数混用。
-论文的 LS 场景—模型相关系数为 ρ = 0.83。旧版三轴 Overall 输出如需更新，
+论文的 LS 场景—模型相关系数为 ρ = 0.83。已有分析输出如需更新，
 请保存到新的分析目录，保留原始回答和历史结果。

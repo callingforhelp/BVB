@@ -4,7 +4,7 @@
 Mirrors into the same run directories under yunlong10/BVB-results, alongside any
 existing Stage-1 config/agent_meta/blends files.
 
-By default uploads ``summary.json`` / ``unit_tests.jsonl``, and when present
+Uploads the available two-axis scores:
 ``vision_sim.jsonl`` / ``vision_sim_summary.json`` and
 ``dual_vqa.jsonl`` / ``dual_vqa_summary.json``. Also uploads the shared Dual
 VQA answer banks under ``_dual_vqa_shared/`` when that directory exists.
@@ -23,8 +23,6 @@ from huggingface_hub import HfApi
 DEFAULT_REPO_ID = "yunlong10/BVB-results"
 DEFAULT_RESULTS_DIR = Path("sandbox/results")
 EVAL_PATTERNS = [
-    "summary.json",
-    "unit_tests.jsonl",
     "vision_sim.jsonl",
     "vision_sim_summary.json",
     "dual_vqa.jsonl",
@@ -44,13 +42,11 @@ def discover_runs(results_dir: Path, *, include_camera_renders: bool) -> list[Pa
     for path in sorted(results_dir.glob("mini-harness-*")):
         if not path.is_dir():
             continue
-        has_eval = (path / "summary.json").is_file()
         has_vision = (path / "vision_sim_summary.json").is_file()
         has_dual_vqa = (path / "dual_vqa_summary.json").is_file()
         has_renders = (path / "camera_renders").is_dir()
         if (
-            has_eval
-            or has_vision
+            has_vision
             or has_dual_vqa
             or (include_camera_renders and has_renders)
         ):
@@ -162,7 +158,7 @@ def main() -> None:
             commit_message=(
                 f"Upload camera_renders for {run_name}"
                 if args.camera_renders_only
-                else f"Upload Stage-2 eval / vision_sim / dual_vqa for {run_name}"
+                else f"Upload Latent Similarity / Dual VQA for {run_name}"
             ),
             dry_run=args.dry_run,
         )

@@ -13,8 +13,7 @@ compares GPT-5.6 Sol xhigh, Grok-4.5 high, Gemini 3.1 Pro high, Claude Opus 4.6
 high, and Qwen3.5-397B-A17B high. Astra and Opus 5 were not part of this study.
 
 Rankings assess visual fidelity to the source. Human judgments validate the
-automatic metrics; Scene Test is not a ground-truth human preference or an
-axis in the current Overall score. Pairwise wins are derived from each total
+automatic DV and LS metrics. Pairwise wins are derived from each total
 order; the instrument does not collect ties or absolute 1–5 ratings.
 
 ## Blinding and delivery
@@ -34,21 +33,21 @@ Multi-form mode uses `--forms 16 --pool-per-source 8 --per-source 3` for the
 24-scene pool and nine scenes per rater. Every sampled scene must have a camera
 render from all five models. `assignments.json` records the actual allocation.
 
-The existing generator uses mean legacy Scene Test scores to stratify scenes
-within a source. This is a historical sampling choice, not the current metric
-definition. Reproducing the collected study requires its saved assignments
-and blind map. Single-form mode without `--forms` instead builds one nine-scene
-survey and does not reproduce the multi-form assignment design.
+New packs use seeded random sampling within each source, with no model-score
+stratification. The policy (`source_balanced_random_v1`, or `explicit_scene_ids`)
+and seed are recorded in the blind map and assignments. Existing study
+assignments are preserved; the same seed in the new generator does not
+recreate previously collected surveys. Single-form mode without `--forms`
+builds one nine-scene survey.
 
 ## Analysis
 
 `score_human.py` writes mean rank (1 is best), pairwise wins, and per-scene,
 per-model mean ranks. It computes Spearman correlation between negated human
 mean rank and DV, LS, and their two-axis Overall when those scores exist.
-Scene Test may appear as a separate historical diagnostic.
 
 Automatic values in these files are on a 0–1 scale. Overall is
-`((sqrt(DV) + sqrt(max(0, LS))) / 2) ** 2`; it does not require Scene Test.
+`((sqrt(DV) + sqrt(max(0, LS))) / 2) ** 2`.
 Missing automatic metrics remain undefined, including DV for a scene with no
 source-correct questions. Correlations use only pairs with an available score.
 

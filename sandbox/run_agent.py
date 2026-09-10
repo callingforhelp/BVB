@@ -59,7 +59,7 @@ def main() -> None:
                         "Omit to use the provider/model API default.")
     parser.add_argument("--output", type=Path, required=True, help="Run directory, e.g. results/run_001")
     parser.add_argument("--image", default="bvb-sandbox:latest", help="Docker image tag.")
-    parser.add_argument("--scenes", nargs="*", help="Specific scene_name(s); default = all with tests+video.")
+    parser.add_argument("--scenes", nargs="*", help="Specific scene_name(s); default = QA metadata scenes with video.")
     parser.add_argument("--skip-scenes", nargs="*", default=[],
                         help="Scene names to exclude before optional sharding.")
     parser.add_argument("--limit", type=int)
@@ -94,7 +94,7 @@ def main() -> None:
             raise SystemExit("--shard must be i/N with 1 <= i <= N")
         tasks = tasks[shard_i - 1 :: shard_n]
     if not tasks:
-        raise SystemExit("No tasks with both unit tests and a video were found.")
+        raise SystemExit("No QA metadata scenes with an available video were found.")
 
     blends_dir = args.output / "blends"
     meta_dir = args.output / "agent_meta"

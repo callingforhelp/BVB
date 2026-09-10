@@ -33,21 +33,16 @@ class HumanAutoScoresTest(unittest.TestCase):
         with patch.object(score_human, "RESULTS", self.results):
             return score_human.auto_scores(self.blind, ["scene"])[("scene", "model")]
 
-    def test_overall_works_without_legacy_scene_tests(self):
+    def test_overall_uses_only_current_axes(self):
         row = self.score()
-        self.assertIsNone(row["scene_test"])
+        self.assertEqual(set(row), {"dual_vqa", "vision_sim", "overall"})
         self.assertEqual(row["dual_vqa"], 0.25)
         self.assertEqual(row["overall"], 0.5625)
 
-    def test_legacy_scores_do_not_change_overall(self):
-        for status in ("pass", "fail"):
-            with self.subTest(status=status):
-                self.write("unit_tests.jsonl", [{
-                    "scene_id": "scene", "test_type": "object_count", "status": status,
-                }])
-                row = self.score()
-                self.assertEqual(row["scene_test"], float(status == "pass"))
-                self.assertEqual(row["overall"], 0.5625)
+    def test_unrelated_legacy_file_is_never_read(self):
+        # A retired metric file must not be parsed, even when it is malformed.
+        (self.run / "unit_tests.jsonl").write_text("not valid JSON")
+        self.assertEqual(self.score()["overall"], 0.5625)
 
     def test_no_source_correct_questions_is_undefined(self):
         self.write("dual_vqa.jsonl", [{"scene_name": "scene", "original_correct": False}])
