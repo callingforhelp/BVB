@@ -2,7 +2,8 @@
 """Score ranking JSONs from the self-contained survey.html.
 
 Does not invent numbers. Unblinds with BLIND_MAP.json and writes mean rank,
-pairwise wins, and optional Spearman vs Scene Test / Dual VQA.
+pairwise wins, and optional Spearman vs Dual VQA, Latent Similarity, and
+their two-axis Overall. Scene Test is retained as a legacy diagnostic only.
 """
 from __future__ import annotations
 
@@ -115,30 +116,69 @@ def scene_test_rate(tests: list[dict]) -> float | None:
     return passed / n
 
 
+def dual_vqa_retention(records: list[dict]) -> float | None:
+    orig_ok = [r for r in records if r.get("original_correct") is True]
+    if not orig_ok:
+        return None
+    retained = 0
+    for rec in orig_ok:
+        if rec.get("render_correct") is True or rec.get("retained") is True:
+            retained += 1
+    return retained / len(orig_ok)
+
+
+def scene_key_from_record(rec: dict) -> str:
+    if rec.get("original_video"):
+        return Path(str(rec["original_video"])).stem
+    for key in ("scene_name", "scene_id", "id"):
+        if rec.get(key):
+            return str(rec[key])
+    return ""
+
+
 def auto_scores(blind: dict, scenes: list[str]) -> dict[tuple[str, str], dict]:
     out: dict[tuple[str, str], dict] = {}
     for model in blind.get("models") or []:
         run, label = model.get("run"), model.get("label")
         if not run or not label:
             continue
-        tests_by = defaultdict(list)
+        tests_by: dict[str, list] = defaultdict(list)
         for rec in _iter_jsonl(RESULTS / run / "unit_tests.jsonl"):
-            tests_by[str(rec.get("id") or rec.get("scene_name") or "")].append(rec)
+            scene = scene_key_from_record(rec)
+            if not scene:
+                continue
+            nested = rec.get("unit_tests")
+            if nested:
+                tests_by[scene].extend(nested)
+            elif rec.get("test_type"):
+                tests_by[scene].append(rec)
         dual_by = defaultdict(list)
         for rec in _iter_jsonl(RESULTS / run / "dual_vqa.jsonl"):
-            dual_by[str(rec.get("scene_name", ""))].append(rec)
-        vis = {}
+            scene = str(rec.get("scene_name") or scene_key_from_record(rec) or "")
+            if scene:
+                dual_by[scene].append(rec)
+        vis: dict[str, float | None] = {}
         for rec in _iter_jsonl(RESULTS / run / "vision_sim.jsonl"):
-            vis[str(rec.get("id") or rec.get("scene_name") or "")] = rec
+            scene = scene_key_from_record(rec)
+            if scene:
+                vis[scene] = rec.get("vision_sim")
         for scene in scenes:
             st = scene_test_rate(tests_by.get(scene, []))
-            orig_ok = [r for r in dual_by.get(scene, []) if r.get("original_correct") is True]
-            retained = [r for r in orig_ok if r.get("render_correct") is True]
-            retention = (len(retained) / len(orig_ok)) if orig_ok else None
+            orig_ok = dual_by.get(scene, [])
+            retention = dual_vqa_retention(orig_ok)
+            ls = vis.get(scene)
+            overall = None
+            if retention is not None and ls is not None:
+                # Current paper: DV + LS; clip negative cosine before sqrt.
+                mean_root = (
+                    math.sqrt(retention) + math.sqrt(max(0.0, ls))
+                ) / 2.0
+                overall = mean_root**2
             out[(scene, label)] = {
                 "scene_test": st,
                 "dual_vqa": retention,
-                "vision_sim": (vis.get(scene) or {}).get("vision_sim"),
+                "vision_sim": ls,
+                "overall": overall,
             }
     return out
 
@@ -219,7 +259,7 @@ def main() -> None:
 
     auto = auto_scores(blind, sorted(scenes))
     cal_rows = []
-    h_over, st, dual, vis = [], [], [], []
+    h_over, st, dual, vis, ovr = [], [], [], [], []
     for (scene, label), ranks_ in sorted(scene_rank.items()):
         human = mean(ranks_)
         auto_row = auto.get((scene, label), {})
@@ -240,20 +280,48 @@ def main() -> None:
             dual.append((score, float(auto_row["dual_vqa"])))
         if auto_row.get("vision_sim") is not None:
             vis.append((score, float(auto_row["vision_sim"])))
+        if auto_row.get("overall") is not None:
+            ovr.append((score, float(auto_row["overall"])))
     write_csv(
         out_dir / "human_by_scene_model.csv",
         cal_rows,
-        ["scene_id", "model", "human_mean_rank", "scene_test", "dual_vqa", "vision_sim"],
+        ["scene_id", "model", "human_mean_rank", "scene_test", "dual_vqa", "vision_sim", "overall"],
     )
 
+    corr_rows = []
+
+    def corr_report(name: str, pairs: list[tuple[float, float]]) -> dict | None:
+        if len(pairs) < 3:
+            return None
+        xs = [x for x, _ in pairs]
+        ys = [y for _, y in pairs]
+        rho = spearman(xs, ys)
+        row = {
+            "metric": name,
+            "n": len(pairs),
+            "spearman_rho": None if rho is None else round(rho, 3),
+        }
+        corr_rows.append(row)
+        return row
+
+    st_row = corr_report("scene_test", [(x, y) for x, y in zip(h_over, st)])
+    dual_row = corr_report("dual_vqa", dual)
+    vis_row = corr_report("latent_sim", vis)
+    ovr_row = corr_report("overall", ovr)
+    write_csv(out_dir / "human_metric_correlation.csv", corr_rows, ["metric", "n", "spearman_rho"])
+
     report = {
+        "overall_axes": ["dual_vqa", "vision_sim"],
+        "overall_aggregation": "square_root_mean",
+        "correlation_unit": "scene_model",
         "n_raters": len(recs),
         "n_scenes": len(scenes),
         "n_models": len(models),
         "mean_rank": {r["model"]: r["mean_rank"] for r in by_model},
-        "spearman_neg_rank_vs_scene_test": spearman(h_over, st) if st else None,
-        "spearman_neg_rank_vs_dual_vqa": spearman([x for x, _ in dual], [y for _, y in dual]) if dual else None,
-        "spearman_neg_rank_vs_vision_sim": spearman([x for x, _ in vis], [y for _, y in vis]) if vis else None,
+        "spearman_neg_rank_vs_scene_test": None if not st_row else st_row["spearman_rho"],
+        "spearman_neg_rank_vs_dual_vqa": None if not dual_row else dual_row["spearman_rho"],
+        "spearman_neg_rank_vs_vision_sim": None if not vis_row else vis_row["spearman_rho"],
+        "spearman_neg_rank_vs_overall": None if not ovr_row else ovr_row["spearman_rho"],
     }
     (out_dir / "summary.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))

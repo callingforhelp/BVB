@@ -19,5 +19,14 @@ sandbox/log/
 .tmp
 .vscode/
 
-
-
+# Local authoring tools, private study responses, and build state
+.cursor/skills/
+eval/human/packs/
+eval/human/returns/
+numeric_evidence.json
+paper_state.json
+texput.log
+.env
+.env.*
+!.env.example
+.staticrypt.json

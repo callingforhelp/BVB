@@ -1,2 +1,2 @@
-litellm>=1.89
+litellm>=1.99
 tenacity

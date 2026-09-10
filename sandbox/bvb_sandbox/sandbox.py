@@ -20,6 +20,14 @@ class ExecResult:
     stderr: str
 
 
+def _as_text(value: str | bytes | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
 class Sandbox:
     def __init__(
         self,
@@ -67,7 +75,11 @@ class Sandbox:
                 command, text=True, capture_output=True, check=False, timeout=timeout
             )
         except subprocess.TimeoutExpired as exc:
-            return ExecResult(124, exc.stdout or "", f"command timed out after {timeout}s")
+            stderr = _as_text(exc.stderr)
+            if stderr:
+                stderr += "\n"
+            stderr += f"command timed out after {timeout}s"
+            return ExecResult(124, _as_text(exc.stdout), stderr)
         return ExecResult(completed.returncode, completed.stdout or "", completed.stderr or "")
 
     def copy_frames_in(self, local_dir: Path) -> None:

@@ -3,12 +3,12 @@
 
 Each scene gets a fresh sandbox container. The agent (host-side) drives it and
 must leave /workspace/output/result.blend; we copy that out to
-results/<run>/blend/<scene>.blend. Stage-2 evaluation is fully decoupled (run
-eval/unit_test_metric.py --mode execute on the collected .blend files later).
+results/<run>/blends/<scene>.blend. Stage-2 evaluation renders the scene camera
+and scores Dual VQA and Latent Similarity separately; see eval/README.md.
 
 Example:
     export OPENAI_API_KEY=...          # or ANTHROPIC_API_KEY / GEMINI_API_KEY
-    python run_agent.py --model gpt-5.5 --output results/run_001 --limit 5
+    python run_agent.py --model gpt-6-astra --reasoning high --output results/run_001 --limit 5
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ def resolve_reasoning(model: str, explicit: str | None) -> str:
         return explicit
     name = model.split("/")[-1].lower()
     defaults = {
+        "gpt-6-astra": "medium",
         "gpt-5.5": "medium",
         "gpt-5.4": "none",
         "gpt-5.4-mini": "none",
@@ -52,13 +53,15 @@ def resolve_reasoning(model: str, explicit: str | None) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="BVB Stage-1 agent runner.")
     parser.add_argument("--model", required=True,
-                        help="litellm model name, e.g. gpt-5.5, anthropic/claude-sonnet-4.6, gemini/gemini-2.5-pro")
+                        help="litellm model name, e.g. gpt-6-astra, anthropic/claude-sonnet-4.6, gemini/gemini-2.5-pro")
     parser.add_argument("--reasoning",
                         help="Optional reasoning/thinking effort passed to litellm, e.g. none, low, medium, high, max. "
                         "Omit to use the provider/model API default.")
     parser.add_argument("--output", type=Path, required=True, help="Run directory, e.g. results/run_001")
     parser.add_argument("--image", default="bvb-sandbox:latest", help="Docker image tag.")
     parser.add_argument("--scenes", nargs="*", help="Specific scene_name(s); default = all with tests+video.")
+    parser.add_argument("--skip-scenes", nargs="*", default=[],
+                        help="Scene names to exclude before optional sharding.")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--shard", help="Run a subset 'i/N' (1-based), e.g. 1/4, for N parallel processes.")
     parser.add_argument("--cost-limit", type=float, default=3.0,
@@ -77,6 +80,11 @@ def main() -> None:
     args = parser.parse_args()
 
     tasks = load_tasks(scenes=args.scenes, limit=args.limit, require_video=True)
+    if args.skip_scenes:
+        skipped = set(args.skip_scenes)
+        tasks = [task for task in tasks if task.scene_name not in skipped]
+    shard_i: int | None = None
+    shard_n: int | None = None
     if args.shard:
         try:
             shard_i, shard_n = (int(x) for x in args.shard.split("/"))
@@ -107,8 +115,15 @@ def main() -> None:
         "scene_timeout": args.scene_timeout,
         "timestamp": dt.datetime.now().isoformat(timespec="seconds"),
         "num_tasks": len(tasks),
+        "shard": args.shard,
+        "skip_scenes": args.skip_scenes,
     }
-    (args.output / "config.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
+    config_name = (
+        f"config.shard-{shard_i}-of-{shard_n}.json"
+        if shard_i is not None and shard_n is not None
+        else "config.json"
+    )
+    (args.output / config_name).write_text(json.dumps(config, indent=2), encoding="utf-8")
 
     for index, task in enumerate(tasks, start=1):
         blend_out = blends_dir / f"{task.scene_name}.blend"

@@ -1,6 +1,6 @@
 """Model access via litellm.
 
-litellm routes by model name (e.g. ``gpt-5.5``, ``anthropic/claude-sonnet-4.6``,
+litellm routes by model name (e.g. ``gpt-6-astra``, ``anthropic/claude-sonnet-4.6``,
 ``gemini/gemini-2.5-pro``), handles retries/rate-limits internally, and ships a
 price database so the per-call USD cost is computed for us -- no hand-maintained
 prices. Cost is the single budget lever (mini-swe-agent style).
@@ -90,6 +90,11 @@ class Model:
             # OpenAI reasoning_effort, Anthropic adaptive thinking/output_config,
             # Gemini thinking budget, etc.
             kwargs["reasoning_effort"] = self.reasoning
+            # LiteLLM 1.99 has Astra's capability/price metadata but its OpenAI
+            # parameter allowlist predates GPT-6. Forward the official parameter
+            # explicitly; newer LiteLLM versions accept this harmlessly too.
+            if self.model.lower() in {"gpt-6-astra", "openai/gpt-6-astra"}:
+                kwargs["allowed_openai_params"] = ["reasoning_effort"]
         response = litellm.completion(
             model=self.model,
             messages=oai_messages,

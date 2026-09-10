@@ -81,47 +81,29 @@ The refined scene should make it as easy as possible for the evaluation model to
 
 Focus on changes that matter for the question. For example, if the QA item depends on object position, visibility, orientation, distance, or relative layout, adjust those parts of the scene carefully. The scene does not need to be visually perfect, but it should preserve the information needed to answer the QA correctly.
 
-## 6. Verify Exportability Before Pushing
+## 6. Verify the Saved Blender Scene
 
-Before pushing your refined `.blend` file, verify that the scene can be exported to reproducible `bpy` code and reconstructed correctly.
+The current workflow uses the native `.blend` directly. Exporting to Python
+and reconstructing from an exported script is no longer a required step.
 
-Install the Blender export add-on from this repository:
+After finishing a scene:
 
-1. In Blender, go to `Edit > Preferences > Add-ons > Install...`.
-2. Select `addons/export_bpy_code.py`.
-3. Enable the checkbox next to `Export Scene as BPY Code`.
+1. Save `blend/[id].blend`, then reopen it in a fresh Blender session.
+2. Verify that geometry, materials, lights, and the active camera load correctly.
+3. Scrub the full camera timeline and render representative frames. Check the
+   object relations and camera motion against the source video.
+4. Check for missing external assets so the saved scene opens on another machine.
 
-See [`addons/README.md`](addons/README.md) for the full add-on instructions.
-
-After you think the refinement is finished:
-
-1. Save the refined `.blend` file in Blender.
-2. Use the add-on to export the scene:
-
-```text
-File > Export > Blender Python Script (.py)
-```
-
-3. Open a new Blender window.
-4. Switch to the `Scripting` workspace.
-5. Open the exported `.py` file and run it.
-6. Compare the reconstructed scene from the exported script with your refined `.blend` scene.
-
-If the exported-and-reconstructed scene looks meaningfully different from the refined `.blend`, the refinement may be using structures that do not export cleanly. Common causes include arbitrary complex geometry, unsupported or partially exported modifiers, applied dense mesh edits, or textures/material nodes that depend on external image/procedural data.
-
-In that case, simplify the scene before pushing:
-
-- Replace complex structures with simple geometric primitives or exporter-supported procedural modifiers where possible.
-- Prefer solid-color materials over textures.
-- Avoid details that look nice in Blender but disappear or change after export.
-
-Once the exported script reconstructs a scene with no major differences from the refined `.blend`, you can save the `.blend` file and push it.
+Keep the native scene as the authoritative artifact. The historical scripts
+in `bpy/` and the optional exporter in `addons/` are retained for older workflows;
+current reconstruction, camera rendering, Dual VQA, and Latent Similarity do
+not require those exports.
 
 ## 7. Save and Push
 
 After finishing the refinement:
 
-1. Make sure the `.blend` file is saved after the exportability check.
+1. Make sure the `.blend` file is saved after the native-scene checks.
 2. Pull the latest changes:
 
 ```bash

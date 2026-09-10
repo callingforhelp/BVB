@@ -5,7 +5,7 @@
 #   ./run_model.sh <litellm-model> [extra run_agent.py flags]
 #
 # Examples:
-#   OPENAI_API_KEY=sk-...     ./run_model.sh gpt-5.5
+#   OPENAI_API_KEY=sk-...     ./run_model.sh gpt-6-astra --reasoning high
 #   ANTHROPIC_API_KEY=sk-...  ./run_model.sh anthropic/claude-sonnet-4.6
 #   GEMINI_API_KEY=...        ./run_model.sh gemini/gemini-2.5-pro --limit 3
 #
@@ -40,6 +40,7 @@ for ARG in "$@"; do
 done
 if [[ -z "$REASONING" ]]; then
   case "$BASE_MODEL" in
+    gpt-6-astra) REASONING="medium" ;;
     gpt-5.5) REASONING="medium" ;;
     gemini-3.1-pro-preview|gemini-3.1-pro) REASONING="high" ;;
     *) REASONING="none" ;;

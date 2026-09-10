@@ -3,8 +3,10 @@
 #   pip install -r eval/requirements-vjepa.txt
 
 torch>=2.2
+torchvision>=0.17
 transformers>=4.51
 accelerate>=0.30
 safetensors>=0.4
 opencv-python-headless>=4.8
 numpy>=1.24
+pillow>=10

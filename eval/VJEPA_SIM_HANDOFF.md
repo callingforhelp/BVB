@@ -1,151 +1,113 @@
-# V-JEPA Vision-Sim Handoff (temporary)
+# Latent Similarity: render and GPU workflow
 
-> Temporary notes for a cluster agent continuing this work.
-> Official docs live in [`README.md`](README.md); this file is the short context dump.
+LS is one of the two current BVB axes, alongside Dual VQA. It averages layout
+and motion similarity from a frozen V-JEPA 2.1 ViT-G encoder. See the
+[evaluation guide](README.md) for the score definition, coverage requirements,
+and two-axis Overall. Scene Test is a legacy diagnostic.
 
-## What changed / intent
+Run all commands below from the repository root. Use a separate evaluation
+environment for [the GPU dependencies](requirements-vjepa.txt); the Stage-1
+agent environment does not need the encoder.
 
-BVB eval is now **dual-level**:
-
-| Level | Metric | Artifacts |
-|------|--------|-----------|
-| **Code** | unit-test pass rate (unchanged) | `<run>/unit_tests.jsonl`, `<run>/summary.json` |
-| **Vision** | V-JEPA paired cosine sim (new) | `<run>/vision_sim.jsonl`, `<run>/vision_sim_summary.json` |
-
-**Do not break** Stage-1 agent runs under `sandbox/results/` or the code-level evaluator (`unit_test_metric.py`). Vision sim writes **separate** files only.
-
-Old Video-QA retention (`videoqa_metric.py`) is **deprecated** — keep the file, do not treat it as the official vision metric.
-
-## Pipeline (vision)
-
-```
-.blend (scene.camera)
-  -> sparse EEVEE PNG frames across full timeline   [CPU / Blender]
-  -> sample same #frames from original VSI-Bench mp4
-  -> frozen V-JEPA 2.1 ViT-G encode both clips      [GPU]
-  -> vision_sim = 0.5 * (layout_cosine + motion_cosine)
-  -> write one score per scene; features never on disk
-```
-
-Default encoder: `apiantonio/vjepa2.1-vit-gigantic-384`  
-Layout = temporally pooled spatial patch-map cosine; motion = global token-mean cosine.
-
-## Files
-
-| Path | Role |
-|------|------|
-| [`batch_render_camera.py`](batch_render_camera.py) | Mac-side batch Blender render → `camera_renders/` (no GPU) |
-| [`vjepa_sim_metric.py`](vjepa_sim_metric.py) | Orchestrator (render → encode → score) |
-| [`render_blend_video.py`](render_blend_video.py) | Blender camera render → PNG sequence (optional MP4 wrapper) |
-| [`requirements-vjepa.txt`](requirements-vjepa.txt) | Cluster deps (torch / transformers / opencv) — **not** the sandbox Stage-1 venv |
-| [`unit_test_metric.py`](unit_test_metric.py) | Code-level eval — leave alone unless asked |
-| [`test.jsonl`](test.jsonl) | Scene → dataset mapping for locating `VSI-Bench/<dataset>/<scene>.mp4` |
-
-## How to run on the cluster
-
-Preferred workflow (Mac renders once → HF → cluster scores):
+## 1. Render once on a Blender host
 
 ```bash
-# --- on Mac (CPU / Blender only) ---
-# Overnight helper (parallel workers + HF sync):
-#   caffeinate -i bash eval/overnight_render_and_sync.sh
-python eval/batch_render_camera.py --all-runs --resume --workers 6 --num-frames 64
-# ~15s/scene @512px, ~160KB mp4/scene → camera_renders/<id>.mp4
-python scripts/sync_eval_results.py --camera-renders-only
-
-# --- on GPU cluster ---
-HF_HUB_ENABLE_HF_TRANSFER=1 python scripts/download_results.py --run <run>
-pip install -r eval/requirements-vjepa.txt
+python eval/batch_render_camera.py \
+  --run sandbox/results/run_001 \
+  --num-frames 64 \
+  --resume
 ```
 
-### GPU instance choice (Lambda-style)
+Requires host Blender and FFmpeg. Set `BLENDER_BIN` if needed. The renderer
+samples the full animated camera timeline and writes
+`sandbox/results/run_001/camera_renders/<scene>.mp4`. Increase `--workers`
+according to available host resources. The default resolution is 512 pixels.
+No GPU encoder or judge API runs at this stage.
 
-| Goal | Rent | Why |
-|------|------|-----|
-| **Fastest wall-clock** | **8x A100 40GB** | Same $/GPU-hr as 1x; ~8× throughput via scene shards |
-| Cheaper / smoke | 1x A100 40GB | Enough VRAM for ViT-G @ 64 frames |
-| Avoid | 1x A10 24GB (OOM risk), V100 16GB (too small) |
-
-Do **not** use 8 GPUs inside one process — launch **8 processes**, one per GPU:
+The GPU host needs those camera renders, the tracked evaluation metadata,
+and the original videos under `VSI-Bench/<dataset>/<scene>.mp4`.
+If using the existing Hugging Face results store, authenticated maintainers
+can transfer the run with:
 
 ```bash
-RUN=sandbox/results/<run>
+# Blender host: preview the upload, then upload camera renders.
+python scripts/sync_eval_results.py --run run_001 --camera-renders-only --dry-run
+python scripts/sync_eval_results.py --run run_001 --camera-renders-only
+
+# GPU host: restore the run; source videos are obtained separately.
+python scripts/download_results.py --run run_001
+```
+
+These transfer commands require `huggingface_hub` and access to
+`yunlong10/BVB-results`. Local file transfer works as well. They are not needed
+when rendering and scoring on the same machine.
+
+## 2. Encode on one GPU
+
+```bash
+python -m pip install -r eval/requirements-vjepa.txt
+python eval/vjepa_sim_metric.py \
+  --run sandbox/results/run_001 \
+  --vsi-bench VSI-Bench \
+  --dry-run --limit 3
+
+python eval/vjepa_sim_metric.py \
+  --run sandbox/results/run_001 \
+  --vsi-bench VSI-Bench \
+  --model apiantonio/vjepa2.1-vit-gigantic-384 \
+  --num-frames 64 \
+  --device cuda --dtype bfloat16 \
+  --resume
+```
+
+The dry run checks input paths without loading the encoder. Cached camera
+MP4s avoid Blender work on the GPU host. Without a cache, the scorer can render
+the saved `.blend` itself when Blender is available.
+
+Keep the encoder and frame count fixed for paper-comparable results.
+Changing either defines a different evaluation setting; do not mix its scores
+with the released results. A small `--limit` run checks GPU memory needs before
+starting a complete run, but its summary represents only that subset.
+
+## 3. Optional: distribute scene shards
+
+Launch one process per GPU. This example uses eight GPUs and eight disjoint
+scene shards; adjust both together for the available machine.
+
+```bash
+BVB_RUN=sandbox/results/run_001
 for i in $(seq 1 8); do
   CUDA_VISIBLE_DEVICES=$((i-1)) python eval/vjepa_sim_metric.py \
-    --run "$RUN" \
+    --run "$BVB_RUN" \
     --vsi-bench VSI-Bench \
+    --model apiantonio/vjepa2.1-vit-gigantic-384 \
     --device cuda --dtype bfloat16 --num-frames 64 \
     --shard "$i/8" --resume &
 done
 wait
-# Each shard writes vision_sim.shard-i-of-8.jsonl + vision_sim_summary.shard-i-of-8.json
-# TODO: merge shards into vision_sim.jsonl / vision_sim_summary.json (or score one GPU per run)
+
+python eval/merge_vision_sim_shards.py \
+  --run "$BVB_RUN" --shard-count 8
 ```
 
-Warm `camera_renders/<id>.mp4` ⇒ encoder skips Blender.
+Each process writes `vision_sim.shard-i-of-8.jsonl` and its own summary.
+The merge helper checks shard completeness and writes `vision_sim.jsonl` plus
+`vision_sim_summary.json`; it retains the shard files by default. Inspect
+`num_scenes`, `num_ok`, and `num_error` in the merged summary before reporting
+results. A full benchmark run covers all 288 scenes, including failure rows.
 
-One-shot single-GPU (render+score on the same machine) still works:
+## Outputs and caching
 
-```bash
-pip install -r eval/requirements-vjepa.txt
-cd eval
-python vjepa_sim_metric.py --run ../sandbox/results/<run> --vsi-bench ../VSI-Bench --dry-run --limit 2
-python vjepa_sim_metric.py --run ../sandbox/results/<run> --vsi-bench ../VSI-Bench --device cuda --dtype bfloat16
-```
+- `vision_sim.jsonl` stores per-scene layout, motion, LS, status, and errors.
+- `vision_sim_summary.json` averages all selected scenes with failures filled
+  as zero. Its `scored_only` block is a diagnostic, not the benchmark score.
+- Scores are stored on a 0–1 scale; tables display them multiplied by 100.
+- Render caching is enabled by default under `<run>/camera_renders/`.
+  `--no-keep-renders` uses temporary frames and disables reuse of that cache;
+  it does not remove previously cached camera MP4s.
+- Encoder features are not saved. Evaluation writes separate metric files and
+  does not edit Stage-1 blends or legacy Scene Test outputs.
 
-Useful flags: `--resume`, `--shard i/N`, `--limit`, `--sample`, `--scene-ids`.
-
-Defaults that matter:
-
-- `--num-frames 64` — uniform sparse samples across the **full** camera timeline
-- Renders cached as `<run>/camera_renders/<scene_id>.mp4` and **reused**
-- Features never written; scores in `vision_sim*.json`
-- `--no-keep-renders` deletes local render cache after scoring (not recommended)
-
-**VRAM note:** 64-frame ViT-G yields ~18k tokens/clip. Prefer **A100 40GB**. If OOM, try `--dtype float16`, `apiantonio/vjepa2.1-vit-giant-384`, or `--num-frames 32`.
-## Hard constraints for the next agent
-
-1. **Never overwrite** `unit_tests.jsonl` / `summary.json`.
-2. **Never modify** existing `blends/*.blend` from agent runs.
-3. Prefer fixing/extending `vjepa_sim_metric.py` + `render_blend_video.py` over inventing a second vision pipeline.
-4. If changing the score definition, bump a note in `vision_sim_summary.json` (e.g. `metric_version`) so old numbers are not mixed silently.
-5. ViT-G (~2B) needs a real GPU; CPU is only for `--dry-run` / path checks.
-
-## Render cost (measured on Mac, Blender 5.1 EEVEE @ 512px)
-
-Sampled 19 blends from a 288-scene run (`mini-harness-claude-opus-4-6-run01`):
-
-- Timeline length in `.blend` files is often **huge**: median ~**1644** frames, max ~**4360** (do **not** render the full animation).
-- Sparse render ≈ **0.2 s/frame** after startup.
-- **64 frames** (current default): ~**12–15 s/scene**, ~**12 MB** PNG/scene → ~**3.5 GB**/288-scene run.
-- 16 frames: ~3–4 s/scene, ~3 MB/scene (legacy smoke setting).
-
-### Recommendation
-
-**Pre-render on Mac → sync `camera_renders/` to `yunlong10/BVB-results` → cluster only runs the encoder.** Disk is cheap; Blender time is the bottleneck if you re-render on every metric tweak.
-
-```bash
-python eval/batch_render_camera.py --run sandbox/results/<run> --resume
-python scripts/sync_eval_results.py --run <run> --camera-renders-only
-```
-
-## Open follow-ups (nice, not blocking)
-
-- Merge helper for `vision_sim.shard-*-of-N.jsonl` → `vision_sim.jsonl` + summary (8-GPU path)
-- Batch shell for multi-run × 8-GPU encode (like `sandbox/run_eval_batch.sh`)
-- Plot `vision_sim` into `scripts/plot_eval_results.py`
-- Paper section `misc/sections/2_benchmark.tex` → Vision-Level Metrics still a stub
-- If ViT-G @ 64 frames OOMs, document the fallback model / frame count in the summary
-
-## Quick sanity checks
-
-```bash
-# Paths only
-python eval/vjepa_sim_metric.py --run sandbox/results/<run> --vsi-bench VSI-Bench --dry-run --limit 3
-
-# Blender render only
-python eval/render_blend_video.py \
-  --blend sandbox/results/<run>/blends/<scene>.blend \
-  --output /tmp/<scene>.mp4 \
-  --num-samples 16
-```
+Resume only within the same encoder, sampling, and rendering protocol. See
+[README.md](README.md#4-check-coverage-and-compute-overall) before combining LS
+with Dual VQA.

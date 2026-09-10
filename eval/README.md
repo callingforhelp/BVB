@@ -1,440 +1,168 @@
-# BVB Evaluation Scripts
+# BVB Evaluation
 
-This folder contains lightweight evaluation utilities for BVB.
+The current BVB protocol evaluates reconstructions along **two axes**:
 
-The current evaluation has three levels:
+| Axis | Measurement | Output summary |
+| --- | --- | --- |
+| **Dual VQA (DV)** | Retention of answers the judge gets right on the source | `dual_vqa_summary.json` |
+| **Latent Similarity (LS)** | Mean layout and motion similarity from frozen V-JEPA 2.1 features | `vision_sim_summary.json` |
 
-1. Vision-level V-JEPA similarity: render each submission from the scene camera,
-   encode the original video and the render with a frozen V-JEPA 2.1 encoder, and
-   report layout / motion / combined cosine similarity.
-2. Vision-level Dual VQA: ask a judge VLM the same VSI-Bench questions on the
-   original video and on each camera render; report retention
-   \(R = P(\text{render correct}\mid\text{original correct})\).
-3. Executable unit-test evaluation: load each `.blend` (or trusted `.py`) in
-   Blender, introspect the resulting scene, and run materialized tests.
+**Overall** is `((sqrt(DV) + sqrt(LS)) / 2) ** 2`, with both scores on a
+0–100 scale. The earlier code-level Scene Test is an experimental diagnostic;
+it is not part of the current Overall score. Its complete instructions are
+retained in [LEGACY_SCENE_TESTS.md](LEGACY_SCENE_TESTS.md).
 
-Code-level unit tests remain the primary deterministic scorer. Vision sim and
-Dual VQA write separate artifacts and never overwrite `unit_tests.jsonl` /
-`summary.json`.
+All commands below start from the **repository root**. The paper evaluates
+288 scenes and 5,130 questions from [`test.jsonl`](test.jsonl), using the same
+reconstruction sandbox and a $3 Stage-1 spend ceiling per scene. Evaluation
+does not send scores back to the reconstruction agent.
 
-## Vision-Level Metric (V-JEPA similarity)
+## 1. Render the animated scene camera
 
-Requires a GPU machine for encoding, plus Blender on `PATH` (or `BLENDER_BIN`)
-unless `camera_renders/` was precomputed. Install:
-
-```bash
-pip install -r requirements-vjepa.txt
-```
-
-Default encoder: `apiantonio/vjepa2.1-vit-gigantic-384` (V-JEPA 2.1 ViT-G/16 @ 384).
-Default clip length: **64** sparse frames (matches V-JEPA 2.1 pretrain `frames_per_clip`).
-
-### Recommended: Mac render → HF → cluster encode
+Requires host Blender and FFmpeg. Use a Python 3.10+ environment; the
+[Stage-1 environment](../sandbox/README.md) can also run this rendering step.
 
 ```bash
-# Mac / CPU node
-python batch_render_camera.py --run ../sandbox/results/<run> --num-frames 64 --resume
-python ../scripts/sync_eval_results.py --run <run> --camera-renders-only
-
-# GPU cluster
-HF_HUB_ENABLE_HF_TRANSFER=1 python ../scripts/download_results.py --run <run>
-python vjepa_sim_metric.py \
-  --run ../sandbox/results/<run> \
-  --vsi-bench ../VSI-Bench \
-  --device cuda \
-  --dtype bfloat16
-```
-
-### One-shot on a GPU box
-
-```bash
-python vjepa_sim_metric.py \
-  --run ../sandbox/results/mini-harness-claude-sonnet-4-6-run01 \
-  --vsi-bench ../VSI-Bench \
-  --device cuda \
-  --dtype bfloat16 \
-  --limit 2
-```
-
-Per scene the runner:
-
-1. Sparsely renders `--num-frames` EEVEE frames across the full camera timeline
-   (cached as `<run>/camera_renders/<id>.mp4` by default; reused on resume/rerun).
-2. Uniformly samples the same number of frames from the original VSI-Bench video.
-3. Encodes both clips with V-JEPA 2.1; averages layout + motion cosine into one
-   `vision_sim`.
-4. Features are never written to disk. Use `--no-keep-renders` only if you truly
-   want to delete the PNG cache after scoring.
-
-See [`VJEPA_SIM_HANDOFF.md`](VJEPA_SIM_HANDOFF.md) for cluster-agent context and
-measured render cost.
-
-Outputs (inside the run directory by default):
-
-- `vision_sim.jsonl` — one row per scene with `vision_sim` (or an error status)
-- `vision_sim_summary.json` — mean `vision_sim` over successfully scored scenes
-
-Useful flags: `--resume`, `--shard i/N`, `--scene-ids`, `--sample`, `--keep-renders`
-(debug only; default is to delete renders).
-
-Standalone camera render (without the encoder):
-
-```bash
-python render_blend_video.py \
-  --blend ../sandbox/results/.../blends/41069025.blend \
-  --output /tmp/41069025.mp4
-```
-
-## Vision-Level Metric (Dual VQA)
-
-Requires an OpenAI-compatible API key for the judge VLM (default
-`gpt-5.4-mini`) and precomputed `camera_renders/`. Shared original-video
-answers (and optional text-only chance floor) live once under
-`sandbox/results/_dual_vqa_shared/`.
-
-```bash
-# Import already-paid pilot logs into official artifacts (no API calls)
-python import_dual_vqa_from_pilot.py --force
-
-# Or score live
-python dual_vqa_metric.py --ensure-originals-only
-python dual_vqa_metric.py --run ../sandbox/results/<run>
-# Batch:
-./run_dual_vqa_batch.sh --all-local
-
-# Sync scored Dual VQA (+ shared banks) to HF
-python ../scripts/sync_eval_results.py --run <run>
-```
-
-Outputs (inside the run directory):
-
-- `dual_vqa.jsonl` — one row per QA with rendered answer + retention flags
-- `dual_vqa_summary.json` — mean retention / rendered accuracy / by type
-
-Shared banks under `sandbox/results/_dual_vqa_shared/`:
-
-- `original_answers.jsonl`
-- `text_only_answers.jsonl` (optional; for chance-corrected variants)
-
-The older offline helper `videoqa_metric.py` is deprecated and kept only for
-reproducing legacy paired-prediction files.
-
-## Optional: Batch Export Blend Results To BPY
-
-The unit-test evaluator reads `.blend` files directly; BPY export is not
-required. Use `batch_export_blend_to_bpy.py` only when you explicitly need
-portable source code for inspection or another tool.
-
-The default result layout is:
-
-```text
-results/claude-sonnet-4.6/
-  blend/   # input .blend files
-  bpy/     # exported .py files
-```
-
-From this `eval/` directory, run:
-
-```bash
-python batch_export_blend_to_bpy.py \
-  --overwrite \
-  --manifest results/claude-sonnet-4.6/export_manifest.jsonl
-```
-
-This exports:
-
-```text
-results/claude-sonnet-4.6/blend/09c1414f1b.blend
--> results/claude-sonnet-4.6/bpy/09c1414f1b.py
-```
-
-Useful options:
-
-- `--input-dir`: directory containing `.blend` files.
-- `--output-dir`: directory where exported `.py` files should be written.
-- `--blender`: path to the Blender executable. If omitted, the script tries `blender` on `PATH` and common macOS app locations.
-- `--limit N`: export only the first `N` files for a smoke test.
-- `--dry-run`: print planned exports without launching Blender.
-- `--overwrite`: regenerate existing `.py` files.
-- `--manifest`: write one JSONL row per attempted export with the input path, output path, return code, and success flag.
-
-Smoke test:
-
-```bash
-python batch_export_blend_to_bpy.py --limit 3 --dry-run
-python batch_export_blend_to_bpy.py --limit 1 --overwrite
-```
-
-## Code Unit Tests
-
-Use `generate_unit_tests.py` and `unit_test_metric.py` to evaluate either a
-`.blend` or `.py` submission. In execute mode Blender produces a structured
-scene manifest (names, collections, materials, world-space AABBs, and camera
-trajectory). The judge only grounds semantic references to manifest group keys;
-host-side deterministic code computes pass/fail.
-
-### How evaluation works
-
-```text
-Stage-1 run/blends/*.blend
-          |
-          v
-unit_test_metric.py --run <run>
-          |
-          +-- select global + scene-specific tests from unit_tests.jsonl
-          |
-          +-- launch Blender with the minimum required introspection profile
-          |     geometry   -> objects, evaluated dimensions/AABBs, floor footprint
-          |     route      -> geometry + camera trajectory
-          |     appearance -> route profile + per-frame ray-cast visibility
-          |
-          +-- build a compact semantic manifest
-          |     [group_key, collection, material, animated]
-          |
-          +-- gpt-5.4-mini grounds semantic refs to exact group keys
-          |     "chair" -> ["ChairSeat", "ChairBack"]
-          |
-          +-- host validates grounding with aliases/exact-key checks
-          |
-          +-- deterministic Python computes pass/fail
-                count, size, distance, direction, room area,
-                route turns, appearance order
-```
-
-The model that created a submission and the judge are different roles. For
-example, `mini-harness-gpt-5.6-sol-...` means GPT-5.6 Sol created the `.blend`;
-`--model gpt-5.4-mini` means Mini only grounds names during evaluation. Mini
-does not generate or modify the scene and does not decide pass/fail.
-
-One full 288-scene run makes at most one grounding batch per scene (split only
-when an API response is truncated or incomplete). Rule tests never call an API.
-Every output row records judge tokens, estimated cost, grounding evidence,
-deterministic actual values, and pass/fail status.
-
-### Test branches
-
-- `basic_validity`: Blender load success, non-empty mesh scene, camera, light.
-- `object_counting`: judge returns physical instances and their part group keys;
-  host counts validated instances.
-- `object_size_estimation`: evaluated object dimensions for one mesh; multi-part
-  objects use union geometry.
-- `object_abs_distance` / `object_rel_distance`: world-AABB surface separation.
-- `object_rel_direction`: deterministic egocentric XY geometry.
-- `room_size_estimation`: projected horizontal mesh footprint; bbox fallback
-  only when no footprint is available.
-- `route_planning`: ordered camera-trajectory landmark events and turn sequence.
-- `obj_appearance_order`: first visible frame from camera projection plus
-  Blender ray casts; transparent materials do not block the ray.
-
-First generate the stable input test suite:
-
-```bash
-python generate_unit_tests.py \
-  --metadata test.jsonl \
-  --output unit_tests.jsonl \
-  --statement-output unit_tests.statements.jsonl \
-  --llm-statements \
-  --statement-batch-size 50
-```
-
-`unit_tests.jsonl` is the input test set. It should be versioned/reviewed like any other benchmark artifact. The runner does not convert from `test.jsonl` at evaluation time.
-
-Then evaluate any submission against that same test set. `human`,
-`claude-sonnet-4.6`, or any agent result is simply another submission:
-
-```bash
-python unit_test_metric.py \
-  --run ../sandbox/results/mini-harness-claude-sonnet-4-6-run01 \
-  --unit-tests unit_tests.jsonl \
-  --mode execute \
-  --cache-dir ../sandbox/results/mini-harness-claude-sonnet-4-6-run01/introspection-cache \
+python eval/batch_render_camera.py \
+  --run sandbox/results/run_001 \
+  --num-frames 64 \
   --resume
 ```
 
-`--run` scans `blends/` directly and writes `unit_tests.jsonl` plus
-`summary.json` into the same run. For submissions outside the Stage-1 directory
-layout, pass `--submissions manifest.jsonl`; each row must contain `id` and
-`submission_path`. Execute mode accepts `.blend` by default. Trusted `.py`
-submissions require explicit `--allow-python-exec`; never enable it for
-untrusted code outside an isolated container.
+Set `BLENDER_BIN` or pass `--blender /path/to/blender` if necessary. The renderer
+samples the full camera timeline with EEVEE and caches
+`<run>/camera_renders/<scene>.mp4`. `--keep-pngs` retains intermediate frames
+for debugging; the batch renderer otherwise removes them after making the MP4.
+No judge API or GPU encoder is called in this step.
 
-The generated test suite currently contains:
+## 2. Score Dual VQA
 
-- `basic_validity`: new tests that do not come from QA, such as parse success, non-empty scene, camera exists, and light exists.
-- QA-derived tests: tests converted from `test.jsonl`, keeping the original VSI-Bench `question_type` as the unit-test type.
-
-QA-derived tests use these evaluator modes:
-
-- `rule`: direct checks that need no model, currently used for `basic_validity`.
-- `function`: the judge maps semantic references to exact scene group keys;
-  deterministic code evaluates counting, size, absolute/relative distance,
-  egocentric direction, route turns, and appearance order.
-- `unsupported`: the selected evaluator mode cannot provide required evidence
-  (for example running exact spatial functions in `--mode static`). In execute
-  mode a submission with no camera motion fails temporal tests rather than
-  being excluded. Direct LLM proposition guessing is disabled.
-
-Configure an OpenAI-compatible API before running function tests. The recommended
-judge is the inexpensive `gpt-5.4-mini`:
+Install the judge dependencies in an evaluation environment:
 
 ```bash
+python -m pip install openai opencv-python-headless
 export OPENAI_API_KEY="..."
 ```
 
-Pass the non-secret model name explicitly for reproducible commands:
+The manuscript uses `gpt-5.4-mini` and 16 uniformly sampled frames per video.
+Source answers are shared across runs under
+`sandbox/results/_dual_vqa_shared/original_answers.jsonl`.
 
 ```bash
-python unit_test_metric.py \
-  --run ../sandbox/results/mini-harness-claude-sonnet-4-6-run01 \
-  --mode execute \
+python eval/dual_vqa_metric.py \
+  --ensure-originals-only \
   --model gpt-5.4-mini \
-  --limit 10
-```
+  --n-frames 16
 
-Use `--dry-run --limit 10` to validate loading and Blender introspection without
-model calls, then remove `--dry-run` for a paid smoke test. Each output row and
-the summary record judge prompt/completion tokens and estimated USD cost.
-
-For comparable random smoke tests across multiple agent runs, use one seed:
-
-```bash
-python smoke_matrix.py \
-  --runs \
-    ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
-    ../sandbox/results/mini-harness-minimax-m3-run01 \
-    ../sandbox/results/mini-harness-seed-2.0-lite-run01 \
+python eval/dual_vqa_metric.py \
+  --run sandbox/results/run_001 \
   --model gpt-5.4-mini \
-  --sample 10 \
-  --seed 42 \
-  --stop-on-error
+  --n-frames 16
 ```
 
-Every run receives the same sorted scene-ID sample. Add `--dry-run` to validate
-the matrix without API calls.
+These commands call the judge API for uncached answers. Resume is enabled by
+default. Keep the judge and sampling settings fixed when reusing shared banks;
+use a separate results directory for a different judging protocol.
 
-Use exact scene IDs and selected test types for targeted evaluator debugging:
+Outputs inside each run:
+
+- `dual_vqa.jsonl`: answers, source-correct flags, and retention for each question.
+- `dual_vqa_summary.json`: retention, accuracy, per-task values, and coverage.
+
+DV is `|C_source ∩ C_render| / |C_source|`, reported as a percentage. Its
+denominator is the set of **source-correct questions**, not all questions and
+not the number of scenes. A scene with no source-correct questions has
+undefined per-scene DV; it should not be labeled as a zero-retention example.
+The reported overall DV is pooled over questions rather than an unweighted
+mean of scene percentages.
+
+`--text-only` optionally builds a chance-floor bank; the current leaderboard
+uses retention directly. `videoqa_metric.py` is a legacy offline helper.
+`import_dual_vqa_from_pilot.py` is only for migrating existing pilot logs and
+is not a required setup step for a fresh checkout.
+
+## 3. Score Latent Similarity
+
+Use a dedicated GPU environment, separate from the Stage-1 agent environment:
 
 ```bash
-python smoke_matrix.py \
-  --runs \
-    ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
-    ../sandbox/results/mini-harness-minimax-m3-run01 \
-  --model gpt-5.4-mini \
-  --scene-ids 09c1414f1b 0d2ee665be \
-  --test-types obj_appearance_order route_planning
+python -m pip install -r eval/requirements-vjepa.txt
+python eval/vjepa_sim_metric.py \
+  --run sandbox/results/run_001 \
+  --vsi-bench VSI-Bench \
+  --model apiantonio/vjepa2.1-vit-gigantic-384 \
+  --num-frames 64 \
+  --device cuda \
+  --dtype bfloat16 \
+  --resume
 ```
 
-Compare the resulting score, token, and cost summaries:
+The frozen V-JEPA 2.1 ViT-G encoder compares source and rendered clips:
 
-```bash
-python compare_smoke.py \
-  --runs \
-    ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
-    ../sandbox/results/mini-harness-minimax-m3-run01 \
-    ../sandbox/results/mini-harness-seed-2.0-lite-run01 \
-  --model gpt-5.4-mini \
-  --sample 10 \
-  --seed 42
+- **Layout:** cosine similarity of temporally pooled spatial patch maps.
+- **Motion:** cosine similarity of global token-mean features.
+- **LS:** the mean of Layout and Motion.
+
+Outputs inside each run:
+
+- `vision_sim.jsonl`: one score or failure record per selected scene.
+- `vision_sim_summary.json`: `vision_sim`, `layout_sim`, and `motion_sim` over
+  all selected scenes, filling failed rows with zero. `scored_only` is a
+  separate diagnostic over successful rows and is not the benchmark mean.
+
+Raw summary scores use a 0–1 scale; multiply by 100 for tables. Cached MP4s
+avoid another Blender render. Render caching is enabled by default;
+`--no-keep-renders` disables cache reuse and saving, while existing MP4s stay
+on disk. Newly rendered PNGs are temporary. Features are never written to
+disk. Use `--limit`, `--sample`, or `--scene-ids` only for explicitly labeled
+subsets.
+
+See [the render/cluster guide](VJEPA_SIM_HANDOFF.md) for moving camera renders,
+running independent GPU shards, and merging their results.
+
+## 4. Check coverage and compute Overall
+
+Use the same full test pool for every configuration. The paper assigns zero
+to failed reconstructions on both axes; dropping failures changes the task.
+Record coverage alongside scores, and resolve evaluation infrastructure errors
+before reporting benchmark results.
+
+The current DV runner discovers questions from existing camera renders, and
+its raw summary aggregates successfully scored question records. A partial
+or failed run can therefore have a smaller denominator. **Do not treat that
+partial-run summary as a complete 288-scene result.** Check it against
+`test.jsonl` and the complete source-answer bank. Likewise, an LS summary's
+`num_scenes` must cover the intended pool, including failure records.
+
+Once both summaries cover the intended evaluation pool, compute the aggregate
+without further model calls:
+
+```python
+import json
+import math
+from pathlib import Path
+
+run = Path("sandbox/results/run_001")
+dv = 100 * json.loads((run / "dual_vqa_summary.json").read_text())["retention_rate"]
+ls = 100 * json.loads((run / "vision_sim_summary.json").read_text())["vision_sim"]
+overall = ((math.sqrt(dv) + math.sqrt(max(0.0, ls))) / 2) ** 2
+print({"Dual VQA": dv, "Latent Similarity": ls, "Overall": overall})
 ```
 
-For full-scale evaluation, run independent scene shards (each command writes
-separate output files):
+The square-root mean is applied to the two configuration-level scores, not
+averaged over per-scene Overall scores. It is neither the geometric mean nor
+the arithmetic mean. Negative cosine similarity is clipped to zero before
+taking its square root, as defined in the paper.
 
-```bash
-for i in $(seq 1 8); do
-  python unit_test_metric.py \
-    --run ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
-    --mode execute \
-    --model gpt-5.4-mini \
-    --shard "$i/8" &
-done
-wait
-
-# Merge into unit_tests.jsonl + summary.json, then delete shard intermediates.
-python merge_eval_shards.py \
-  --run ../sandbox/results/mini-harness-gpt-5.6-sol-reasoning-high-run01 \
-  --cleanup
-```
-
-To evaluate many completed Stage-1 runs in one go (skips runs that already
-have `summary.json`, auto-merges, and cleans shard intermediates):
-
-```bash
-cd ../sandbox
-caffeinate -i ./run_eval_batch.sh
-# or preview the queue first:
-./run_eval_batch.sh --dry-run
-```
-
-If a shard is interrupted, rerun that same shard command with `--resume`.
-`run_eval_batch.sh` resumes a shard only when that shard's `.config.json`
-already exists, so fresh runs and interrupted runs both work.
-
-Each input test case has a structure like:
-
-```json
-{
-  "test_id": "ut_000123",
-  "scene_name": "scene0461_00",
-  "test_type": "object_counting",
-  "source_qa_id": 123,
-  "evaluator": "function",
-  "function": "count_objects",
-  "expected": {"count": 4},
-  "params": {"object_ref": "chair"}
-}
-```
-
-New tests such as `basic_validity` have `source_qa_id: null`.
-
-The summary reports:
-
-```json
-{
-  "num_scenes": 30,
-  "num_tests": 149,
-  "num_evaluated": 149,
-  "num_passed": 80,
-  "num_unsupported": 0,
-  "unit_test_pass_rate": 0.5369127516778524,
-  "basic_validity_aggregation": "scene_all_or_nothing",
-  "judge_usage": {
-    "prompt_tokens": 12345,
-    "completion_tokens": 678,
-    "cost_usd": 0.01231
-  },
-  "by_test_type": {
-    "basic_validity": {
-      "aggregation": "scene_all_or_nothing",
-      "pass_rate": 0.9666666666666667,
-      "atomic_pass_rate": 0.9916666666666667
-    },
-    "object_counting": {"pass_rate": 0.32432432432432434}
-  }
-}
-```
-
-`basic_validity` is aggregated **per scene**: the four atomic checks (parse / mesh / camera / light) contribute a single credit that passes only when every evaluated check for that scene passes. This avoids saturating the overall micro-average with many easy basic tests. Atomic rates remain available under `atomic_pass_rate`.
-
-All tests are preserved, including tests where `human` fails. Low `human` scores are diagnostic signals for improving test extraction, object matching, unit calibration, or the scene itself; they are not a reason to remove tests.
-
-### Current geometric approximations
-
-- Object dimensions use evaluated Blender dimensions for single meshes; a
-  multi-part semantic object falls back to its union world AABB.
-- Closest surface distance currently uses world AABB separation, which can
-  underestimate distance for rotated or concave meshes.
-- Room area uses the evaluated mesh's projected horizontal footprint and avoids
-  double-counting overlapping floor parts; bbox area is a last-resort fallback.
-- Appearance visibility uses camera projection plus Blender ray casts. Materials
-  with low alpha or Principled transmission are treated as transparent.
-- Camera trajectories are sampled at up to 600 coarse frames, then each detected
-  first-visible interval is refined frame-by-frame.
-
-This unit-test metric is experimental. It is meant to support the "scene code as a testable artifact" direction. In particular, object matching and unit calibration still need improvement.
+The [results CSV](../assets/bvb-results.csv) preserves all 46 manuscript
+configurations and their full-precision values. The
+[project page](https://yoloytang.me/BVB/#leaderboard) adds interactive ranking
+and cost comparisons.
 
 ## Blind human ranking
 
-Nine ranking questions (3 sources × 3 scenes) in one self-contained HTML.
-Raters order n family-representative reconstructions against the original
-video and return a JSON file. See [`human/README.md`](human/README.md).
+The paper reports 15 raters, each ranking five anonymized reconstructions on
+nine scenes. LS correlates with preference at the scene-model level
+(Spearman ρ = 0.83). Overall matches the ordering of the five studied
+configurations (ρ = 1.00); Astra was not included in that study.
+See [the human-study guide](human/README.md) and [protocol](human/PROTOCOL.md).
