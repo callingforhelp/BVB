@@ -23,7 +23,7 @@ limit. External asset libraries are disallowed.
 
 <p align="center">
   <a href="https://yoloytang.me/BVB/">
-    <img src="assets/bvb-cost-frontier.png" alt="BVB two-axis Overall cost frontier">
+    <img src="assets/bvb-cost-frontier.png?v=afd7357e2ce3" alt="BVB Overall cost frontier across 47 configurations, including Grok 4.6 xhigh">
   </a>
 </p>
 
@@ -32,7 +32,7 @@ limit. External asset libraries are disallowed.
 - **288 real indoor videos** from the held-out VSI-Bench test split, sourced
   from ARKitScenes, ScanNet, and ScanNet++.
 - **5,130 spatiotemporal questions**, shared across all reconstructions.
-- **46 agent configurations across nine model families**, evaluated under one
+- **47 agent configurations across nine model families**, evaluated under one
   shared sandbox and prompt contract.
 - **Two complementary axes**: paired video-QA retention and frozen
   video-embedding similarity.
@@ -43,7 +43,7 @@ limit. External asset libraries are disallowed.
 
 The full interactive results are on the
 [project page](https://yoloytang.me/BVB/#leaderboard). A
-[CSV snapshot of all 46 configurations](assets/bvb-results.csv) is also included
+[CSV snapshot of all 47 configurations](assets/bvb-results.csv) is also included
 in this repository. This README focuses on the benchmark and reproducible workflow.
 
 ## Why programmatic reconstruction?
@@ -87,9 +87,10 @@ remain in the evaluation pool and score zero on both axes.
 
 ## What current agents reveal
 
-- **GPT-6 Astra high** leads the 46-configuration pool with **53.7 DV**,
+- **GPT-6 Astra high** leads the 47-configuration pool with **53.7 DV**,
   **88.6 LS**, and **70.07 Overall**.
-- **GPT-5.6 Sol xhigh** follows at 67.49 Overall, then **Claude Opus 5 high** at 66.21.
+- **GPT-5.6 Sol xhigh** follows at 67.49 Overall, then **Grok-4.6 xhigh** at
+  **67.17** and **Claude Opus 5 high** at 66.21.
 - A blind study with **15 raters** agrees strongly with LS at the scene-model
   level (Spearman ρ = 0.83). Overall matches the human ordering of the five
   tested configurations (ρ = 1.00); Astra was not included in that study.

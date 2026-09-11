@@ -60,7 +60,7 @@ for (const rel of assets) {
 let html = fs.readFileSync(path.join(source, 'index.html'), 'utf8');
 const escapeScript = value => value.replace(/<\/script/gi, '<\\/script');
 html = html.replace(/<link rel="stylesheet" href="styles.css"\s*\/>/, `<style>${fs.readFileSync(path.join(source,'styles.css'),'utf8')}</style>`);
-html = html.replace(/\s*<script src="(?:data|gallery|app)\.js" defer><\/script>/g, '');
+html = html.replace(/\s*<script src="(?:data|gallery|app)\.js(?:\?[^"\s]*)?" defer><\/script>/g, '');
 html = html.replace(/<video\b[\s\S]*?<\/video>/g, block => {
   const src = block.match(/<source\s+src="([^"]+)"/);
   if (!src || !privateAssets[src[1]]) throw new Error('Unrecognized initial video.');
