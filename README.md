@@ -5,7 +5,7 @@
 <h1 align="center">BVB: Blender-VideoBench</h1>
 
 <p align="center">
-  <strong>Benchmarking Multimodal Agents on Spatiotemporal Video Understanding via Programmatic Reconstruction in Blender</strong>
+  <strong>BVB: Benchmarking Agentic Video Understanding via Programmatic Reconstruction in Blender</strong>
 </p>
 
 <p align="center">
@@ -203,7 +203,7 @@ Cursor users can also follow the repository's BVB scene-builder skill at
 
 ```bibtex
 @misc{tang2026bvb,
-  title = {BVB: Benchmarking Multimodal Agents on Spatiotemporal Video Understanding via Programmatic Reconstruction in Blender},
+  title = {BVB: Benchmarking Agentic Video Understanding via Programmatic Reconstruction in Blender},
   author = {Yolo Y. Tang and Daiki Shimada and Jiayue Meng and Jing Bi and Pinxin Liu and Yicheng Wang and Yunzhong Xiao and Zhangyun Tan and Zeliang Zhang and Chao Huang and Susan Liang and Qianxiang Shen and Luchuan Song and Ali Vosoughi and Mingqian Feng and Melika Filvantorkaman and Chenliang Xu},
   year = {2026},
   url = {https://yoloytang.me/BVB/}
