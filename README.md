@@ -93,7 +93,7 @@ remain in the evaluation pool and score zero on both axes.
   **67.17**, **Qwen3.8-Max high** at **66.24**, and **Claude Opus 5 high** at 66.21.
 - A blind study with **15 raters** agrees strongly with LS at the scene-model
   level (Spearman ρ = 0.83). Overall matches the human ordering of the five
-  tested configurations (ρ = 1.00); Astra was not included in that study.
+  tested configurations (ρ = 1.00).
 - Even Astra loses nearly half of the spatial questions that are answerable
   from the original videos.
 

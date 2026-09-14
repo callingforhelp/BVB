@@ -154,7 +154,7 @@ averaged over per-scene Overall scores. It is neither the geometric mean nor
 the arithmetic mean. Negative cosine similarity is clipped to zero before
 taking its square root, as defined in the paper.
 
-The [results CSV](../assets/bvb-results.csv) preserves all 46 manuscript
+The [results CSV](../assets/bvb-results.csv) preserves all 51 manuscript
 configurations and their full-precision values. The
 [project page](https://yoloytang.me/BVB/#leaderboard) adds interactive ranking
 and cost comparisons.
@@ -164,5 +164,5 @@ and cost comparisons.
 The paper reports 15 raters, each ranking five anonymized reconstructions on
 nine scenes. LS correlates with preference at the scene-model level
 (Spearman ρ = 0.83). Overall matches the ordering of the five studied
-configurations (ρ = 1.00); Astra was not included in that study.
+configurations (ρ = 1.00).
 See [the human-study guide](human/README.md) and [protocol](human/PROTOCOL.md).
