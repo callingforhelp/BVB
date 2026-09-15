@@ -193,7 +193,10 @@ HF_HUB_ENABLE_HF_TRANSFER=1 python scripts/download_results.py \
   title = {BVB: Benchmarking Agentic Video Understanding via Programmatic Reconstruction in Blender},
   author = {Yolo Y. Tang and Daiki Shimada and Jiayue Meng and Jing Bi and Pinxin Liu and Yicheng Wang and Yunzhong Xiao and Zhangyun Tan and Zeliang Zhang and Chao Huang and Susan Liang and Qianxiang Shen and Luchuan Song and Ali Vosoughi and Mingqian Feng and Melika Filvantorkaman and Chenliang Xu},
   year = {2026},
-  url = {https://yoloytang.me/BVB/}
+  eprint = {2609.15478},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CV},
+  url = {https://arxiv.org/abs/2609.15478}
 }
 ```
 
