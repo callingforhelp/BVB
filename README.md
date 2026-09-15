@@ -23,7 +23,7 @@ limit. External asset libraries are disallowed.
 
 <p align="center">
   <a href="https://yoloytang.me/BVB/">
-    <img src="assets/bvb-cost-frontier.png?v=5a0bf31c5f4a" alt="BVB Overall cost frontier across 51 configurations, including Grok 4.6 xhigh">
+    <img src="assets/bvb-figure1.png?v=c12e59389209" alt="BVB Figure 1: benchmark overview and Overall cost frontier across 51 configurations">
   </a>
 </p>
 
