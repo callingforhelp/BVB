@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://yoloytang.me/BVB/"><img src="https://img.shields.io/badge/Project-Page-8B5CF6" alt="Project page"></a>
+  <a href="https://arxiv.org/abs/2609.15478"><img src="https://img.shields.io/badge/arXiv-2609.15478-B31B1B" alt="arXiv paper"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-0F766E" alt="MIT License"></a>
 </p>
 
