@@ -1,0 +1,13 @@
+{
+  "n_frames": 900,
+  "T": 3233.68,
+  "best_score": 0.753,
+  "best_pair": [
+    74,
+    191
+  ],
+  "median_echo": 0.121,
+  "max_echo": 0.753,
+  "breaks_s": [],
+  "operator": "none"
+}

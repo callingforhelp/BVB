@@ -1,0 +1,16 @@
+{
+  "n_frames": 900,
+  "T": 2483.56,
+  "best_score": 0.983,
+  "best_pair": [
+    596,
+    733
+  ],
+  "median_echo": 0.094,
+  "max_echo": 0.983,
+  "breaks_s": [
+    10.0,
+    16.0
+  ],
+  "operator": "room_swap"
+}

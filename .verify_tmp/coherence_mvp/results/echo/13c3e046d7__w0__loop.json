@@ -1,0 +1,15 @@
+{
+  "n_frames": 900,
+  "T": 570.92,
+  "best_score": 3.362569753334907e+17,
+  "best_pair": [
+    314,
+    464
+  ],
+  "median_echo": 0.027,
+  "max_echo": 3.362569753334907e+17,
+  "breaks_s": [
+    15.0
+  ],
+  "operator": "loop"
+}

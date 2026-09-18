@@ -1,0 +1,15 @@
+{
+  "n_frames": 900,
+  "T": 2120.61,
+  "best_score": 1.132,
+  "best_pair": [
+    711,
+    766
+  ],
+  "median_echo": 0.132,
+  "max_echo": 1.132,
+  "breaks_s": [
+    20.0
+  ],
+  "operator": "timewarp"
+}

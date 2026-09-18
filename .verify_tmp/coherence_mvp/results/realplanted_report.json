@@ -1,0 +1,1306 @@
+{
+  "beverage__clean": {
+    "breaks_s": [],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      297,
+      432,
+      437
+    ],
+    "det": {
+      "dup": [],
+      "recur": [],
+      "echo": {
+        "n_frames": 450,
+        "T": 171.39,
+        "best_score": 0.167,
+        "best_pair": [
+          358,
+          433
+        ],
+        "median_echo": 0.013,
+        "max_echo": 0.167
+      }
+    },
+    "judge": [
+      {
+        "frame": 297,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 432,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.7
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.7
+      },
+      {
+        "frame": 437,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.8
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 2.1
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 32.1
+      }
+    ]
+  },
+  "beverage__splice": {
+    "breaks_s": [
+      9.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      224,
+      332,
+      337
+    ],
+    "det": {
+      "dup": [],
+      "recur": [],
+      "echo": {
+        "n_frames": 350,
+        "T": 156.93,
+        "best_score": 0.424,
+        "best_pair": [
+          225,
+          338
+        ],
+        "median_echo": 0.024,
+        "max_echo": 0.424
+      }
+    },
+    "judge": [
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.9
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 2.2
+      },
+      {
+        "frame": 224,
+        "verdict": {
+          "continuous": false,
+          "same_scene": true,
+          "break_kind": "temporal_jump",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 3.0
+      },
+      {
+        "frame": 337,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 332,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      }
+    ]
+  },
+  "beverage__reverse": {
+    "breaks_s": [
+      7.0,
+      12.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      174,
+      299,
+      432
+    ],
+    "det": {
+      "dup": [],
+      "recur": [],
+      "echo": {
+        "n_frames": 450,
+        "T": 168.8,
+        "best_score": 330.776,
+        "best_pair": [
+          175,
+          300
+        ],
+        "median_echo": 0.021,
+        "max_echo": 330.776
+      }
+    },
+    "judge": [
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.1
+      },
+      {
+        "frame": 432,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.5
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.8
+      },
+      {
+        "frame": 299,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 174,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 2.3
+      }
+    ]
+  },
+  "beverage__loop": {
+    "breaks_s": [
+      7.0
+    ],
+    "cand": [
+      22,
+      31,
+      32,
+      33,
+      34,
+      174,
+      197
+    ],
+    "det": {
+      "dup": [],
+      "recur": [
+        175
+      ],
+      "echo": {
+        "n_frames": 450,
+        "T": 154.65,
+        "best_score": 77164.211,
+        "best_pair": [
+          58,
+          233
+        ],
+        "median_echo": 0.028,
+        "max_echo": 77164.211
+      }
+    },
+    "judge": [
+      {
+        "frame": 22,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.0
+      },
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 174,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 197,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      }
+    ]
+  },
+  "beverage__timewarp": {
+    "breaks_s": [
+      14.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      351,
+      376,
+      378
+    ],
+    "det": {
+      "dup": [
+        344
+      ],
+      "recur": [],
+      "echo": {
+        "n_frames": 400,
+        "T": 56.09,
+        "best_score": 0.421,
+        "best_pair": [
+          236,
+          266
+        ],
+        "median_echo": 0.003,
+        "max_echo": 0.421
+      }
+    },
+    "judge": [
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 378,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.0
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.98
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.8
+      },
+      {
+        "frame": 351,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.7
+      },
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 6.5
+      },
+      {
+        "frame": 376,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 7.6
+      }
+    ]
+  },
+  "desk__clean": {
+    "breaks_s": [],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      378,
+      379,
+      380
+    ],
+    "det": {
+      "dup": [],
+      "recur": [],
+      "echo": {
+        "n_frames": 450,
+        "T": 516.99,
+        "best_score": 3.239,
+        "best_pair": [
+          98,
+          233
+        ],
+        "median_echo": 0.018,
+        "max_echo": 3.239
+      }
+    },
+    "judge": [
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 378,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.1
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.8
+      },
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 2.0
+      },
+      {
+        "frame": 380,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 379,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 2.1
+      }
+    ]
+  },
+  "desk__splice": {
+    "breaks_s": [
+      9.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      224,
+      278,
+      279
+    ],
+    "det": {
+      "dup": [],
+      "recur": [],
+      "echo": {
+        "n_frames": 350,
+        "T": 482.95,
+        "best_score": 1.446,
+        "best_pair": [
+          48,
+          185
+        ],
+        "median_echo": 0.027,
+        "max_echo": 1.446
+      }
+    },
+    "judge": [
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.0
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.8
+      },
+      {
+        "frame": 224,
+        "verdict": {
+          "continuous": false,
+          "same_scene": false,
+          "break_kind": "scene_change",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 279,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 278,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 2.2
+      }
+    ]
+  },
+  "desk__reverse": {
+    "breaks_s": [
+      7.0,
+      12.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      174,
+      299,
+      379
+    ],
+    "det": {
+      "dup": [],
+      "recur": [],
+      "echo": {
+        "n_frames": 450,
+        "T": 511.8,
+        "best_score": 188.797,
+        "best_pair": [
+          175,
+          300
+        ],
+        "median_echo": 0.045,
+        "max_echo": 188.797
+      }
+    },
+    "judge": [
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.0
+      },
+      {
+        "frame": 174,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 299,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.3
+      },
+      {
+        "frame": 379,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 3.9
+      }
+    ]
+  },
+  "desk__loop": {
+    "breaks_s": [
+      7.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      174,
+      404,
+      407
+    ],
+    "det": {
+      "dup": [],
+      "recur": [
+        175
+      ],
+      "echo": {
+        "n_frames": 450,
+        "T": 460.52,
+        "best_score": 368155.594,
+        "best_pair": [
+          97,
+          272
+        ],
+        "median_echo": 0.239,
+        "max_echo": 368155.594
+      }
+    },
+    "judge": [
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 0.9
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.1
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.5
+      },
+      {
+        "frame": 404,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 174,
+        "verdict": {
+          "continuous": false,
+          "same_scene": true,
+          "break_kind": "temporal_jump",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.8
+      },
+      {
+        "frame": 407,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      }
+    ]
+  },
+  "desk__timewarp": {
+    "breaks_s": [
+      14.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      376,
+      377,
+      378
+    ],
+    "det": {
+      "dup": [
+        344
+      ],
+      "recur": [],
+      "echo": {
+        "n_frames": 400,
+        "T": 147.0,
+        "best_score": 2.554,
+        "best_pair": [
+          194,
+          379
+        ],
+        "median_echo": 0.004,
+        "max_echo": 2.554
+      }
+    },
+    "judge": [
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.1
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.7
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.5
+      },
+      {
+        "frame": 377,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 376,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.8
+      },
+      {
+        "frame": 378,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      }
+    ]
+  },
+  "beverage__room_swap": {
+    "breaks_s": [
+      7.0,
+      12.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      174,
+      299,
+      432
+    ],
+    "det": {
+      "dup": [],
+      "recur": [],
+      "echo": {
+        "n_frames": 450,
+        "T": 220.57,
+        "best_score": 1.072,
+        "best_pair": [
+          175,
+          300
+        ],
+        "median_echo": 0.027,
+        "max_echo": 1.072
+      }
+    },
+    "judge": [
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.0
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.1
+      },
+      {
+        "frame": 432,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 299,
+        "verdict": {
+          "continuous": false,
+          "same_scene": false,
+          "break_kind": "scene_change",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      },
+      {
+        "frame": 174,
+        "verdict": {
+          "continuous": false,
+          "same_scene": false,
+          "break_kind": "scene_change",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.8
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 2.3
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 2.9
+      }
+    ]
+  },
+  "desk__room_swap": {
+    "breaks_s": [
+      7.0,
+      12.0
+    ],
+    "cand": [
+      31,
+      32,
+      33,
+      34,
+      174,
+      299,
+      379
+    ],
+    "det": {
+      "dup": [],
+      "recur": [],
+      "echo": {
+        "n_frames": 450,
+        "T": 361.24,
+        "best_score": 1.041,
+        "best_pair": [
+          175,
+          300
+        ],
+        "median_echo": 0.029,
+        "max_echo": 1.041
+      }
+    },
+    "judge": [
+      {
+        "frame": 31,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.1
+      },
+      {
+        "frame": 32,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.1
+      },
+      {
+        "frame": 299,
+        "verdict": {
+          "continuous": false,
+          "same_scene": false,
+          "break_kind": "scene_change",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.1
+      },
+      {
+        "frame": 34,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 174,
+        "verdict": {
+          "continuous": false,
+          "same_scene": false,
+          "break_kind": "scene_change",
+          "confidence": 1.0
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.2
+      },
+      {
+        "frame": 33,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.7
+      },
+      {
+        "frame": 379,
+        "verdict": {
+          "continuous": true,
+          "same_scene": true,
+          "break_kind": "none",
+          "confidence": 0.95
+        },
+        "route": "deepseek/deepseek-v4.1-flash",
+        "secs": 1.4
+      }
+    ]
+  }
+}

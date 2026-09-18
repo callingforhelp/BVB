@@ -22,12 +22,13 @@
     },
     "reverse_segment": {
       "breaks": 30,
-      "hit": 18,
+      "hit": 30,
       "fp": 0,
       "clips": 15,
-      "clip_flagged": 12,
+      "clip_flagged": 15,
       "kinds": {
         "scene_change": 10,
+        "reverse(echo)": 12,
         "temporal_jump": 6,
         "other": 2
       }
@@ -35,7 +36,7 @@
     "loop": {
       "breaks": 15,
       "hit": 15,
-      "fp": 0,
+      "fp": 11,
       "clips": 15,
       "clip_flagged": 15,
       "kinds": {
@@ -48,7 +49,7 @@
     "room_swap": {
       "breaks": 30,
       "hit": 26,
-      "fp": 6,
+      "fp": 9,
       "clips": 15,
       "clip_flagged": 15,
       "kinds": {
@@ -195,7 +196,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 7,
       "n_disc": 1,
       "recur_onsets": [
@@ -206,7 +207,7 @@
       "detected": [
         300.0
       ],
-      "fp": 2,
+      "fp": 3,
       "n_cand": 8,
       "n_disc": 1,
       "recur_onsets": [
@@ -232,7 +233,10 @@
       "recur_onsets": []
     },
     "09c1414f1b__w1__reverse_segment": {
-      "detected": [],
+      "detected": [
+        300.0,
+        480.0
+      ],
       "fp": 0,
       "n_cand": 6,
       "n_disc": 0,
@@ -242,7 +246,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 7,
       "n_disc": 0,
       "recur_onsets": [
@@ -253,7 +257,7 @@
       "detected": [
         300.0
       ],
-      "fp": 2,
+      "fp": 3,
       "n_cand": 8,
       "n_disc": 1,
       "recur_onsets": [
@@ -280,7 +284,8 @@
     },
     "09c1414f1b__w2__reverse_segment": {
       "detected": [
-        300.0
+        300.0,
+        480.0
       ],
       "fp": 0,
       "n_cand": 6,
@@ -291,7 +296,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 8,
       "n_disc": 0,
       "recur_onsets": [
@@ -302,7 +307,7 @@
       "detected": [
         300.0
       ],
-      "fp": 2,
+      "fp": 3,
       "n_cand": 9,
       "n_disc": 1,
       "recur_onsets": [
@@ -329,7 +334,8 @@
     },
     "0d2ee665be__w0__reverse_segment": {
       "detected": [
-        300.0
+        300.0,
+        480.0
       ],
       "fp": 0,
       "n_cand": 6,
@@ -340,7 +346,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 6,
       "n_disc": 0,
       "recur_onsets": [
@@ -377,6 +383,7 @@
     },
     "0d2ee665be__w1__reverse_segment": {
       "detected": [
+        300.0,
         480.0
       ],
       "fp": 0,
@@ -388,7 +395,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 7,
       "n_disc": 0,
       "recur_onsets": [
@@ -476,6 +483,7 @@
     },
     "13c3e046d7__w0__reverse_segment": {
       "detected": [
+        300.0,
         480.0
       ],
       "fp": 0,
@@ -536,7 +544,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 6,
       "n_disc": 1,
       "recur_onsets": [
@@ -667,7 +675,8 @@
     },
     "1ada7a0617__w1__reverse_segment": {
       "detected": [
-        300.0
+        300.0,
+        480.0
       ],
       "fp": 0,
       "n_cand": 10,
@@ -678,7 +687,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 11,
       "n_disc": 1,
       "recur_onsets": [
@@ -714,6 +723,7 @@
     },
     "1ada7a0617__w2__reverse_segment": {
       "detected": [
+        300.0,
         480.0
       ],
       "fp": 0,
@@ -725,7 +735,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 9,
       "n_disc": 0,
       "recur_onsets": [
@@ -761,7 +771,10 @@
       "recur_onsets": []
     },
     "21d970d8de__w0__reverse_segment": {
-      "detected": [],
+      "detected": [
+        300.0,
+        480.0
+      ],
       "fp": 0,
       "n_cand": 6,
       "n_disc": 0,
@@ -771,7 +784,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 7,
       "n_disc": 0,
       "recur_onsets": [
@@ -820,7 +833,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 7,
       "n_disc": 1,
       "recur_onsets": [
@@ -856,7 +869,10 @@
       "recur_onsets": []
     },
     "21d970d8de__w2__reverse_segment": {
-      "detected": [],
+      "detected": [
+        300.0,
+        480.0
+      ],
       "fp": 0,
       "n_cand": 7,
       "n_disc": 0,
@@ -866,7 +882,7 @@
       "detected": [
         450.0
       ],
-      "fp": 0,
+      "fp": 1,
       "n_cand": 7,
       "n_disc": 1,
       "recur_onsets": [

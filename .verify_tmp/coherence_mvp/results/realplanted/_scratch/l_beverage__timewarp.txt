@@ -1,0 +1,2 @@
+file '/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp/results/realplanted/_scratch/beverage_tw_a.mp4'
+file '/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp/results/realplanted/_scratch/beverage_tw_b.mp4'

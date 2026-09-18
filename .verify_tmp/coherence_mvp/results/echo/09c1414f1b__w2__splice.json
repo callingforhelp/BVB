@@ -1,0 +1,15 @@
+{
+  "n_frames": 900,
+  "T": 1571.73,
+  "best_score": 0.594,
+  "best_pair": [
+    249,
+    450
+  ],
+  "median_echo": 0.03,
+  "max_echo": 0.594,
+  "breaks_s": [
+    15.0
+  ],
+  "operator": "splice"
+}

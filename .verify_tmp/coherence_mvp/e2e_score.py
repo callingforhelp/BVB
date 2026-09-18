@@ -52,6 +52,18 @@ def recur_onsets(clip_id: str) -> list[int]:
 
 
 DUP_W, DUP_T = 60, 0.2   # trailing window, dense-dup fraction
+ECHO_T = 10.0            # 4-factor echo score; reverse min 21.8, clean max 2.2
+
+
+def echo_boundaries(clip_id: str) -> list[int]:
+    """Reverse arm: 4-factor temporal-echo pair -> both seam positions."""
+    f = ROOT / "results" / "echo" / f"{clip_id}.json"
+    if not f.exists():
+        return []
+    r = json.loads(f.read_text())
+    if r["best_score"] >= ECHO_T:
+        return [int(x) for x in r["best_pair"]]
+    return []
 
 
 def dup_boundaries(clip_id: str) -> list[int]:
@@ -90,6 +102,7 @@ def main() -> int:
                 if v["continuous"] is False]
         onsets = recur_onsets(cid)
         dups = dup_boundaries(cid)
+        echos = echo_boundaries(cid)
         # detection per break
         hits = set()
         kinds = []
@@ -104,11 +117,18 @@ def main() -> int:
             elif any(abs(o - b) <= TOL for o in dups):
                 hits.add(b)
                 kinds.append("timewarp(dup)")
-        # false positives: detections far from any planted break
+            elif any(abs(o - b) <= TOL for o in echos):
+                hits.add(b)
+                kinds.append("reverse(echo)")
+        # false positives: detections far from any planted break.
+        # echo is a PAIR hypothesis: count once if neither endpoint hits.
         fp_j = sum(1 for s, v, g in disc
                    if all(abs(s - b) > TOL for b in bfr))
         fp_r = sum(1 for o in onsets + dups
                    if all(abs(o - b) > TOL for b in bfr))
+        if echos and all(all(abs(o - b) > TOL for b in bfr)
+                         for o in echos):
+            fp_r += 1
         d = table.setdefault(op, {"breaks": 0, "hit": 0, "fp": 0,
                                   "clips": 0, "clip_flagged": 0,
                                   "kinds": {}})

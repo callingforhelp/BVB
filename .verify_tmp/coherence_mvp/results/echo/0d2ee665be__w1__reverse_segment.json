@@ -1,0 +1,16 @@
+{
+  "n_frames": 900,
+  "T": 3605.77,
+  "best_score": 37.834,
+  "best_pair": [
+    300,
+    480
+  ],
+  "median_echo": 0.187,
+  "max_echo": 37.834,
+  "breaks_s": [
+    10.0,
+    16.0
+  ],
+  "operator": "reverse_segment"
+}
