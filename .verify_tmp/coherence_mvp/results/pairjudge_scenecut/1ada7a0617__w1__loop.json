@@ -1,0 +1,74 @@
+{
+  "clip_id": "1ada7a0617__w1__loop",
+  "breaks_s": [
+    15.0
+  ],
+  "candidates": [
+    {
+      "frame": 57,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.5
+    },
+    {
+      "frame": 91,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.4
+    },
+    {
+      "frame": 179,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.9
+    },
+    {
+      "frame": 347,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.0
+    },
+    {
+      "frame": 450,
+      "verdict": {
+        "continuous": false,
+        "same_scene": false,
+        "break_kind": "scene_change",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.6
+    },
+    {
+      "frame": 639,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.3
+    }
+  ]
+}

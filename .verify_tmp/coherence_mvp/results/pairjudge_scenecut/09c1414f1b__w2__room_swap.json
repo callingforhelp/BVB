@@ -1,0 +1,42 @@
+{
+  "clip_id": "09c1414f1b__w2__room_swap",
+  "breaks_s": [
+    10.0,
+    16.0
+  ],
+  "candidates": [
+    {
+      "frame": 296,
+      "verdict": {
+        "continuous": false,
+        "same_scene": false,
+        "break_kind": "scene_change",
+        "confidence": 1.0
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.1
+    },
+    {
+      "frame": 546,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 1.0
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.2
+    },
+    {
+      "frame": 796,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 1.0
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.8
+    }
+  ]
+}

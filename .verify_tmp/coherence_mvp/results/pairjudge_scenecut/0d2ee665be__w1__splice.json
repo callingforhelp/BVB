@@ -1,0 +1,30 @@
+{
+  "clip_id": "0d2ee665be__w1__splice",
+  "breaks_s": [
+    15.0
+  ],
+  "candidates": [
+    {
+      "frame": 651,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.0
+    },
+    {
+      "frame": 678,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.0
+    }
+  ]
+}

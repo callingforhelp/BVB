@@ -1,0 +1,41 @@
+{
+  "clip_id": "13c3e046d7__w2__loop",
+  "breaks_s": [
+    15.0
+  ],
+  "candidates": [
+    {
+      "frame": 424,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.9
+    },
+    {
+      "frame": 578,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.8
+    },
+    {
+      "frame": 828,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.9
+    }
+  ]
+}

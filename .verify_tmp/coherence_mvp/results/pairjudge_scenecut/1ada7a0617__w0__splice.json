@@ -1,0 +1,63 @@
+{
+  "clip_id": "1ada7a0617__w0__splice",
+  "breaks_s": [
+    15.0
+  ],
+  "candidates": [
+    {
+      "frame": 151,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.9
+    },
+    {
+      "frame": 401,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 1.0
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.2
+    },
+    {
+      "frame": 541,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.1
+    },
+    {
+      "frame": 629,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.3
+    },
+    {
+      "frame": 797,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.0
+    }
+  ]
+}
