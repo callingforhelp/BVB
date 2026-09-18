@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "clean",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "No visible movement of hands or objects between any frames; scene appears static.",
+  "confidence": 0.8
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.6,
+ "clip_id": "09c1414f1b__w0__clean"
+}

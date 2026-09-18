@@ -7,23 +7,24 @@
  "final": {
   "action": {
    "type": "choice",
-   "choice": "conclude",
-   "confidence": 0.13,
+   "choice": "judge_7",
+   "confidence": 0.19,
    "probabilities": {
-    "judge_8": 0.07,
+    "judge_0": 0.08,
     "judge_9": 0.01,
-    "judge_0": 0.11,
-    "judge_6": 0.1,
-    "conclude": 0.24000000000000002,
+    "judge_4": 0.11,
+    "judge_2": 0.17,
     "judge_3": 0.04,
-    "judge_4": 0.14,
-    "judge_2": 0.21,
-    "judge_1": 0.08
+    "judge_1": 0.07,
+    "conclude": 0.17,
+    "judge_8": 0.01,
+    "judge_6": 0.07,
+    "judge_7": 0.27
    }
   },
   "corrupted": {
    "type": "noul",
-   "noul": 0.73
+   "noul": 0.74
   },
   "break_type": {
    "type": "choice",
@@ -31,44 +32,84 @@
    "confidence": 0.86,
    "probabilities": {
     "loop": 0.0,
-    "timewarp": 0.88,
     "none": 0.07,
+    "timewarp": 0.89,
+    "room_swap": 0.02,
     "splice": 0.02,
-    "reverse": 0.0,
-    "room_swap": 0.03
+    "reverse": 0.0
    }
   },
   "sufficient": {
    "type": "noul",
-   "noul": 0.31
+   "noul": 0.26
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.11
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.27
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.25
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.76
   }
  },
+ "fan_type": "timewarp",
+ "fan_probs": {
+  "loop": 0.11,
+  "reverse": 0.08,
+  "room_swap": 0.27,
+  "splice": 0.25,
+  "timewarp": 0.76
+ },
+ "composite_type": "timewarp",
  "n_candidates": 10,
  "judge_calls": 2,
  "discontinuous_at": [],
- "jev_calls": 3,
- "jev_errors": 0,
+ "jev_calls": 2,
+ "jev_errors": 1,
  "transcript": [
   {
    "iter": 0,
    "action": "judge_5",
-   "corrupted": 0.77,
+   "corrupted": 0.79,
    "break_type": "timewarp",
-   "sufficient": 0.3
+   "sufficient": 0.26,
+   "fan": {
+    "loop": 0.11,
+    "reverse": 0.08,
+    "room_swap": 0.29,
+    "splice": 0.28,
+    "timewarp": 0.79
+   }
   },
   {
    "iter": 1,
    "action": "judge_7",
    "corrupted": 0.74,
    "break_type": "timewarp",
-   "sufficient": 0.31
+   "sufficient": 0.26,
+   "fan": {
+    "loop": 0.11,
+    "reverse": 0.08,
+    "room_swap": 0.27,
+    "splice": 0.25,
+    "timewarp": 0.76
+   }
   },
   {
    "iter": 2,
-   "action": "conclude",
-   "corrupted": 0.73,
-   "break_type": "timewarp",
-   "sufficient": 0.31
+   "error": "Remote end closed connection without response"
   }
  ]
 }

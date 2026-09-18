@@ -1,0 +1,12 @@
+{
+ "frame": 350,
+ "arm": "boundary",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "No visible change in hand position or object movement between any frames.",
+  "confidence": 0.9
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.8,
+ "clip_id": "beverage__timewarp"
+}

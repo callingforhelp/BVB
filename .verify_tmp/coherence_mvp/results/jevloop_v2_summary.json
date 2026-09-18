@@ -1,0 +1,21 @@
+{
+ "jev_loop": {
+  "config": "evidence-floor conclude gate (corrupted<0.5 OR judged>=2 OR fan_margin>=0.2) + per-type noul fan + seam-count arbitration",
+  "detection": "88/90 (identical to fixed pipeline; 2 sub-perceptual splices)",
+  "typing": "82/90 composite (choice primary, fan fallback, seam-count arbitration)",
+  "judge_calls": "262/782 = 34% of fixed pipeline",
+  "jev_calls": "348 (~3.9/clip)",
+  "key_findings": [
+   "sufficient noul unusable as gate: median 0.30, max 0.61, and its p99 was a confidently-WRONG case",
+   "static swapped scene => recur=1.0 + dup dense + huge echo: pixel-identical to a replay at signal level; disambiguated by fan disagreement + forced judging",
+   "fan-out typing beats Choice on room_swap (12/15 vs 8/15) but loses splice (6/15); seam-count arbitration recovers 82/90",
+   "every failure mode was state-serialization calibration, not Jev reasoning"
+  ]
+ },
+ "rate_probe": {
+  "config": "equal-dt pairs straddling boundary, VLM judges progress_B_vs_A (more/same/less)",
+  "corpus_v3": "boundary 13/15 same (vacuous - windows are static); clean 15/15 same; control 15/15 same",
+  "realplanted": "boundary: same + much_less(direction-inverted); control: much_less (false fire)",
+  "verdict": "NEGATIVE - VLM comparative rate judgment is too noisy at 2s strides; task progress is bursty not steady. dup_frac + motion-rate pixel signals remain the timewarp instruments."
+ }
+}

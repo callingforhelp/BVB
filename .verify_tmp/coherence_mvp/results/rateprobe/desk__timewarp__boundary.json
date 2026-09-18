@@ -1,0 +1,12 @@
+{
+ "frame": 350,
+ "arm": "boundary",
+ "verdict": {
+  "progress_B_vs_A": "much_less",
+  "what_changed": "Hands and orange packet move noticeably between A1 and A2, but remain nearly static between B1 and B2.",
+  "confidence": 0.9
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 2.2,
+ "clip_id": "desk__timewarp"
+}

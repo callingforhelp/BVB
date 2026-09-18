@@ -8,37 +8,66 @@
   "action": {
    "type": "choice",
    "choice": "conclude",
-   "confidence": 0.2,
+   "confidence": 0.17,
    "probabilities": {
-    "judge_3": 0.15,
-    "conclude": 0.37,
-    "judge_1": 0.06,
+    "judge_1": 0.08,
+    "judge_3": 0.19,
+    "conclude": 0.34,
     "judge_2": 0.19,
-    "judge_0": 0.23
+    "judge_0": 0.2
    }
   },
   "corrupted": {
    "type": "noul",
-   "noul": 0.76
+   "noul": 0.78
   },
   "break_type": {
    "type": "choice",
    "choice": "timewarp",
    "confidence": 0.87,
    "probabilities": {
+    "room_swap": 0.03,
+    "loop": 0.0,
     "timewarp": 0.9,
     "splice": 0.02,
     "reverse": 0.0,
-    "loop": 0.0,
-    "room_swap": 0.02,
-    "none": 0.06
+    "none": 0.05
    }
   },
   "sufficient": {
    "type": "noul",
-   "noul": 0.29
+   "noul": 0.3
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.16
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.27
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.26
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.79
   }
  },
+ "fan_type": "timewarp",
+ "fan_probs": {
+  "loop": 0.16,
+  "reverse": 0.07,
+  "room_swap": 0.27,
+  "splice": 0.26,
+  "timewarp": 0.79
+ },
+ "composite_type": "timewarp",
  "n_candidates": 6,
  "judge_calls": 2,
  "discontinuous_at": [],
@@ -48,23 +77,44 @@
   {
    "iter": 0,
    "action": "judge_5",
-   "corrupted": 0.77,
+   "corrupted": 0.78,
    "break_type": "timewarp",
-   "sufficient": 0.26
+   "sufficient": 0.26,
+   "fan": {
+    "loop": 0.17,
+    "reverse": 0.08,
+    "room_swap": 0.31,
+    "splice": 0.31,
+    "timewarp": 0.78
+   }
   },
   {
    "iter": 1,
    "action": "judge_4",
-   "corrupted": 0.78,
+   "corrupted": 0.77,
    "break_type": "timewarp",
-   "sufficient": 0.26
+   "sufficient": 0.28,
+   "fan": {
+    "loop": 0.16,
+    "reverse": 0.08,
+    "room_swap": 0.27,
+    "splice": 0.27,
+    "timewarp": 0.77
+   }
   },
   {
    "iter": 2,
    "action": "conclude",
-   "corrupted": 0.76,
+   "corrupted": 0.78,
    "break_type": "timewarp",
-   "sufficient": 0.29
+   "sufficient": 0.3,
+   "fan": {
+    "loop": 0.16,
+    "reverse": 0.07,
+    "room_swap": 0.27,
+    "splice": 0.26,
+    "timewarp": 0.79
+   }
   }
  ]
 }

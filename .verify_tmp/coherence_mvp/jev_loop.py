@@ -38,6 +38,9 @@ OUT.mkdir(parents=True, exist_ok=True)
 FPS = 30.0
 KEYINT = 250 / FPS
 MAX_ITERS = 8
+SUFF_TAU = 0.5
+FAN_MARGIN = 0.2
+MIN_JUDGED = 2
 TYPES = ["none", "loop", "reverse", "room_swap", "splice", "timewarp"]
 
 manifest = json.loads((ROOT / "corpus_v3" / "manifest.json").read_text())
@@ -121,9 +124,11 @@ def state_view(st: dict) -> dict:
         "free_signal_evidence": {
             "recur_frac_max": {
                 "value": fs["recur_frac_max"], "frame": fs["recur_argmax_frame"],
-                "meaning": ("fraction of frames that are exact pixel replays of an earlier frame; >=0.9 = "
-                            "clip replays itself (loop edit). Values 0.5-0.8 are ambiguous: splices of "
-                            "the same scene can also reach ~0.6 — do NOT call loop below 0.9.")},
+                "meaning": ("fraction of frames that are near-exact replays of an earlier frame (lag 2-10s); "
+                            ">=0.9 usually = loop edit. CAVEAT: a static motionless segment (e.g. a still "
+                            "room swapped in) also scores ~1.0 — if dup_dense also fires and the repeated "
+                            "region is contiguous, suspect STATIC segment => room_swap, not loop. "
+                            "Values 0.5-0.8 ambiguous (splices of same scene reach ~0.6).")},
             "dup_dense_last_frame": {
                 "value": fs["dup_dense_last_frame"],
                 "meaning": "last frame of a dense run of adjacent-duplicate frames (setpts slowdown). Non-null strongly indicates timewarp; null on clean/other."},
@@ -168,6 +173,15 @@ def state_view(st: dict) -> dict:
     }
 
 
+TYPE_DESC = {
+    "loop": "footage repeats itself — a segment is replayed",
+    "reverse": "a segment plays backward in time",
+    "room_swap": "the scene/location changes to a different place then returns",
+    "splice": "a hard cut joins non-contiguous footage of the same scene",
+    "timewarp": "part of the clip plays at altered speed (slowed or sped up)",
+}
+
+
 def questions_for(st: dict) -> dict:
     crit = {}
     for i, c in enumerate(st["candidates"]):
@@ -175,18 +189,18 @@ def questions_for(st: dict) -> dict:
             crit[f"judge_{i}"] = (f"run the VLM continuity check on candidate "
                                   f"{i} at frame {c['frame']} (~{c['frame']/30:.1f}s)")
     crit["conclude"] = "stop gathering evidence and report the final verdict"
-    return {
+    q = {
         "action": {"type": "choice", "instructions": "What is the best next step?", "criteria": crit},
         "corrupted": {"type": "noul", "instructions": "This clip contains an artificial temporal discontinuity (an edit: replayed footage, reversed segment, swapped scene, cut/splice, or retimed segment)."},
         "break_type": {"type": "choice", "instructions": "Which edit type best fits the evidence?", "criteria": {
-            "none": "no artificial edit",
-            "loop": "footage repeats itself (replayed segment)",
-            "reverse": "a segment plays backward (reversed)",
-            "room_swap": "the scene/location changes then returns",
-            "splice": "a hard cut joins non-contiguous footage of the same scene",
-            "timewarp": "part of the clip plays at altered speed"}},
+            "none": "no artificial edit", **TYPE_DESC}},
         "sufficient": {"type": "noul", "instructions": "The current evidence is sufficient to conclude with confidence; more VLM checks would not change the verdict."},
     }
+    # speculative fan-out: per-type nouls — parallel, no added latency
+    for t, desc in TYPE_DESC.items():
+        q[f"is_{t}"] = {"type": "noul",
+                        "instructions": f"The evidence indicates this clip was edited with a {t} corruption ({desc})."}
+    return q
 
 
 # ---------------------------------------------------------------- loop
@@ -209,11 +223,34 @@ def run_clip(cid: str) -> dict:
             break
         verdict = {k: v for k, v in ans.items()}
         act = ans.get("action", {}).get("choice", "conclude")
+        suff = ans.get("sufficient", {}).get("noul", 0)
+        fan = {t: ans.get(f"is_{t}", {}).get("noul") for t in TYPE_DESC}
         transcript.append({"iter": it, "action": act,
                            "corrupted": ans.get("corrupted", {}).get("noul"),
                            "break_type": ans.get("break_type", {}).get("choice"),
-                           "sufficient": ans.get("sufficient", {}).get("noul")})
-        if act == "conclude" or not unjudged:
+                           "sufficient": suff, "fan": fan})
+        if act == "conclude":
+            vals = sorted((v for v in fan.values() if v is not None), reverse=True)
+            margin = (vals[0] - vals[1]) if len(vals) > 1 else 1.0
+            corrupted_p = ans.get("corrupted", {}).get("noul", 0)
+            judged_n = len([c for c in st["candidates"] if c["revealed"]])
+            # conclude honored iff evidence floor met: clearly clean,
+            # >=MIN_JUDGED verdicts seen, or one type dominates the fan.
+            # (sufficient noul is logged but NOT gated on: Jev's suff
+            #  calibration is pessimistic (median ~0.3) and its max came
+            #  from a confidently-wrong case.)
+            ok = (corrupted_p < 0.5 or judged_n >= MIN_JUDGED
+                  or margin >= FAN_MARGIN)
+            if ok:
+                break
+            if not unjudged:
+                transcript[-1]["forced_end"] = True  # out of options, still uncertain
+                break
+            # confidence-gated: wants to stop but evidence thin/ambiguous -> force a check
+            st["candidates"][unjudged[0]]["revealed"] = st["candidates"][unjudged[0]]["verdict"]
+            transcript[-1]["forced_judge"] = unjudged[0]
+            continue
+        if not unjudged:
             break
         if act.startswith("judge_"):
             i = int(act.split("_")[1])
@@ -227,11 +264,26 @@ def run_clip(cid: str) -> dict:
     judged = [c for c in st["candidates"] if c["revealed"]]
     discont = [c["frame"] for c in judged
                if c["revealed"].get("continuous") is False]
+    last_fan = next((t["fan"] for t in reversed(transcript) if t.get("fan")), {})
+    fan_type = max(last_fan, key=lambda k: last_fan.get(k) or 0) if last_fan else None
+    ch = verdict.get("break_type", {}).get("choice")
+    cor = verdict.get("corrupted", {}).get("noul", 0)
+    composite = fan_type if (ch == "none" and cor > 0.5 and fan_type) else ch
+    # seam-count arbitration: room_swap = TWO confirmed discontinuities,
+    # splice = ONE. Jev gathers the evidence; code arbitrates the type.
+    ndis = len(discont)
+    if composite == "splice" and ndis >= 2:
+        composite = "room_swap"
+    elif composite == "room_swap" and ndis < 2:
+        composite = "splice"
     out = {
         "clip_id": cid,
         "operator": CLIPS[cid]["operator"],
         "breaks_s": CLIPS[cid]["breaks_s"],
         "final": verdict,
+        "fan_type": fan_type,
+        "fan_probs": last_fan,
+        "composite_type": composite,
         "n_candidates": len(st["candidates"]),
         "judge_calls": len(judged),
         "discontinuous_at": discont,

@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "clean",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "The scene is static with no visible actor or object movement in either pair.",
+  "confidence": 0.8
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.5,
+ "clip_id": "1ada7a0617__w2__clean"
+}

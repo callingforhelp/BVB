@@ -13,26 +13,55 @@
   },
   "corrupted": {
    "type": "noul",
-   "noul": 0.23
+   "noul": 0.26
   },
   "break_type": {
    "type": "choice",
    "choice": "none",
-   "confidence": 0.85,
+   "confidence": 0.87,
    "probabilities": {
+    "none": 0.89,
+    "room_swap": 0.03,
     "timewarp": 0.01,
-    "splice": 0.07,
-    "loop": 0.02,
-    "none": 0.88,
-    "reverse": 0.0,
-    "room_swap": 0.02
+    "loop": 0.01,
+    "splice": 0.06,
+    "reverse": 0.0
    }
   },
   "sufficient": {
    "type": "noul",
-   "noul": 0.49
+   "noul": 0.42
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.15
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.15
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.09
   }
  },
+ "fan_type": "room_swap",
+ "fan_probs": {
+  "loop": 0.09,
+  "reverse": 0.04,
+  "room_swap": 0.15,
+  "splice": 0.15,
+  "timewarp": 0.09
+ },
+ "composite_type": "none",
  "n_candidates": 6,
  "judge_calls": 6,
  "discontinuous_at": [],
@@ -42,51 +71,100 @@
   {
    "iter": 0,
    "action": "judge_1",
-   "corrupted": 0.33,
+   "corrupted": 0.37,
    "break_type": "none",
-   "sufficient": 0.3
+   "sufficient": 0.23,
+   "fan": {
+    "loop": 0.1,
+    "reverse": 0.05,
+    "room_swap": 0.2,
+    "splice": 0.2,
+    "timewarp": 0.1
+   }
   },
   {
    "iter": 1,
-   "action": "judge_3",
-   "corrupted": 0.25,
+   "action": "judge_2",
+   "corrupted": 0.3,
    "break_type": "none",
-   "sufficient": 0.38
+   "sufficient": 0.33,
+   "fan": {
+    "loop": 0.09,
+    "reverse": 0.04,
+    "room_swap": 0.17,
+    "splice": 0.19,
+    "timewarp": 0.09
+   }
   },
   {
    "iter": 2,
-   "action": "judge_2",
-   "corrupted": 0.24,
+   "action": "judge_3",
+   "corrupted": 0.27,
    "break_type": "none",
-   "sufficient": 0.45
+   "sufficient": 0.38,
+   "fan": {
+    "loop": 0.09,
+    "reverse": 0.04,
+    "room_swap": 0.18,
+    "splice": 0.17,
+    "timewarp": 0.09
+   }
   },
   {
    "iter": 3,
    "action": "judge_0",
-   "corrupted": 0.2,
+   "corrupted": 0.24,
    "break_type": "none",
-   "sufficient": 0.46
+   "sufficient": 0.41,
+   "fan": {
+    "loop": 0.09,
+    "reverse": 0.04,
+    "room_swap": 0.16,
+    "splice": 0.15,
+    "timewarp": 0.08
+   }
   },
   {
    "iter": 4,
    "action": "judge_4",
-   "corrupted": 0.24,
+   "corrupted": 0.29,
    "break_type": "none",
-   "sufficient": 0.46
+   "sufficient": 0.38,
+   "fan": {
+    "loop": 0.09,
+    "reverse": 0.05,
+    "room_swap": 0.17,
+    "splice": 0.18,
+    "timewarp": 0.09
+   }
   },
   {
    "iter": 5,
    "action": "judge_5",
-   "corrupted": 0.23,
+   "corrupted": 0.26,
    "break_type": "none",
-   "sufficient": 0.48
+   "sufficient": 0.46,
+   "fan": {
+    "loop": 0.09,
+    "reverse": 0.04,
+    "room_swap": 0.16,
+    "splice": 0.15,
+    "timewarp": 0.08
+   }
   },
   {
    "iter": 6,
    "action": "conclude",
-   "corrupted": 0.23,
+   "corrupted": 0.26,
    "break_type": "none",
-   "sufficient": 0.49
+   "sufficient": 0.42,
+   "fan": {
+    "loop": 0.09,
+    "reverse": 0.04,
+    "room_swap": 0.15,
+    "splice": 0.15,
+    "timewarp": 0.09
+   }
   }
  ]
 }

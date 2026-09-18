@@ -1,0 +1,12 @@
+{
+ "frame": 175,
+ "arm": "control",
+ "verdict": {
+  "progress_B_vs_A": "much_less",
+  "what_changed": "Hands and bottles remain nearly static in B1->B2 while A1->A2 shows clear reaching and grasping motion.",
+  "confidence": 0.95
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.6,
+ "clip_id": "beverage__timewarp"
+}

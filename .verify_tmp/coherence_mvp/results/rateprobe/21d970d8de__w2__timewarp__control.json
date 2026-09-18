@@ -1,0 +1,12 @@
+{
+ "frame": 300,
+ "arm": "control",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "No visible change in the empty classroom scene, hands, or objects between any frames.",
+  "confidence": 0.9
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.6,
+ "clip_id": "21d970d8de__w2__timewarp"
+}

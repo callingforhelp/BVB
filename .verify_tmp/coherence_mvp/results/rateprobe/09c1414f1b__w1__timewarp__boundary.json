@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "boundary",
+ "verdict": {
+  "progress_B_vs_A": "much_less",
+  "what_changed": "The scene is nearly static in both pairs, but B1->B2 shows even less change than A1->A2, with only a slight camera shift and no object/hand movement.",
+  "confidence": 0.6
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.9,
+ "clip_id": "09c1414f1b__w1__timewarp"
+}

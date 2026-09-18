@@ -1,0 +1,12 @@
+{
+ "frame": 175,
+ "arm": "control",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "The scene, hands, and objects show no noticeable movement or change in either pair, indicating identical progress.",
+  "confidence": 0.9
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 2.0,
+ "clip_id": "desk__timewarp"
+}

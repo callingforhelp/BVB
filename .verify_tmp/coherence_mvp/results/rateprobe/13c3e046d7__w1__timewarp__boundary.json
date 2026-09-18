@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "boundary",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "The scene is nearly static in both pairs, with only minor camera movement and no significant object or hand motion between frames.",
+  "confidence": 0.7
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.5,
+ "clip_id": "13c3e046d7__w1__timewarp"
+}

@@ -1,0 +1,12 @@
+{
+ "frame": 350,
+ "arm": "clean",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "Hands and objects show identical minimal movement in both pairs, indicating no speed change.",
+  "confidence": 0.8
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.4,
+ "clip_id": "beverage__clean"
+}

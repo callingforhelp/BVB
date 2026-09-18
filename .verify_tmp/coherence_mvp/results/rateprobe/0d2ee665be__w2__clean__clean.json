@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "clean",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "No significant change in scene, hands, or objects between either pair; only minor camera shift.",
+  "confidence": 0.8
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.6,
+ "clip_id": "0d2ee665be__w2__clean"
+}

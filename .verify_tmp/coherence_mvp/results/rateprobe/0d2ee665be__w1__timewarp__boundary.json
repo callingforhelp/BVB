@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "boundary",
+ "verdict": {
+  "progress_B_vs_A": "much_less",
+  "what_changed": "The camera movement and scene shift between B1 and B2 are significantly smaller than between A1 and A2, indicating slower video speed after point T.",
+  "confidence": 0.9
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.6,
+ "clip_id": "0d2ee665be__w1__timewarp"
+}

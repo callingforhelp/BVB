@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "clean",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "The scene, hands, and objects show no discernible movement or progress in either pair; the frames appear nearly identical.",
+  "confidence": 0.8
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 2.0,
+ "clip_id": "13c3e046d7__w2__clean"
+}

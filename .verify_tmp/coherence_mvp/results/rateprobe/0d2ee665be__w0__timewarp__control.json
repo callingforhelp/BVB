@@ -1,0 +1,12 @@
+{
+ "frame": 300,
+ "arm": "control",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "The scene is completely static with no visible movement of hands or objects in either pair.",
+  "confidence": 1.0
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.2,
+ "clip_id": "0d2ee665be__w0__timewarp"
+}

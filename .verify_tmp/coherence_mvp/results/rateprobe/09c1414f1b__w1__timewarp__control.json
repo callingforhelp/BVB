@@ -1,0 +1,12 @@
+{
+ "frame": 300,
+ "arm": "control",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "No visible change in scene, hands, or objects between either pair; both show static room with no actor motion.",
+  "confidence": 0.8
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.2,
+ "clip_id": "09c1414f1b__w1__timewarp"
+}

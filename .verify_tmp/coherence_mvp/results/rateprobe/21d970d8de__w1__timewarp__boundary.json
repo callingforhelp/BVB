@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "boundary",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "No visible change in the scene, hands, or objects between any frames; only minor camera shake.",
+  "confidence": 0.9
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.1,
+ "clip_id": "21d970d8de__w1__timewarp"
+}

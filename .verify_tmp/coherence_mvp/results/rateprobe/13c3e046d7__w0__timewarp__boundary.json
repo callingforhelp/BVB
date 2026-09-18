@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "boundary",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "The scene is static with no visible actor or object movement in either pair, so progress is identical.",
+  "confidence": 0.8
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.4,
+ "clip_id": "13c3e046d7__w0__timewarp"
+}

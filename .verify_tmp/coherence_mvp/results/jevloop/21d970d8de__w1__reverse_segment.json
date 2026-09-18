@@ -9,38 +9,67 @@
   "action": {
    "type": "choice",
    "choice": "conclude",
-   "confidence": 0.35,
+   "confidence": 0.26,
    "probabilities": {
-    "judge_1": 0.09,
-    "judge_0": 0.04,
-    "judge_4": 0.19,
-    "judge_3": 0.2,
+    "conclude": 0.39,
+    "judge_1": 0.07,
+    "judge_3": 0.26,
     "judge_5": 0.03,
-    "conclude": 0.45
+    "judge_4": 0.23,
+    "judge_0": 0.02
    }
   },
   "corrupted": {
    "type": "noul",
-   "noul": 0.82
+   "noul": 0.81
   },
   "break_type": {
    "type": "choice",
    "choice": "reverse",
-   "confidence": 0.87,
+   "confidence": 0.82,
    "probabilities": {
-    "loop": 0.0,
-    "room_swap": 0.01,
-    "none": 0.04,
-    "splice": 0.06,
     "timewarp": 0.0,
-    "reverse": 0.89
+    "none": 0.04,
+    "room_swap": 0.05,
+    "loop": 0.01,
+    "splice": 0.06,
+    "reverse": 0.84
    }
   },
   "sufficient": {
    "type": "noul",
-   "noul": 0.36
+   "noul": 0.27
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.19
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.74
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.41
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.25
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.11
   }
  },
+ "fan_type": "reverse",
+ "fan_probs": {
+  "loop": 0.19,
+  "reverse": 0.74,
+  "room_swap": 0.41,
+  "splice": 0.25,
+  "timewarp": 0.11
+ },
+ "composite_type": "reverse",
  "n_candidates": 6,
  "judge_calls": 1,
  "discontinuous_at": [
@@ -52,16 +81,30 @@
   {
    "iter": 0,
    "action": "judge_2",
-   "corrupted": 0.8,
+   "corrupted": 0.78,
    "break_type": "reverse",
-   "sufficient": 0.36
+   "sufficient": 0.29,
+   "fan": {
+    "loop": 0.2,
+    "reverse": 0.78,
+    "room_swap": 0.34,
+    "splice": 0.3,
+    "timewarp": 0.11
+   }
   },
   {
    "iter": 1,
    "action": "conclude",
-   "corrupted": 0.82,
+   "corrupted": 0.81,
    "break_type": "reverse",
-   "sufficient": 0.36
+   "sufficient": 0.27,
+   "fan": {
+    "loop": 0.19,
+    "reverse": 0.74,
+    "room_swap": 0.41,
+    "splice": 0.25,
+    "timewarp": 0.11
+   }
   }
  ]
 }

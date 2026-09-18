@@ -1,0 +1,12 @@
+{
+ "frame": 600,
+ "arm": "clean",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "No discernible change in scene, hands, or objects between any frames; all four images appear identical.",
+  "confidence": 0.9
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.5,
+ "clip_id": "0d2ee665be__w0__clean"
+}

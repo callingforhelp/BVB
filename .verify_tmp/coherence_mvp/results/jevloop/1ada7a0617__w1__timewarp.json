@@ -7,68 +7,135 @@
  "final": {
   "action": {
    "type": "choice",
-   "choice": "conclude",
-   "confidence": 0.16,
+   "choice": "judge_3",
+   "confidence": 0.35,
    "probabilities": {
-    "judge_8": 0.02,
-    "judge_0": 0.04,
-    "judge_2": 0.03,
-    "judge_9": 0.01,
-    "judge_7": 0.23,
-    "judge_4": 0.16,
-    "conclude": 0.25,
-    "judge_3": 0.24,
-    "judge_1": 0.02
+    "judge_8": 0.05,
+    "judge_4": 0.18,
+    "judge_0": 0.05,
+    "judge_1": 0.02,
+    "judge_9": 0.02,
+    "judge_3": 0.44,
+    "judge_2": 0.04,
+    "conclude": 0.2
    }
   },
   "corrupted": {
    "type": "noul",
-   "noul": 0.8
+   "noul": 0.72
   },
   "break_type": {
    "type": "choice",
    "choice": "timewarp",
-   "confidence": 0.9,
+   "confidence": 0.89,
    "probabilities": {
     "reverse": 0.0,
+    "splice": 0.01,
+    "room_swap": 0.02,
+    "timewarp": 0.91,
     "loop": 0.0,
-    "timewarp": 0.93,
-    "none": 0.03,
-    "room_swap": 0.03,
-    "splice": 0.01
+    "none": 0.06
    }
   },
   "sufficient": {
    "type": "noul",
-   "noul": 0.34
+   "noul": 0.26
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.14
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.1
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.27
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.23
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.76
   }
  },
+ "fan_type": "timewarp",
+ "fan_probs": {
+  "loop": 0.14,
+  "reverse": 0.1,
+  "room_swap": 0.27,
+  "splice": 0.23,
+  "timewarp": 0.76
+ },
+ "composite_type": "timewarp",
  "n_candidates": 10,
- "judge_calls": 2,
+ "judge_calls": 4,
  "discontinuous_at": [],
- "jev_calls": 3,
- "jev_errors": 0,
+ "jev_calls": 4,
+ "jev_errors": 1,
  "transcript": [
   {
    "iter": 0,
    "action": "judge_5",
-   "corrupted": 0.79,
+   "corrupted": 0.77,
    "break_type": "timewarp",
-   "sufficient": 0.3
+   "sufficient": 0.25,
+   "fan": {
+    "loop": 0.13,
+    "reverse": 0.1,
+    "room_swap": 0.39,
+    "splice": 0.3,
+    "timewarp": 0.76
+   }
   },
   {
    "iter": 1,
    "action": "judge_6",
-   "corrupted": 0.81,
+   "corrupted": 0.8,
    "break_type": "timewarp",
-   "sufficient": 0.31
+   "sufficient": 0.27,
+   "fan": {
+    "loop": 0.13,
+    "reverse": 0.09,
+    "room_swap": 0.35,
+    "splice": 0.24,
+    "timewarp": 0.8
+   }
   },
   {
    "iter": 2,
-   "action": "conclude",
-   "corrupted": 0.8,
+   "action": "judge_7",
+   "corrupted": 0.75,
    "break_type": "timewarp",
-   "sufficient": 0.34
+   "sufficient": 0.27,
+   "fan": {
+    "loop": 0.14,
+    "reverse": 0.09,
+    "room_swap": 0.34,
+    "splice": 0.24,
+    "timewarp": 0.77
+   }
+  },
+  {
+   "iter": 3,
+   "action": "judge_3",
+   "corrupted": 0.72,
+   "break_type": "timewarp",
+   "sufficient": 0.26,
+   "fan": {
+    "loop": 0.14,
+    "reverse": 0.1,
+    "room_swap": 0.27,
+    "splice": 0.23,
+    "timewarp": 0.76
+   }
+  },
+  {
+   "iter": 4,
+   "error": "Remote end closed connection without response"
   }
  ]
 }

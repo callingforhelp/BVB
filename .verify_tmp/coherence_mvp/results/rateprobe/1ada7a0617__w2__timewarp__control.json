@@ -1,0 +1,12 @@
+{
+ "frame": 300,
+ "arm": "control",
+ "verdict": {
+  "progress_B_vs_A": "same",
+  "what_changed": "The scene shows minimal movement in both pairs, with only slight camera drift and no significant actor or object motion.",
+  "confidence": 0.8
+ },
+ "route": "deepseek/deepseek-v4.1-flash",
+ "secs": 1.2,
+ "clip_id": "1ada7a0617__w2__timewarp"
+}
