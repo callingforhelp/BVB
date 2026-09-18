@@ -1,0 +1,67 @@
+{
+ "clip_id": "0d2ee665be__w0__reverse_segment",
+ "operator": "reverse_segment",
+ "breaks_s": [
+  10.0,
+  16.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "confidence": 0.34,
+   "probabilities": {
+    "judge_1": 0.03,
+    "judge_5": 0.09,
+    "conclude": 0.45,
+    "judge_0": 0.03,
+    "judge_4": 0.15,
+    "judge_3": 0.25
+   }
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.83
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "reverse",
+   "confidence": 0.85,
+   "probabilities": {
+    "timewarp": 0.0,
+    "splice": 0.09,
+    "loop": 0.0,
+    "none": 0.02,
+    "reverse": 0.88,
+    "room_swap": 0.01
+   }
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.37
+  }
+ },
+ "n_candidates": 6,
+ "judge_calls": 1,
+ "discontinuous_at": [
+  299
+ ],
+ "jev_calls": 2,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_2",
+   "corrupted": 0.81,
+   "break_type": "reverse",
+   "sufficient": 0.37
+  },
+  {
+   "iter": 1,
+   "action": "conclude",
+   "corrupted": 0.83,
+   "break_type": "reverse",
+   "sufficient": 0.37
+  }
+ ]
+}

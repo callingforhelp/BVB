@@ -1,0 +1,74 @@
+{
+ "clip_id": "0d2ee665be__w2__splice",
+ "operator": "splice",
+ "breaks_s": [
+  15.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "confidence": 0.38,
+   "probabilities": {
+    "judge_11": 0.01,
+    "judge_9": 0.01,
+    "judge_0": 0.01,
+    "judge_7": 0.01,
+    "judge_3": 0.01,
+    "judge_13": 0.11,
+    "judge_10": 0.01,
+    "judge_1": 0.0,
+    "judge_8": 0.0,
+    "judge_4": 0.0,
+    "conclude": 0.43,
+    "judge_5": 0.21,
+    "judge_6": 0.18,
+    "judge_2": 0.01
+   }
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.77
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "splice",
+   "confidence": 0.85,
+   "probabilities": {
+    "loop": 0.0,
+    "reverse": 0.0,
+    "none": 0.08,
+    "room_swap": 0.03,
+    "timewarp": 0.01,
+    "splice": 0.88
+   }
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.21
+  }
+ },
+ "n_candidates": 14,
+ "judge_calls": 1,
+ "discontinuous_at": [
+  449
+ ],
+ "jev_calls": 2,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_12",
+   "corrupted": 0.45,
+   "break_type": "none",
+   "sufficient": 0.22
+  },
+  {
+   "iter": 1,
+   "action": "conclude",
+   "corrupted": 0.77,
+   "break_type": "splice",
+   "sufficient": 0.21
+  }
+ ]
+}
