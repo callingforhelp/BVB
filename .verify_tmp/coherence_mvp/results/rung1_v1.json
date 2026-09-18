@@ -1,0 +1,714 @@
+{
+  "protocol": "RUNG1_PROTOCOL.md v1",
+  "label": "VALIDATION-HELDOUT",
+  "summary": {
+    "orb_inliers__splice": {
+      "held_out_clean_specificity": "4/5",
+      "sensitivity": "1/5",
+      "precision": 1.0,
+      "recall_breaks": 1,
+      "n_breaks": 5,
+      "median_margin": 1.049,
+      "mean_chance_hit": 0.007
+    },
+    "orb_inliers__room_swap": {
+      "held_out_clean_specificity": "4/5",
+      "sensitivity": "1/5",
+      "precision": 0.4,
+      "recall_breaks": 2,
+      "n_breaks": 10,
+      "median_margin": 1.31,
+      "mean_chance_hit": 0.058
+    },
+    "flow_reversal__reverse_segment": {
+      "held_out_clean_specificity": "4/5",
+      "sensitivity": "1/5",
+      "precision": 0.062,
+      "recall_breaks": 1,
+      "n_breaks": 10,
+      "median_margin": 1.41,
+      "mean_chance_hit": 0.132
+    },
+    "recurrence__loop": {
+      "held_out_clean_specificity": "4/5",
+      "sensitivity": "1/5",
+      "precision": 1.0,
+      "recall_breaks": 1,
+      "n_breaks": 5,
+      "median_margin": 1.511,
+      "mean_chance_hit": 0.007
+    },
+    "motion_scale__timewarp": {
+      "held_out_clean_specificity": "4/5",
+      "sensitivity": "0/5",
+      "precision": 0.0,
+      "recall_breaks": 0,
+      "n_breaks": 5,
+      "median_margin": null,
+      "mean_chance_hit": 0.037
+    }
+  },
+  "verdict": {
+    "orb_inliers__splice": {
+      "pass": false,
+      "criteria": {
+        "specificity_5of5": false,
+        "sensitivity_ge4": false,
+        "precision_ge_0.5": true,
+        "above_chance": true,
+        "margin_ge_1.5": false
+      }
+    },
+    "orb_inliers__room_swap": {
+      "pass": false,
+      "criteria": {
+        "specificity_5of5": false,
+        "sensitivity_ge4": false,
+        "precision_ge_0.5": false,
+        "above_chance": true,
+        "margin_ge_1.5": false
+      }
+    },
+    "flow_reversal__reverse_segment": {
+      "pass": false,
+      "criteria": {
+        "specificity_5of5": false,
+        "sensitivity_ge4": false,
+        "precision_ge_0.5": false,
+        "above_chance": true,
+        "margin_ge_1.5": false
+      }
+    },
+    "recurrence__loop": {
+      "pass": false,
+      "criteria": {
+        "specificity_5of5": false,
+        "sensitivity_ge4": false,
+        "precision_ge_0.5": true,
+        "above_chance": true,
+        "margin_ge_1.5": true
+      }
+    },
+    "motion_scale__timewarp": {
+      "pass": false,
+      "criteria": {
+        "specificity_5of5": false,
+        "sensitivity_ge4": false,
+        "precision_ge_0.5": false,
+        "above_chance": false,
+        "margin_ge_1.5": false
+      }
+    }
+  },
+  "folds": [
+    {
+      "held_out": "09c1414f1b",
+      "taus": {
+        "orb_inliers": 3.271280183461487,
+        "flow_reversal": 12.945362010659874,
+        "recurrence": 3.0104501276362043,
+        "motion_scale": 226.6287223757396
+      },
+      "clips": [
+        {
+          "id": "09c1414f1b__clean",
+          "operator": "none",
+          "breaks_s": [],
+          "specificity": {
+            "orb_inliers": {
+              "z_max": 2.9087414002428167,
+              "tau": 3.271280183461487,
+              "flagged": false
+            },
+            "flow_reversal": {
+              "z_max": 8.971601027335801,
+              "tau": 12.945362010659874,
+              "flagged": false
+            },
+            "recurrence": {
+              "z_max": 2.674760432607847,
+              "tau": 3.0104501276362043,
+              "flagged": false
+            },
+            "motion_scale": {
+              "z_max": 22.801018916497682,
+              "tau": 226.6287223757396,
+              "flagged": false
+            }
+          }
+        },
+        {
+          "id": "09c1414f1b__splice",
+          "operator": "splice",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "orb_inliers",
+          "tau": 3.271280183461487,
+          "z_max": 3.4311051677722455,
+          "margin": 1.0488570147915734,
+          "n_detections": 1,
+          "hits": 1,
+          "detections_s": [
+            14.967
+          ],
+          "chance_hit": 0.033333333333333326
+        },
+        {
+          "id": "09c1414f1b__reverse_segment",
+          "operator": "reverse_segment",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "flow_reversal",
+          "tau": 12.945362010659874,
+          "z_max": 9.839832181096009,
+          "margin": 0.7601048292812042,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "09c1414f1b__loop",
+          "operator": "loop",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "recurrence",
+          "tau": 3.0104501276362043,
+          "z_max": 4.548237019982302,
+          "margin": 1.510816265723546,
+          "n_detections": 1,
+          "hits": 1,
+          "detections_s": [
+            15.0
+          ],
+          "chance_hit": 0.033333333333333326
+        },
+        {
+          "id": "09c1414f1b__room_swap",
+          "operator": "room_swap",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "orb_inliers",
+          "tau": 3.271280183461487,
+          "z_max": 2.7943188606887515,
+          "margin": 0.8541973490427098,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "09c1414f1b__timewarp",
+          "operator": "timewarp",
+          "breaks_s": [
+            20.0
+          ],
+          "check": "motion_scale",
+          "tau": 226.6287223757396,
+          "z_max": 43.2268863714721,
+          "margin": 0.19073878155569346,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        }
+      ]
+    },
+    {
+      "held_out": "0d2ee665be",
+      "taus": {
+        "orb_inliers": 3.271280183461487,
+        "flow_reversal": 12.945362010659874,
+        "recurrence": 3.0104501276362043,
+        "motion_scale": 226.6287223757396
+      },
+      "clips": [
+        {
+          "id": "0d2ee665be__clean",
+          "operator": "none",
+          "breaks_s": [],
+          "specificity": {
+            "orb_inliers": {
+              "z_max": 1.0895619960775769,
+              "tau": 3.271280183461487,
+              "flagged": false
+            },
+            "flow_reversal": {
+              "z_max": 3.466871546389461,
+              "tau": 12.945362010659874,
+              "flagged": false
+            },
+            "recurrence": {
+              "z_max": 2.841057791206928,
+              "tau": 3.0104501276362043,
+              "flagged": false
+            },
+            "motion_scale": {
+              "z_max": 192.60571411216029,
+              "tau": 226.6287223757396,
+              "flagged": false
+            }
+          }
+        },
+        {
+          "id": "0d2ee665be__splice",
+          "operator": "splice",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "orb_inliers",
+          "tau": 3.271280183461487,
+          "z_max": 1.184916199080505,
+          "margin": 0.36221788799108384,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "0d2ee665be__reverse_segment",
+          "operator": "reverse_segment",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "flow_reversal",
+          "tau": 12.945362010659874,
+          "z_max": 3.524219713387832,
+          "margin": 0.2722380193374128,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "0d2ee665be__loop",
+          "operator": "loop",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "recurrence",
+          "tau": 3.0104501276362043,
+          "z_max": 2.4848079519793167,
+          "margin": 0.8253941592217573,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "0d2ee665be__room_swap",
+          "operator": "room_swap",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "orb_inliers",
+          "tau": 3.271280183461487,
+          "z_max": 1.1290388799934312,
+          "margin": 0.3451367099955177,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "0d2ee665be__timewarp",
+          "operator": "timewarp",
+          "breaks_s": [
+            20.0
+          ],
+          "check": "motion_scale",
+          "tau": 226.6287223757396,
+          "z_max": 152.8276918739318,
+          "margin": 0.6743527045991583,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        }
+      ]
+    },
+    {
+      "held_out": "13c3e046d7",
+      "taus": {
+        "orb_inliers": 2.9087414002428167,
+        "flow_reversal": 8.971601027335801,
+        "recurrence": 3.0104501276362043,
+        "motion_scale": 226.6287223757396
+      },
+      "clips": [
+        {
+          "id": "13c3e046d7__clean",
+          "operator": "none",
+          "breaks_s": [],
+          "specificity": {
+            "orb_inliers": {
+              "z_max": 3.271280183461487,
+              "tau": 2.9087414002428167,
+              "flagged": true
+            },
+            "flow_reversal": {
+              "z_max": 12.945362010659874,
+              "tau": 8.971601027335801,
+              "flagged": true
+            },
+            "recurrence": {
+              "z_max": 2.3156590908133485,
+              "tau": 3.0104501276362043,
+              "flagged": false
+            },
+            "motion_scale": {
+              "z_max": 11.352439227936173,
+              "tau": 226.6287223757396,
+              "flagged": false
+            }
+          }
+        },
+        {
+          "id": "13c3e046d7__splice",
+          "operator": "splice",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "orb_inliers",
+          "tau": 2.9087414002428167,
+          "z_max": 2.0699888825316197,
+          "margin": 0.7116441779110445,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "13c3e046d7__reverse_segment",
+          "operator": "reverse_segment",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "flow_reversal",
+          "tau": 8.971601027335801,
+          "z_max": 12.652878447373357,
+          "margin": 1.4103255827829366,
+          "n_detections": 16,
+          "hits": 1,
+          "detections_s": [
+            2.633,
+            3.167,
+            3.433,
+            3.667,
+            5.167,
+            7.867,
+            10.2,
+            10.4,
+            10.533,
+            10.8,
+            11.9,
+            12.267,
+            12.533,
+            12.667,
+            12.9,
+            19.967
+          ],
+          "chance_hit": 0.6620474079764284
+        },
+        {
+          "id": "13c3e046d7__loop",
+          "operator": "loop",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "recurrence",
+          "tau": 3.0104501276362043,
+          "z_max": 1.6810593886421192,
+          "margin": 0.5584079846431741,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "13c3e046d7__room_swap",
+          "operator": "room_swap",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "orb_inliers",
+          "tau": 2.9087414002428167,
+          "z_max": 3.810872791042763,
+          "margin": 1.310144927536232,
+          "n_detections": 5,
+          "hits": 2,
+          "detections_s": [
+            9.967,
+            15.967,
+            19.867,
+            28.933,
+            29.067
+          ],
+          "chance_hit": 0.2875286062419329
+        },
+        {
+          "id": "13c3e046d7__timewarp",
+          "operator": "timewarp",
+          "breaks_s": [
+            20.0
+          ],
+          "check": "motion_scale",
+          "tau": 226.6287223757396,
+          "z_max": 22.63626732918141,
+          "margin": 0.09988260575220276,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        }
+      ]
+    },
+    {
+      "held_out": "1ada7a0617",
+      "taus": {
+        "orb_inliers": 3.271280183461487,
+        "flow_reversal": 12.945362010659874,
+        "recurrence": 3.0104501276362043,
+        "motion_scale": 192.60571411216029
+      },
+      "clips": [
+        {
+          "id": "1ada7a0617__clean",
+          "operator": "none",
+          "breaks_s": [],
+          "specificity": {
+            "orb_inliers": {
+              "z_max": 0.6744907594765952,
+              "tau": 3.271280183461487,
+              "flagged": false
+            },
+            "flow_reversal": {
+              "z_max": 2.4002584717415774,
+              "tau": 12.945362010659874,
+              "flagged": false
+            },
+            "recurrence": {
+              "z_max": 2.876725889738826,
+              "tau": 3.0104501276362043,
+              "flagged": false
+            },
+            "motion_scale": {
+              "z_max": 226.6287223757396,
+              "tau": 192.60571411216029,
+              "flagged": true
+            }
+          }
+        },
+        {
+          "id": "1ada7a0617__splice",
+          "operator": "splice",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "orb_inliers",
+          "tau": 3.271280183461487,
+          "z_max": 0.6744907594765952,
+          "margin": 0.20618556701030927,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "1ada7a0617__reverse_segment",
+          "operator": "reverse_segment",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "flow_reversal",
+          "tau": 12.945362010659874,
+          "z_max": 2.317873958174479,
+          "margin": 0.1790505322497604,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "1ada7a0617__loop",
+          "operator": "loop",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "recurrence",
+          "tau": 3.0104501276362043,
+          "z_max": 1.4343586941404942,
+          "margin": 0.4764598758746912,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "1ada7a0617__room_swap",
+          "operator": "room_swap",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "orb_inliers",
+          "tau": 3.271280183461487,
+          "z_max": 0.6744907594765952,
+          "margin": 0.20618556701030927,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "1ada7a0617__timewarp",
+          "operator": "timewarp",
+          "breaks_s": [
+            20.0
+          ],
+          "check": "motion_scale",
+          "tau": 192.60571411216029,
+          "z_max": 322.3140182689958,
+          "margin": 1.6734395433424283,
+          "n_detections": 6,
+          "hits": 0,
+          "detections_s": [
+            1.433,
+            4.367,
+            4.433,
+            4.5,
+            4.567,
+            5.033
+          ],
+          "chance_hit": 0.1840558010973936
+        }
+      ]
+    },
+    {
+      "held_out": "21d970d8de",
+      "taus": {
+        "orb_inliers": 3.271280183461487,
+        "flow_reversal": 12.945362010659874,
+        "recurrence": 2.876725889738826,
+        "motion_scale": 226.6287223757396
+      },
+      "clips": [
+        {
+          "id": "21d970d8de__clean",
+          "operator": "none",
+          "breaks_s": [],
+          "specificity": {
+            "orb_inliers": {
+              "z_max": 1.8548495885606366,
+              "tau": 3.271280183461487,
+              "flagged": false
+            },
+            "flow_reversal": {
+              "z_max": 6.165780647738391,
+              "tau": 12.945362010659874,
+              "flagged": false
+            },
+            "recurrence": {
+              "z_max": 3.0104501276362043,
+              "tau": 2.876725889738826,
+              "flagged": true
+            },
+            "motion_scale": {
+              "z_max": 8.249100898369525,
+              "tau": 226.6287223757396,
+              "flagged": false
+            }
+          }
+        },
+        {
+          "id": "21d970d8de__splice",
+          "operator": "splice",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "orb_inliers",
+          "tau": 3.271280183461487,
+          "z_max": 1.6422383708995363,
+          "margin": 0.502017032720753,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "21d970d8de__reverse_segment",
+          "operator": "reverse_segment",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "flow_reversal",
+          "tau": 12.945362010659874,
+          "z_max": 5.767878252554212,
+          "margin": 0.4455555779594766,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "21d970d8de__loop",
+          "operator": "loop",
+          "breaks_s": [
+            15.0
+          ],
+          "check": "recurrence",
+          "tau": 2.876725889738826,
+          "z_max": 1.6577598636245725,
+          "margin": 0.5762661884254389,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "21d970d8de__room_swap",
+          "operator": "room_swap",
+          "breaks_s": [
+            10.0,
+            16.0
+          ],
+          "check": "orb_inliers",
+          "tau": 3.271280183461487,
+          "z_max": 1.512494430341456,
+          "margin": 0.46235551390190566,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        },
+        {
+          "id": "21d970d8de__timewarp",
+          "operator": "timewarp",
+          "breaks_s": [
+            20.0
+          ],
+          "check": "motion_scale",
+          "tau": 226.6287223757396,
+          "z_max": 91.56737517607313,
+          "margin": 0.40404135105284134,
+          "n_detections": 0,
+          "hits": 0,
+          "detections_s": [],
+          "chance_hit": 0.0
+        }
+      ]
+    }
+  ]
+}

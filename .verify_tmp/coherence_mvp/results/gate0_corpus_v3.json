@@ -1,0 +1,1957 @@
+{
+  "clips": 90,
+  "failures": [],
+  "frames_by_operator": {
+    "none": {
+      "900": 15
+    },
+    "splice": {
+      "900": 15
+    },
+    "reverse_segment": {
+      "900": 15
+    },
+    "loop": {
+      "900": 15
+    },
+    "room_swap": {
+      "900": 15
+    },
+    "timewarp": {
+      "900": 15
+    }
+  },
+  "metadata_leakage": {},
+  "duration_range_s": [
+    30.0,
+    30.0
+  ],
+  "mean_duration_s": 30.0,
+  "boundary_counts": {
+    "loop": [
+      1
+    ],
+    "none": [
+      0
+    ],
+    "reverse_segment": [
+      2
+    ],
+    "room_swap": [
+      2
+    ],
+    "splice": [
+      1
+    ],
+    "timewarp": [
+      1
+    ]
+  },
+  "rows": [
+    {
+      "id": "09c1414f1b__w0__clean",
+      "source": "09c1414f1b",
+      "window": 0,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "09c1414f1b__w0__clean.mp4",
+      "src_start_s": 0.0,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w1__clean",
+      "source": "09c1414f1b",
+      "window": 1,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "09c1414f1b__w1__clean.mp4",
+      "src_start_s": 75.833333,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w2__clean",
+      "source": "09c1414f1b",
+      "window": 2,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "09c1414f1b__w2__clean.mp4",
+      "src_start_s": 151.666667,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w0__clean",
+      "source": "0d2ee665be",
+      "window": 0,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "0d2ee665be__w0__clean.mp4",
+      "src_start_s": 0.0,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w1__clean",
+      "source": "0d2ee665be",
+      "window": 1,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "0d2ee665be__w1__clean.mp4",
+      "src_start_s": 30.0,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w2__clean",
+      "source": "0d2ee665be",
+      "window": 2,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "0d2ee665be__w2__clean.mp4",
+      "src_start_s": 60.0,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w0__clean",
+      "source": "13c3e046d7",
+      "window": 0,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "13c3e046d7__w0__clean.mp4",
+      "src_start_s": 0.0,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w1__clean",
+      "source": "13c3e046d7",
+      "window": 1,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "13c3e046d7__w1__clean.mp4",
+      "src_start_s": 61.8,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w2__clean",
+      "source": "13c3e046d7",
+      "window": 2,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "13c3e046d7__w2__clean.mp4",
+      "src_start_s": 123.6,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w0__clean",
+      "source": "1ada7a0617",
+      "window": 0,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "1ada7a0617__w0__clean.mp4",
+      "src_start_s": 0.0,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w1__clean",
+      "source": "1ada7a0617",
+      "window": 1,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "1ada7a0617__w1__clean.mp4",
+      "src_start_s": 30.983334,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w2__clean",
+      "source": "1ada7a0617",
+      "window": 2,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "1ada7a0617__w2__clean.mp4",
+      "src_start_s": 61.966667,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w0__clean",
+      "source": "21d970d8de",
+      "window": 0,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "21d970d8de__w0__clean.mp4",
+      "src_start_s": 0.0,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w1__clean",
+      "source": "21d970d8de",
+      "window": 1,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "21d970d8de__w1__clean.mp4",
+      "src_start_s": 61.183334,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w2__clean",
+      "source": "21d970d8de",
+      "window": 2,
+      "operator": "none",
+      "arm": "baseline",
+      "breaks_s": [],
+      "path": "21d970d8de__w2__clean.mp4",
+      "src_start_s": 122.366667,
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w0__splice",
+      "source": "09c1414f1b",
+      "window": 0,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "09c1414f1b__w0__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w0__reverse_segment",
+      "source": "09c1414f1b",
+      "window": 0,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "09c1414f1b__w0__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w0__loop",
+      "source": "09c1414f1b",
+      "window": 0,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "09c1414f1b__w0__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w0__room_swap",
+      "source": "09c1414f1b",
+      "window": 0,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "09c1414f1b__w0__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w0__timewarp",
+      "source": "09c1414f1b",
+      "window": 0,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "09c1414f1b__w0__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w1__splice",
+      "source": "09c1414f1b",
+      "window": 1,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "09c1414f1b__w1__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w1__reverse_segment",
+      "source": "09c1414f1b",
+      "window": 1,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "09c1414f1b__w1__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w1__loop",
+      "source": "09c1414f1b",
+      "window": 1,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "09c1414f1b__w1__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w1__room_swap",
+      "source": "09c1414f1b",
+      "window": 1,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "09c1414f1b__w1__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w1__timewarp",
+      "source": "09c1414f1b",
+      "window": 1,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "09c1414f1b__w1__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w2__splice",
+      "source": "09c1414f1b",
+      "window": 2,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "09c1414f1b__w2__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w2__reverse_segment",
+      "source": "09c1414f1b",
+      "window": 2,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "09c1414f1b__w2__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w2__loop",
+      "source": "09c1414f1b",
+      "window": 2,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "09c1414f1b__w2__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w2__room_swap",
+      "source": "09c1414f1b",
+      "window": 2,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "09c1414f1b__w2__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "09c1414f1b__w2__timewarp",
+      "source": "09c1414f1b",
+      "window": 2,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "09c1414f1b__w2__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w0__splice",
+      "source": "0d2ee665be",
+      "window": 0,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "0d2ee665be__w0__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w0__reverse_segment",
+      "source": "0d2ee665be",
+      "window": 0,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "0d2ee665be__w0__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w0__loop",
+      "source": "0d2ee665be",
+      "window": 0,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "0d2ee665be__w0__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w0__room_swap",
+      "source": "0d2ee665be",
+      "window": 0,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "0d2ee665be__w0__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w0__timewarp",
+      "source": "0d2ee665be",
+      "window": 0,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "0d2ee665be__w0__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w1__splice",
+      "source": "0d2ee665be",
+      "window": 1,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "0d2ee665be__w1__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w1__reverse_segment",
+      "source": "0d2ee665be",
+      "window": 1,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "0d2ee665be__w1__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w1__loop",
+      "source": "0d2ee665be",
+      "window": 1,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "0d2ee665be__w1__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w1__room_swap",
+      "source": "0d2ee665be",
+      "window": 1,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "0d2ee665be__w1__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w1__timewarp",
+      "source": "0d2ee665be",
+      "window": 1,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "0d2ee665be__w1__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w2__splice",
+      "source": "0d2ee665be",
+      "window": 2,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "0d2ee665be__w2__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w2__reverse_segment",
+      "source": "0d2ee665be",
+      "window": 2,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "0d2ee665be__w2__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w2__loop",
+      "source": "0d2ee665be",
+      "window": 2,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "0d2ee665be__w2__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w2__room_swap",
+      "source": "0d2ee665be",
+      "window": 2,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "0d2ee665be__w2__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "0d2ee665be__w2__timewarp",
+      "source": "0d2ee665be",
+      "window": 2,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "0d2ee665be__w2__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w0__splice",
+      "source": "13c3e046d7",
+      "window": 0,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "13c3e046d7__w0__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w0__reverse_segment",
+      "source": "13c3e046d7",
+      "window": 0,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "13c3e046d7__w0__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w0__loop",
+      "source": "13c3e046d7",
+      "window": 0,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "13c3e046d7__w0__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w0__room_swap",
+      "source": "13c3e046d7",
+      "window": 0,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "13c3e046d7__w0__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w0__timewarp",
+      "source": "13c3e046d7",
+      "window": 0,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "13c3e046d7__w0__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w1__splice",
+      "source": "13c3e046d7",
+      "window": 1,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "13c3e046d7__w1__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w1__reverse_segment",
+      "source": "13c3e046d7",
+      "window": 1,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "13c3e046d7__w1__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w1__loop",
+      "source": "13c3e046d7",
+      "window": 1,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "13c3e046d7__w1__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w1__room_swap",
+      "source": "13c3e046d7",
+      "window": 1,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "13c3e046d7__w1__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w1__timewarp",
+      "source": "13c3e046d7",
+      "window": 1,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "13c3e046d7__w1__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w2__splice",
+      "source": "13c3e046d7",
+      "window": 2,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "13c3e046d7__w2__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w2__reverse_segment",
+      "source": "13c3e046d7",
+      "window": 2,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "13c3e046d7__w2__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w2__loop",
+      "source": "13c3e046d7",
+      "window": 2,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "13c3e046d7__w2__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w2__room_swap",
+      "source": "13c3e046d7",
+      "window": 2,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "13c3e046d7__w2__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "13c3e046d7__w2__timewarp",
+      "source": "13c3e046d7",
+      "window": 2,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "13c3e046d7__w2__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w0__splice",
+      "source": "1ada7a0617",
+      "window": 0,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "1ada7a0617__w0__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w0__reverse_segment",
+      "source": "1ada7a0617",
+      "window": 0,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "1ada7a0617__w0__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w0__loop",
+      "source": "1ada7a0617",
+      "window": 0,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "1ada7a0617__w0__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w0__room_swap",
+      "source": "1ada7a0617",
+      "window": 0,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "1ada7a0617__w0__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w0__timewarp",
+      "source": "1ada7a0617",
+      "window": 0,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "1ada7a0617__w0__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w1__splice",
+      "source": "1ada7a0617",
+      "window": 1,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "1ada7a0617__w1__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w1__reverse_segment",
+      "source": "1ada7a0617",
+      "window": 1,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "1ada7a0617__w1__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w1__loop",
+      "source": "1ada7a0617",
+      "window": 1,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "1ada7a0617__w1__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w1__room_swap",
+      "source": "1ada7a0617",
+      "window": 1,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "1ada7a0617__w1__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w1__timewarp",
+      "source": "1ada7a0617",
+      "window": 1,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "1ada7a0617__w1__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w2__splice",
+      "source": "1ada7a0617",
+      "window": 2,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "1ada7a0617__w2__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w2__reverse_segment",
+      "source": "1ada7a0617",
+      "window": 2,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "1ada7a0617__w2__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w2__loop",
+      "source": "1ada7a0617",
+      "window": 2,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "1ada7a0617__w2__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w2__room_swap",
+      "source": "1ada7a0617",
+      "window": 2,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "1ada7a0617__w2__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "1ada7a0617__w2__timewarp",
+      "source": "1ada7a0617",
+      "window": 2,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "1ada7a0617__w2__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w0__splice",
+      "source": "21d970d8de",
+      "window": 0,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "21d970d8de__w0__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w0__reverse_segment",
+      "source": "21d970d8de",
+      "window": 0,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "21d970d8de__w0__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w0__loop",
+      "source": "21d970d8de",
+      "window": 0,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "21d970d8de__w0__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w0__room_swap",
+      "source": "21d970d8de",
+      "window": 0,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "21d970d8de__w0__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w0__timewarp",
+      "source": "21d970d8de",
+      "window": 0,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "21d970d8de__w0__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w1__splice",
+      "source": "21d970d8de",
+      "window": 1,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "21d970d8de__w1__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w1__reverse_segment",
+      "source": "21d970d8de",
+      "window": 1,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "21d970d8de__w1__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w1__loop",
+      "source": "21d970d8de",
+      "window": 1,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "21d970d8de__w1__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w1__room_swap",
+      "source": "21d970d8de",
+      "window": 1,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "21d970d8de__w1__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w1__timewarp",
+      "source": "21d970d8de",
+      "window": 1,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "21d970d8de__w1__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w2__splice",
+      "source": "21d970d8de",
+      "window": 2,
+      "operator": "splice",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "21d970d8de__w2__splice.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w2__reverse_segment",
+      "source": "21d970d8de",
+      "window": 2,
+      "operator": "reverse_segment",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "21d970d8de__w2__reverse_segment.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w2__loop",
+      "source": "21d970d8de",
+      "window": 2,
+      "operator": "loop",
+      "arm": "test",
+      "breaks_s": [
+        15.0
+      ],
+      "path": "21d970d8de__w2__loop.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w2__room_swap",
+      "source": "21d970d8de",
+      "window": 2,
+      "operator": "room_swap",
+      "arm": "test",
+      "breaks_s": [
+        10.0,
+        16.0
+      ],
+      "path": "21d970d8de__w2__room_swap.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    {
+      "id": "21d970d8de__w2__timewarp",
+      "source": "21d970d8de",
+      "window": 2,
+      "operator": "timewarp",
+      "arm": "test",
+      "breaks_s": [
+        20.0
+      ],
+      "path": "21d970d8de__w2__timewarp.mp4",
+      "probe": {
+        "codec": "h264",
+        "width": 640,
+        "height": 480,
+        "fps": "30/1",
+        "frames": 900,
+        "stream_duration": 30.0,
+        "format_duration": 30.0,
+        "format": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    }
+  ]
+}
