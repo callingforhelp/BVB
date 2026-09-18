@@ -5,13 +5,14 @@ from __future__ import annotations
 import json
 import statistics
 import subprocess
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
 FFPROBE = "/opt/homebrew/bin/ffprobe"
 ROOT = Path(__file__).resolve().parent
-CORPUS = ROOT / "corpus_v2"
-REPORT = ROOT / "results" / "gate0_corpus_v2.json"
+CORPUS = ROOT / sys.argv[1] if len(sys.argv) > 1 else ROOT / "corpus_v2"
+REPORT = ROOT / "results" / f"gate0_{CORPUS.name}.json"
 
 
 def probe(path: Path) -> dict:
