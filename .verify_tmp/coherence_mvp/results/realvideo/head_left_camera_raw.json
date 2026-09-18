@@ -1,0 +1,55 @@
+{
+  "video": "/Volumes/Timemachine1/Videos/Li Zong/lightwheel标注sample/Checkout Gum Replenishment/1fcc0260-9dac-4d70-986d-720ec865b9ac/head_left_camera/head_left_camera_raw.mp4",
+  "candidates": [
+    155,
+    210,
+    303,
+    417
+  ],
+  "verdicts": [
+    {
+      "frame": 155,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.4
+    },
+    {
+      "frame": 210,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.5
+    },
+    {
+      "frame": 303,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.1
+    },
+    {
+      "frame": 417,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.6
+    }
+  ]
+}

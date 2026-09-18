@@ -1,0 +1,36 @@
+{
+  "video": "/Volumes/Timemachine1/Videos/Li Zong/sample带关键点标注/sample_ego双目/ego_0000_可视化标注.mp4",
+  "candidates": [
+    196,
+    732,
+    1203
+  ],
+  "verdicts": [
+    {
+      "frame": 196,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 1.8
+    },
+    {
+      "frame": 732,
+      "verdict": {
+        "continuous": true,
+        "same_scene": true,
+        "break_kind": "none",
+        "confidence": 0.95
+      },
+      "route": "deepseek/deepseek-v4.1-flash",
+      "secs": 2.3
+    },
+    {
+      "frame": 1203,
+      "error": "strip=1"
+    }
+  ]
+}
