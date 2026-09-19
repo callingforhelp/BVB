@@ -305,3 +305,44 @@ git log --oneline -3
 ```
 
 Do not modify the original `coherence_mvp` worktree unless explicitly requested. This worktree is the experimental implementation branch.
+
+
+## Companion experiment document
+
+The probability-learning background that informs the training/evaluation plan is documented separately here:
+
+```text
+/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp_flinter/TLCD_EXPERIMENT.md
+```
+
+The user referred to this as the “TLCD experiment”; the supplied research note calls the method **RLCD** (“Reinforcement Learning for Calibrated Decisions”). No original file with that exact name was found in the source worktree, so `TLCD_EXPERIMENT.md` is a handoff reconstruction from the supplied note and should be replaced or amended if the canonical source is located.
+
+### TLCD/RLCD context that the next agent must preserve
+
+- It is an independent research candidate, not a recovered official TypeSafe/Jev implementation.
+- The sampled proper-reward estimator is mathematically checked, but the experiments do not show it beats direct CE or direct Brier.
+- Direct CE and exact direct Brier are the first controls for small finite candidate sets.
+- The target distribution `q(.|x)` is the underlying conditional event distribution; an observed label `Y` is one sample from it.
+- A teacher/Jev distribution is an imitation target, not automatically ground truth.
+- Event prediction, preferred-action distribution, action policy, and final workflow success are different contracts.
+- The sampled estimator assumes a complete candidate set, independent predictive draws, an outcome independent of the draws conditional on `x`, and a correctly detached baseline.
+- In the Qwen event run, all arms started from the same existing NanoJev checkpoint; it was one seed and a narrow event family. The OOD slice included deterministic cases, so it does not prove broad OOD generalization.
+- For Flinter, begin with CE + direct Brier on reviewed/known outcomes. Keep RLCD-inspired sampling as a later comparison, not a first implementation dependency.
+- For multi-step editing, use deterministic timeline simulation and separate policy/planning evaluation before attempting policy-gradient training.
+
+### Full handoff context for another agent
+
+Read these documents in this order:
+
+1. This file:
+   `/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp_flinter/HANDOFF.md`
+2. Probability-learning experiment:
+   `/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp_flinter/TLCD_EXPERIMENT.md`
+3. Existing detector handoff:
+   `/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp/HANDOFF.md`
+4. Existing runbook:
+   `/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp/RUNBOOK.md`
+5. Existing loop implementation:
+   `/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp/jev_loop.py`
+
+The requested next implementation is the replay adapter: reuse the existing candidate union and cached judgments, put the new bounded evidence policy above it, preserve current arbitration, and produce a side-by-side report of accuracy, abstention, candidate coverage, judge calls, and error decomposition.
