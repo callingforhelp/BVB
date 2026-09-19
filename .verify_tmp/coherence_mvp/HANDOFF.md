@@ -495,3 +495,45 @@ breaks.
 than in-sample suggested. The residual is upstream (candidate/verdict
 coverage). This argues for rag_s1 (learned retrieval at train time) over
 runtime injection — but also that neither fixes the coverage ceiling.
+
+## Phase 2.6 — Coverage fix: bracket pass + seam-look second look (v7)
+
+**Diagnosis correction:** most "missing evidence" was actually UNREVEALED
+evidence — 7 of 10 room_swap->splice demotions already had a cached
+`scene_change` verdict at the true second seam (frame ~479); the loop simply
+never opened it. Only ~3 clips had true nomination gaps, and for 2 of them
+`echo_best_pair` literally contained the seam pair [300,480].
+
+**What was built:**
+- `pairjudge_bracket.py`: nominates candidates at signal-predicted seam
+  positions (scenecut I-frames, dup_dense_last_frame, echo_best_pair ends)
+  uncovered by existing passes; writes results/pairjudge_bracket/
+  (gate="signal_seam", unioned in load_clip_state). 117 judgments, 3
+  scene_changes — incl. the two missing true seams (1ada w1@480,
+  13c w3@480).
+- `jev_loop.py` seam second-look (code-owned, MAX_SEAM_LOOKS=3): on
+  `conclude` with lead in {splice, room_swap} and <2 discontinuous
+  revealed, reveal the unjudged candidate nearest a signal-predicted seam
+  (fallback: first unjudged). "Splice asserts a second seam is absent —
+  it must be checked, not assumed." Fired on 14 clips; all true splices
+  correctly stayed splice.
+
+**Rejected approach (evidence):** a TowerH-style 12-frame dense strip
+(+/-1 s @5fps) — the same VLM that calls scene_change conf 1.0 on a
+4-frame strip answered `continuous` 113/117 on the dense strip.
+Attention dilutes across the span; the focused 4-frame comparison is
+what works on this task/model. Bracket candidates use std4 strips.
+
+**v7 results (98 clips):**
+
+| arm | detection | typing | clean FPs |
+|---|---|---|---|
+| in-sample 90 | 88/90 | **84/90** | 0 |
+| OOD w3 | 8/8 | **7/8** | 0 |
+
+All 7 room_swap->splice demotions eliminated (incl. OOD `13c w3`
+room_swap now correct). Residual: 3x static swap->loop (typing
+discrimination: recur=1.0+dup_dense set = loop signature, needs
+"static inserted segment" distinction), 2x splice->none (truly
+invisible: bracket strip also continuous), 2x loop->reverse (boundary
+coin-flip on dup-null loops, Jev noise range).

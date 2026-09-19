@@ -168,7 +168,8 @@ def load_clip_state(cid: str, bank=None) -> dict:
     cands = {}
     for dname, gate in (("pairjudge", "pixel_gate"),
                         ("pairjudge_scenecut", "scenecut"),
-                        ("pairjudge_wide", "wide_gate")):
+                        ("pairjudge_wide", "wide_gate"),
+                        ("pairjudge_bracket", "signal_seam")):
         f = ROOT / "results" / dname / f"{cid}.json"
         if f.exists():
             for c in json.loads(f.read_text()).get("candidates", []):
@@ -237,6 +238,43 @@ LESSON_GATES: dict = {
                              "dup_dense_last_frame": "null",
                              "echo_best_score": "<1e6"},
 }
+
+# ------------------------------------------------------------ seam 2nd look
+# A one-seam verdict (splice=1 discontinuous, room_swap=2) may not conclude
+# while unjudged candidates remain: "splice" asserts the ABSENCE of a second
+# seam, which requires checking the likely places first. Bounded like the
+# TowerH boundary review: never more than MAX_SEAM_LOOKS targeted reveals.
+MAX_SEAM_LOOKS = 3
+SEAM_TOL = 10          # frames: candidate counts as "at a signal seam"
+
+
+def _seam_positions(fs: dict) -> set:
+    """Signal-predicted seam frames: codec scenecuts, end of the dense
+    duplicate region, echo-pair endpoints (last-original <-> first-resumed
+    frames of a swapped/inserted segment echo each other)."""
+    pos = {int(f) for f in fs.get("scenecut_iframe_frames") or []}
+    dl = fs.get("dup_dense_last_frame")
+    if dl is not None:
+        pos.add(int(dl))
+    for x in fs.get("echo_best_pair") or []:
+        if isinstance(x, (int, float)):
+            pos.add(int(x))
+    return pos
+
+
+def _seam_target(st: dict, unjudged: list) -> "int | None":
+    """Unjudged candidate nearest a signal-predicted seam (<=SEAM_TOL),
+    else the first unjudged candidate in frame order."""
+    pos = _seam_positions(st["free_signals"])
+    if pos:
+        best, d = None, SEAM_TOL + 1
+        for i in unjudged:
+            m = min(abs(st["candidates"][i]["frame"] - p) for p in pos)
+            if m < d:
+                best, d = i, m
+        if best is not None:
+            return best
+    return unjudged[0] if unjudged else None
 
 
 def _gate_ok(gate: dict, fs: dict) -> bool:
@@ -335,6 +373,7 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
     verdict = {}
     abstained = False
     reveal_deltas: list[float] = []   # info gain produced by each reveal
+    seam_looks = 0                    # bounded second-look reveals used
     prev_belief = None                # (corrupted, fan) at last jev call
 
     for it in range(MAX_ITERS):
@@ -366,6 +405,25 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
                            "break_type": ans.get("break_type", {}).get("choice"),
                            "sufficient": suff, "fan": fan})
         if act == "conclude":
+            # seam-count second look (code-owned): before honoring a
+            # one-seam-type conclusion, open remaining reports — the
+            # verdict asserts a second seam is absent, so it must be
+            # checked, not assumed. Bounded by MAX_SEAM_LOOKS.
+            lead = ans.get("break_type", {}).get("choice") or (
+                max(fan, key=lambda k: fan.get(k) or 0) if fan else None)
+            ndis = len([c for c in st["candidates"] if c["revealed"]
+                        and c["revealed"].get("continuous") is False])
+            if lead in ("splice", "room_swap") and ndis < 2 \
+                    and seam_looks < MAX_SEAM_LOOKS and unjudged:
+                tgt = _seam_target(st, unjudged)
+                if tgt is not None:
+                    seam_looks += 1
+                    st["candidates"][tgt]["revealed"] = \
+                        st["candidates"][tgt]["verdict"]
+                    transcript[-1]["forced_judge"] = tgt
+                    transcript[-1]["seam_look"] = True
+                    transcript[-1]["_revealed"] = tgt
+                    continue
             vals = sorted((v for v in fan.values() if v is not None), reverse=True)
             margin = (vals[0] - vals[1]) if len(vals) > 1 else 1.0
             corrupted_p = ans.get("corrupted", {}).get("noul", 0)
