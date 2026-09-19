@@ -341,3 +341,78 @@ Fireworks prepped as alternate backend; `qwen3p6-35b-a3b` is managed-SFT-tunable
   (read estimatedCost in the response before confirming spend).
 - Eval needs a dedicated LoRA deployment (4xB200/hr) — undeploy after.
   Managed RFT not available on this model (`rftLoraManaged:false`) — RL stays Tinker.
+
+## THE PLAN (2026-09-19) — Phase 3 completion
+
+End-state: tuned policy in production via `--jev s1:`/`fw:`, verified on the
+full corpus, ≥ OpenJev accuracy at lower judge cost, 0 clean FPs.
+
+### Stage 0 — Unblock (user action, ~5 min, $0)
+
+Pick ONE, whichever is easier:
+- **A (preferred): Tinker** — log into the account that holds the balance,
+  mint a FRESH api key, swap `refs.TINKER_API_KEY` in ~/.dsh/.credentials.yaml.
+  Verify: `tinker auth status` -> "accessible: yes". Preserves ~$150 sunk
+  checkpoints + cheaper rates ($1.18 vs $3.00 per 1M train tokens).
+- **B: Fireworks** — https://app.fireworks.ai -> billing -> add payment
+  method. Verify: `python3 ft_fireworks.py jobs` returns without 402.
+
+### Stage 1 — Verification evals (Tinker, ~$3)
+
+```bash
+cd .verify_tmp/coherence_mvp
+V=/Users/oldap/s1-spike/.venv/bin/python
+# room_swap-fix candidate (alldata model):
+$V eval_s1.py --model-path tinker://4877bbea-315e-5032-bb7f-0bd0af2260cf:train:0/sampler_weights/final --out results/evals1/full_alldata
+$V jev_score.py results/evals1/full_alldata
+# inspect 09c1414f1b__w{0,1,2}__room_swap -> want room_swap not loop
+# fold-2 parity arm:
+$V eval_s1.py --model-path tinker://60bf1921-f443-5b4d-9e98-c46f8a058a28:train:0/sampler_weights/final --source 0d2ee665be --out results/evals1/loso_0d2ee665be_tuned
+```
+
+Gates: alldata det>=88/90, type>=85/90 (83 + static-swap fixes - regressions),
+0 clean FPs. If type>=86/90 with the 3 swaps fixed -> beats OpenJev.
+Fold-2: det 18/18, type>=15/18, judges << 77.
+
+### Stage 2 — Production ship
+
+Pick winner (alldata if gates pass, else fold-1 ckpt 726604fd). Run
+`jev_loop.py --jev s1:tinker://<ckpt>` on a subset then full corpus.
+Document selected URI + rollback URI here.
+
+### Stage 3 — RL (~$37 Tinker)
+
+Paused run resumes automatically when billing clears. If the process died:
+```bash
+$V ft_rl.py --init-state tinker://a5d4c168-e49a-598a-9146-a26a3476fc3e:train:0/sampler_weights/weights/sft_warmstart \
+    --iters 25 --clip-batch 16 --group-size 4 --lam 0.05 --held-out 09c1414f1b
+```
+Eval the RL ckpt same as Stage 1. Gate: accuracy preserved, judges < 69
+(or abstention quality better) — else SFT stays the shipped policy.
+
+### Stage 4 — Cross-val folds 3-5 — SKIP BY DEFAULT (~$112)
+
+Only if fold-2 contradicts fold-1, or for a writeup. Not needed for shipping.
+
+### Stage 5 — Fireworks fallback (only if Tinker stays dead)
+
+```bash
+python3 ft_fireworks.py train --set all --base-model qwen3-8b --name jev-s1-8b-all   # ~$20
+# eval: try serverless LoRA first (apiLora:true); else deploy->eval->undeploy (~$25-50)
+$V eval_s1.py --fw-model accounts/zhangye1987-q56dy8y3/models/jev-s1-8b-all --out results/evals1/fw_8b_all
+```
+If 8B parity -> optionally escalate to 35B (~$122) or ship the 8B.
+RL stays Tinker (managed RFT unavailable on this model).
+
+### Stage 6 — Wrap-up
+
+Update this file, commit, rotate BOTH api keys (Tinker key was pasted in
+chat). Reasoning bank already integrated (.codex/reasoning-bank).
+
+### Cost summary
+
+| path | spend | gets |
+|---|---|---|
+| Tinker (A) | ~$40 | evals + RL + everything essential |
+| + folds 3-5 | +~$112 | optional confirmation (skip) |
+| Fireworks (B) | ~$20-70 | 8B arm + eval (fallback only) |

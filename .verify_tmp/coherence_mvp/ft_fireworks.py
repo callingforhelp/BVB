@@ -98,12 +98,13 @@ def upload() -> None:
         print(f"  {did}: uploaded {n} rows")
 
 
-def train(set_name: str, model_name: str, val: bool = True) -> None:
+def train(set_name: str, model_name: str, val: bool = True,
+          base_model: str = BASE_MODEL) -> None:
     acct = account()
     stem = set_name if (DATA / f"{set_name}.jsonl").exists() \
         else f"{set_name}_train"
     job = {
-        "baseModel": BASE_MODEL,
+        "baseModel": base_model,
         "dataset": f"accounts/{acct}/datasets/{ds_id(stem)}",
         "outputModel": f"accounts/{acct}/models/{model_name}",
         "loraRank": LORA_RANK,
@@ -157,6 +158,8 @@ def main() -> None:
     tr.add_argument("--set", required=True,
                     help="all | loso_<src> (uses _train/_val files)")
     tr.add_argument("--name", required=True, help="output model id")
+    tr.add_argument("--base-model", default=BASE_MODEL,
+                    help="override base (e.g. qwen3-8b for the $0.50/1M tier)")
     tr.add_argument("--no-val", action="store_true")
     st = sub.add_parser("status"); st.add_argument("job_id")
     st.add_argument("--watch", action="store_true")
@@ -165,7 +168,9 @@ def main() -> None:
     if a.cmd == "upload":
         upload()
     elif a.cmd == "train":
-        train(a.set, a.name, val=not a.no_val)
+        bm = a.base_model if "/" in a.base_model \
+            else f"accounts/fireworks/models/{a.base_model}"
+        train(a.set, a.name, val=not a.no_val, base_model=bm)
     elif a.cmd == "status":
         status(None, a.job_id, a.watch)
     elif a.cmd == "jobs":
