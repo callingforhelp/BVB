@@ -1,0 +1,2341 @@
+{
+  "changed_full_break_coverage": 78,
+  "changed_full_break_coverage_rate": 0.975,
+  "clean_candidate_count_mean": 9.055555555555555,
+  "method": "existing-jev-loop-candidate-union",
+  "n_changed": 80,
+  "n_clean": 18,
+  "n_evaluated": 98,
+  "rows": [
+    {
+      "break_frames": [],
+      "candidate_count": 7,
+      "candidate_frames": [
+        474,
+        555,
+        611,
+        665,
+        709,
+        777,
+        821
+      ],
+      "clip_id": "09c1414f1b__w0__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 8,
+      "candidate_frames": [
+        18,
+        258,
+        278,
+        414,
+        541,
+        648,
+        745,
+        892
+      ],
+      "clip_id": "09c1414f1b__w1__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 7,
+      "candidate_frames": [
+        14,
+        98,
+        107,
+        156,
+        248,
+        254,
+        461
+      ],
+      "clip_id": "09c1414f1b__w2__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 8,
+      "candidate_frames": [
+        74,
+        119,
+        142,
+        191,
+        384,
+        586,
+        597,
+        695
+      ],
+      "clip_id": "0d2ee665be__w0__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 7,
+      "candidate_frames": [
+        76,
+        423,
+        501,
+        590,
+        596,
+        621,
+        634
+      ],
+      "clip_id": "0d2ee665be__w1__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 11,
+      "candidate_frames": [
+        201,
+        294,
+        300,
+        511,
+        563,
+        570,
+        576,
+        597,
+        629,
+        801,
+        871
+      ],
+      "clip_id": "0d2ee665be__w2__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 10,
+      "candidate_frames": [
+        273,
+        287,
+        302,
+        410,
+        416,
+        432,
+        449,
+        682,
+        798,
+        813
+      ],
+      "clip_id": "13c3e046d7__w0__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 7,
+      "candidate_frames": [
+        216,
+        238,
+        280,
+        414,
+        477,
+        597,
+        866
+      ],
+      "clip_id": "13c3e046d7__w1__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 10,
+      "candidate_frames": [
+        26,
+        32,
+        400,
+        413,
+        427,
+        437,
+        473,
+        513,
+        687,
+        828
+      ],
+      "clip_id": "13c3e046d7__w2__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 13,
+      "candidate_frames": [
+        78,
+        143,
+        149,
+        302,
+        345,
+        351,
+        401,
+        509,
+        570,
+        596,
+        627,
+        711,
+        877
+      ],
+      "clip_id": "1ada7a0617__w0__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 12,
+      "candidate_frames": [
+        57,
+        91,
+        166,
+        179,
+        248,
+        279,
+        287,
+        345,
+        589,
+        638,
+        672,
+        719
+      ],
+      "clip_id": "1ada7a0617__w1__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 14,
+      "candidate_frames": [
+        72,
+        234,
+        293,
+        313,
+        351,
+        360,
+        372,
+        503,
+        577,
+        607,
+        726,
+        801,
+        857,
+        882
+      ],
+      "clip_id": "1ada7a0617__w2__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 8,
+      "candidate_frames": [
+        72,
+        169,
+        269,
+        374,
+        491,
+        516,
+        664,
+        689
+      ],
+      "clip_id": "21d970d8de__w0__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 7,
+      "candidate_frames": [
+        258,
+        264,
+        282,
+        332,
+        388,
+        596,
+        726
+      ],
+      "clip_id": "21d970d8de__w1__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 9,
+      "candidate_frames": [
+        207,
+        228,
+        559,
+        669,
+        677,
+        684,
+        698,
+        730,
+        851
+      ],
+      "clip_id": "21d970d8de__w2__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 15,
+      "candidate_frames": [
+        205,
+        371,
+        408,
+        414,
+        431,
+        438,
+        449,
+        456,
+        468,
+        473,
+        475,
+        552,
+        564,
+        700,
+        715
+      ],
+      "clip_id": "09c1414f1b__w0__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        299,
+        308,
+        361,
+        479,
+        555,
+        709
+      ],
+      "clip_id": "09c1414f1b__w0__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        372,
+        449,
+        522,
+        609,
+        620,
+        700,
+        705,
+        755,
+        761
+      ],
+      "clip_id": "09c1414f1b__w0__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 10,
+      "candidate_frames": [
+        295,
+        403,
+        412,
+        420,
+        480,
+        514,
+        546,
+        608,
+        628,
+        796
+      ],
+      "clip_id": "09c1414f1b__w0__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        604,
+        685,
+        725,
+        752,
+        799,
+        805,
+        839,
+        861
+      ],
+      "clip_id": "09c1414f1b__w0__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 13,
+      "candidate_frames": [
+        178,
+        449,
+        463,
+        519,
+        529,
+        542,
+        548,
+        555,
+        570,
+        606,
+        671,
+        684,
+        700
+      ],
+      "clip_id": "09c1414f1b__w1__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        208,
+        299,
+        364,
+        479,
+        634,
+        749
+      ],
+      "clip_id": "09c1414f1b__w1__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        25,
+        114,
+        369,
+        414,
+        430,
+        449,
+        519,
+        564,
+        700
+      ],
+      "clip_id": "09c1414f1b__w1__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        18,
+        25,
+        295,
+        351,
+        452,
+        546,
+        607,
+        792,
+        796
+      ],
+      "clip_id": "09c1414f1b__w1__room_swap",
+      "coverage": false,
+      "covered": [
+        true,
+        false
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        45,
+        395,
+        516,
+        542,
+        604,
+        657,
+        774,
+        787,
+        827
+      ],
+      "clip_id": "09c1414f1b__w1__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 14,
+      "candidate_frames": [
+        13,
+        69,
+        83,
+        92,
+        98,
+        104,
+        120,
+        156,
+        225,
+        234,
+        248,
+        430,
+        450,
+        700
+      ],
+      "clip_id": "09c1414f1b__w2__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 7,
+      "candidate_frames": [
+        98,
+        104,
+        164,
+        248,
+        299,
+        312,
+        480
+      ],
+      "clip_id": "09c1414f1b__w2__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 10,
+      "candidate_frames": [
+        92,
+        98,
+        104,
+        156,
+        177,
+        248,
+        423,
+        450,
+        573,
+        700
+      ],
+      "clip_id": "09c1414f1b__w2__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 11,
+      "candidate_frames": [
+        92,
+        98,
+        104,
+        156,
+        166,
+        248,
+        296,
+        546,
+        613,
+        633,
+        796
+      ],
+      "clip_id": "09c1414f1b__w2__room_swap",
+      "coverage": false,
+      "covered": [
+        true,
+        false
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        38,
+        197,
+        203,
+        209,
+        497,
+        604,
+        625,
+        837,
+        860
+      ],
+      "clip_id": "09c1414f1b__w2__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 14,
+      "candidate_frames": [
+        74,
+        113,
+        119,
+        138,
+        144,
+        151,
+        157,
+        191,
+        288,
+        341,
+        449,
+        501,
+        509,
+        700
+      ],
+      "clip_id": "0d2ee665be__w0__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        111,
+        146,
+        299,
+        308,
+        479,
+        695
+      ],
+      "clip_id": "0d2ee665be__w0__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        119,
+        142,
+        383,
+        449,
+        533,
+        700,
+        747,
+        845
+      ],
+      "clip_id": "0d2ee665be__w0__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        146,
+        152,
+        286,
+        299,
+        479,
+        695
+      ],
+      "clip_id": "0d2ee665be__w0__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        230,
+        236,
+        279,
+        293,
+        604,
+        711,
+        743,
+        766,
+        798
+      ],
+      "clip_id": "0d2ee665be__w0__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 16,
+      "candidate_frames": [
+        59,
+        65,
+        346,
+        352,
+        422,
+        430,
+        449,
+        651,
+        678,
+        683,
+        689,
+        705,
+        729,
+        735,
+        761,
+        828
+      ],
+      "clip_id": "0d2ee665be__w1__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 7,
+      "candidate_frames": [
+        299,
+        479,
+        501,
+        517,
+        624,
+        629,
+        636
+      ],
+      "clip_id": "0d2ee665be__w1__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        423,
+        436,
+        449,
+        573,
+        651,
+        700,
+        740,
+        772,
+        778
+      ],
+      "clip_id": "0d2ee665be__w1__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 7,
+      "candidate_frames": [
+        299,
+        479,
+        501,
+        629,
+        641,
+        647,
+        807
+      ],
+      "clip_id": "0d2ee665be__w1__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 11,
+      "candidate_frames": [
+        372,
+        604,
+        661,
+        700,
+        714,
+        745,
+        763,
+        802,
+        837,
+        883,
+        890
+      ],
+      "clip_id": "0d2ee665be__w1__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 15,
+      "candidate_frames": [
+        19,
+        44,
+        122,
+        129,
+        135,
+        201,
+        255,
+        270,
+        296,
+        302,
+        308,
+        351,
+        378,
+        449,
+        700
+      ],
+      "clip_id": "0d2ee665be__w2__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 10,
+      "candidate_frames": [
+        201,
+        299,
+        309,
+        358,
+        479,
+        570,
+        638,
+        709,
+        801,
+        871
+      ],
+      "clip_id": "0d2ee665be__w2__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 10,
+      "candidate_frames": [
+        201,
+        389,
+        433,
+        449,
+        456,
+        530,
+        591,
+        676,
+        720,
+        870
+      ],
+      "clip_id": "0d2ee665be__w2__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 12,
+      "candidate_frames": [
+        201,
+        235,
+        299,
+        379,
+        479,
+        511,
+        529,
+        570,
+        597,
+        709,
+        801,
+        871
+      ],
+      "clip_id": "0d2ee665be__w2__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 14,
+      "candidate_frames": [
+        131,
+        402,
+        449,
+        456,
+        473,
+        568,
+        602,
+        635,
+        644,
+        697,
+        735,
+        749,
+        845,
+        886
+      ],
+      "clip_id": "0d2ee665be__w2__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 14,
+      "candidate_frames": [
+        368,
+        374,
+        380,
+        388,
+        391,
+        425,
+        431,
+        432,
+        437,
+        443,
+        449,
+        618,
+        666,
+        682
+      ],
+      "clip_id": "13c3e046d7__w0__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        299,
+        369,
+        375,
+        385,
+        479,
+        655
+      ],
+      "clip_id": "13c3e046d7__w0__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        314,
+        426,
+        432,
+        438,
+        449,
+        464,
+        510,
+        700,
+        851
+      ],
+      "clip_id": "13c3e046d7__w0__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 7,
+      "candidate_frames": [
+        205,
+        212,
+        273,
+        299,
+        479,
+        524,
+        560
+      ],
+      "clip_id": "13c3e046d7__w0__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        113,
+        604,
+        654,
+        667,
+        678,
+        749,
+        795,
+        856
+      ],
+      "clip_id": "13c3e046d7__w0__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 14,
+      "candidate_frames": [
+        216,
+        280,
+        374,
+        414,
+        449,
+        471,
+        477,
+        483,
+        514,
+        521,
+        660,
+        700,
+        859,
+        875
+      ],
+      "clip_id": "13c3e046d7__w1__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        147,
+        280,
+        299,
+        479,
+        599,
+        733
+      ],
+      "clip_id": "13c3e046d7__w1__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 7,
+      "candidate_frames": [
+        216,
+        280,
+        419,
+        449,
+        565,
+        700,
+        747
+      ],
+      "clip_id": "13c3e046d7__w1__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        280,
+        299,
+        479,
+        596,
+        602,
+        773
+      ],
+      "clip_id": "13c3e046d7__w1__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        321,
+        604,
+        615,
+        657,
+        703,
+        747,
+        772,
+        807
+      ],
+      "clip_id": "13c3e046d7__w1__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 16,
+      "candidate_frames": [
+        64,
+        71,
+        79,
+        211,
+        258,
+        296,
+        332,
+        348,
+        400,
+        427,
+        433,
+        449,
+        700,
+        819,
+        827,
+        882
+      ],
+      "clip_id": "13c3e046d7__w2__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 7,
+      "candidate_frames": [
+        33,
+        214,
+        299,
+        350,
+        360,
+        453,
+        479
+      ],
+      "clip_id": "13c3e046d7__w2__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        424,
+        434,
+        449,
+        552,
+        578,
+        584,
+        630,
+        663,
+        828
+      ],
+      "clip_id": "13c3e046d7__w2__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        30,
+        36,
+        281,
+        299,
+        479,
+        513
+      ],
+      "clip_id": "13c3e046d7__w2__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        49,
+        59,
+        302,
+        604,
+        650,
+        662,
+        691,
+        706,
+        732
+      ],
+      "clip_id": "13c3e046d7__w2__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 17,
+      "candidate_frames": [
+        78,
+        151,
+        240,
+        246,
+        351,
+        401,
+        449,
+        457,
+        541,
+        551,
+        581,
+        588,
+        616,
+        629,
+        639,
+        755,
+        797
+      ],
+      "clip_id": "1ada7a0617__w0__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 10,
+      "candidate_frames": [
+        151,
+        158,
+        164,
+        299,
+        479,
+        550,
+        589,
+        702,
+        827,
+        877
+      ],
+      "clip_id": "1ada7a0617__w0__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 11,
+      "candidate_frames": [
+        151,
+        163,
+        169,
+        175,
+        305,
+        351,
+        401,
+        449,
+        700,
+        852,
+        863
+      ],
+      "clip_id": "1ada7a0617__w0__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 10,
+      "candidate_frames": [
+        151,
+        167,
+        224,
+        299,
+        479,
+        550,
+        589,
+        602,
+        702,
+        877
+      ],
+      "clip_id": "1ada7a0617__w0__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 13,
+      "candidate_frames": [
+        280,
+        291,
+        297,
+        361,
+        602,
+        604,
+        616,
+        625,
+        709,
+        725,
+        797,
+        848,
+        889
+      ],
+      "clip_id": "1ada7a0617__w0__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 16,
+      "candidate_frames": [
+        57,
+        91,
+        101,
+        166,
+        179,
+        279,
+        293,
+        305,
+        323,
+        329,
+        338,
+        344,
+        347,
+        450,
+        538,
+        795
+      ],
+      "clip_id": "1ada7a0617__w1__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 11,
+      "candidate_frames": [
+        57,
+        91,
+        166,
+        179,
+        287,
+        293,
+        299,
+        451,
+        480,
+        589,
+        603
+      ],
+      "clip_id": "1ada7a0617__w1__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 13,
+      "candidate_frames": [
+        57,
+        91,
+        166,
+        179,
+        279,
+        306,
+        322,
+        347,
+        433,
+        450,
+        583,
+        594,
+        639
+      ],
+      "clip_id": "1ada7a0617__w1__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        57,
+        91,
+        166,
+        179,
+        217,
+        224,
+        299,
+        480,
+        589
+      ],
+      "clip_id": "1ada7a0617__w1__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 10,
+      "candidate_frames": [
+        112,
+        182,
+        356,
+        419,
+        425,
+        607,
+        659,
+        679,
+        707,
+        836
+      ],
+      "clip_id": "1ada7a0617__w1__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 18,
+      "candidate_frames": [
+        72,
+        77,
+        89,
+        102,
+        195,
+        234,
+        293,
+        299,
+        310,
+        311,
+        318,
+        325,
+        331,
+        341,
+        345,
+        450,
+        601,
+        851
+      ],
+      "clip_id": "1ada7a0617__w2__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 10,
+      "candidate_frames": [
+        72,
+        111,
+        234,
+        299,
+        401,
+        408,
+        449,
+        479,
+        597,
+        659
+      ],
+      "clip_id": "1ada7a0617__w2__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 11,
+      "candidate_frames": [
+        72,
+        234,
+        311,
+        318,
+        345,
+        428,
+        449,
+        557,
+        578,
+        653,
+        741
+      ],
+      "clip_id": "1ada7a0617__w2__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 11,
+      "candidate_frames": [
+        72,
+        185,
+        234,
+        299,
+        479,
+        597,
+        609,
+        615,
+        659,
+        801,
+        882
+      ],
+      "clip_id": "1ada7a0617__w2__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 12,
+      "candidate_frames": [
+        114,
+        328,
+        341,
+        530,
+        578,
+        608,
+        623,
+        701,
+        709,
+        715,
+        851,
+        892
+      ],
+      "clip_id": "1ada7a0617__w2__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 15,
+      "candidate_frames": [
+        197,
+        269,
+        294,
+        353,
+        374,
+        385,
+        449,
+        618,
+        624,
+        700,
+        708,
+        714,
+        720,
+        726,
+        732
+      ],
+      "clip_id": "21d970d8de__w0__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        74,
+        299,
+        397,
+        479,
+        659,
+        683
+      ],
+      "clip_id": "21d970d8de__w0__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        74,
+        269,
+        429,
+        440,
+        449,
+        524,
+        579,
+        700,
+        833
+      ],
+      "clip_id": "21d970d8de__w0__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        74,
+        232,
+        299,
+        479,
+        491,
+        516,
+        664,
+        683
+      ],
+      "clip_id": "21d970d8de__w0__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        147,
+        232,
+        604,
+        637,
+        675,
+        731,
+        781,
+        875
+      ],
+      "clip_id": "21d970d8de__w0__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 16,
+      "candidate_frames": [
+        172,
+        178,
+        210,
+        258,
+        264,
+        270,
+        276,
+        282,
+        288,
+        381,
+        388,
+        407,
+        449,
+        657,
+        678,
+        700
+      ],
+      "clip_id": "21d970d8de__w1__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        264,
+        284,
+        299,
+        390,
+        479,
+        547
+      ],
+      "clip_id": "21d970d8de__w1__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        76,
+        266,
+        272,
+        367,
+        388,
+        449,
+        517,
+        538,
+        700
+      ],
+      "clip_id": "21d970d8de__w1__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        265,
+        275,
+        282,
+        299,
+        479,
+        596,
+        733,
+        865
+      ],
+      "clip_id": "21d970d8de__w1__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        339,
+        527,
+        533,
+        539,
+        604,
+        644,
+        749,
+        813,
+        881
+      ],
+      "clip_id": "21d970d8de__w1__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 14,
+      "candidate_frames": [
+        75,
+        82,
+        183,
+        207,
+        228,
+        267,
+        449,
+        469,
+        508,
+        516,
+        522,
+        528,
+        662,
+        700
+      ],
+      "clip_id": "21d970d8de__w2__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 7,
+      "candidate_frames": [
+        71,
+        299,
+        479,
+        677,
+        683,
+        689,
+        698
+      ],
+      "clip_id": "21d970d8de__w2__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        267,
+        365,
+        449,
+        515,
+        700,
+        709,
+        824,
+        830,
+        845
+      ],
+      "clip_id": "21d970d8de__w2__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        207,
+        228,
+        299,
+        315,
+        479,
+        673,
+        680,
+        686,
+        698
+      ],
+      "clip_id": "21d970d8de__w2__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [
+        600
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        394,
+        604,
+        729,
+        786,
+        792,
+        808,
+        836,
+        858
+      ],
+      "clip_id": "21d970d8de__w2__timewarp",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "timewarp"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 7,
+      "candidate_frames": [
+        328,
+        594,
+        685,
+        800,
+        810,
+        825,
+        876
+      ],
+      "clip_id": "09c1414f1b__w3__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 6,
+      "candidate_frames": [
+        192,
+        299,
+        479,
+        594,
+        685,
+        811
+      ],
+      "clip_id": "09c1414f1b__w3__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 9,
+      "candidate_frames": [
+        318,
+        449,
+        468,
+        479,
+        538,
+        700,
+        738,
+        744,
+        828
+      ],
+      "clip_id": "09c1414f1b__w3__loop",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "loop"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 11,
+      "candidate_frames": [
+        4,
+        74,
+        80,
+        164,
+        414,
+        483,
+        617,
+        647,
+        664,
+        830,
+        838
+      ],
+      "clip_id": "13c3e046d7__w3__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 7,
+      "candidate_frames": [
+        71,
+        151,
+        255,
+        299,
+        479,
+        619,
+        643
+      ],
+      "clip_id": "13c3e046d7__w3__reverse_segment",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "reverse_segment"
+    },
+    {
+      "break_frames": [
+        300,
+        480
+      ],
+      "candidate_count": 8,
+      "candidate_frames": [
+        53,
+        151,
+        160,
+        299,
+        351,
+        379,
+        480,
+        537
+      ],
+      "clip_id": "13c3e046d7__w3__room_swap",
+      "coverage": true,
+      "covered": [
+        true,
+        true
+      ],
+      "operator": "room_swap"
+    },
+    {
+      "break_frames": [],
+      "candidate_count": 7,
+      "candidate_frames": [
+        262,
+        268,
+        320,
+        338,
+        344,
+        506,
+        641
+      ],
+      "clip_id": "21d970d8de__w3__clean",
+      "coverage": null,
+      "covered": [],
+      "operator": "none"
+    },
+    {
+      "break_frames": [
+        450
+      ],
+      "candidate_count": 16,
+      "candidate_frames": [
+        50,
+        215,
+        222,
+        228,
+        256,
+        262,
+        268,
+        274,
+        280,
+        314,
+        320,
+        335,
+        341,
+        366,
+        450,
+        700
+      ],
+      "clip_id": "21d970d8de__w3__splice",
+      "coverage": true,
+      "covered": [
+        true
+      ],
+      "operator": "splice"
+    }
+  ],
+  "tolerance_frames": 10
+}

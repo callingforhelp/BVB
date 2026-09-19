@@ -30,6 +30,23 @@ candidate construction, evidence floors, stopping safety, or final arbitration.
 The module is intentionally stdlib-only so it can be embedded in the existing
 `.verify_tmp/coherence_mvp` pipeline without changing its API or credentials.
 
+## Existing-corpus check
+
+`evaluate_existing_proposals.py` reuses the existing coherence MVP's exact
+candidate union and evaluates proposal coverage against the held-out manifest
+only after proposals are generated. On the current 98-clip corpus, the existing
+candidate union covers all true seams within 10 frames on **78/80 changed clips
+(97.5%)**. The two misses are useful coverage failures, not scorer failures.
+
+A naive replacement based only on the top local peaks of the cached signals
+covered just 6/80 changed clips (7.5%). Therefore this worktree does **not**
+replace the mature candidate gates. The correct integration is to reuse the
+existing candidate union and put the bounded evidence policy above it.
+
+The current corpus is a temporal-edit corpus, not an action-boundary corpus, so
+this check validates proposal coverage only. A full action-boundary evaluation
+still needs reviewed action intervals and a completion rubric.
+
 ## Next integration step
 
 Adapt `jev_loop.py` behind an adapter that converts its current state into
