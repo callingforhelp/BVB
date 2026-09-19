@@ -109,6 +109,12 @@ DEFAULT_PACK = {
         "timewarp": "part of the clip plays at altered speed (slowed or sped up)",
     },
     "none_desc": "no artificial edit",
+    "precedents_note": ("Each candidate may carry a 'precedent' field: an "
+                        "outcome summary of the most visually similar "
+                        "boundaries seen in OTHER videos (retrieved by "
+                        "embedding, never from this clip). Treat it as a "
+                        "prior, not a verdict — strong when it agrees with "
+                        "your read of the signals, weak when it conflicts."),
 }
 
 
@@ -135,7 +141,7 @@ def pack_hash(pack: dict) -> str:
 
 # ---------------------------------------------------------------- evidence
 
-def load_clip_state(cid: str) -> dict:
+def load_clip_state(cid: str, bank=None) -> dict:
     """Free-signal evidence + judgeable candidates (cached verdicts)."""
     sig = np.load(ROOT / "results" / "signals_v3" / f"{cid}.npz")
     recur = sig["recur_frac"].astype(np.float64)
@@ -173,7 +179,20 @@ def load_clip_state(cid: str) -> dict:
     for c in candidates:
         c["revealed"] = None
 
+    # optional reasoning bank: per-candidate strip descriptors for retrieval
+    if bank is not None:
+        import strip_bank as sb
+        mp4 = ROOT / "corpus_v3" / CLIPS[cid]["path"]
+        for c in candidates:
+            try:
+                frames = sb.extract_strip_frames(mp4, c["frame"])
+                ctx = sb.signal_context_for(cid, c["frame"], c["gate"])
+                c["vec"] = sb.strip_descriptor(frames, ctx)
+            except Exception:
+                c["vec"] = None
+
     return {
+        "source": CLIPS[cid]["source"],
         "free_signals": {
             "recur_frac_max": round(float(recur.max()), 3),
             "recur_argmax_frame": int(recur.argmax()),
@@ -200,7 +219,7 @@ def jev(state: dict, questions: dict) -> dict:
         return json.loads(r.read().decode())["answers"]
 
 
-def state_view(st: dict, pack: dict) -> dict:
+def state_view(st: dict, pack: dict, bank=None) -> dict:
     """Serialize evidence Jev may see (signals + revealed verdicts only)."""
     fs = st["free_signals"]
     sig = pack["signals"]
@@ -226,10 +245,15 @@ def state_view(st: dict, pack: dict) -> dict:
             "typing_guide": pack["typing_guide"],
         },
         "candidates": [
-            {"id": i, "frame": c["frame"], "gate": c["gate"],
+            {**({"precedent": bank.precedent_summary(
+                     c["vec"], exclude_source=st["source"])["summary"]}
+                 if bank is not None and c.get("vec") is not None else {}),
+             "id": i, "frame": c["frame"], "gate": c["gate"],
              "vlm_verdict": c["revealed"] if c["revealed"] else "not_judged"}
             for i, c in enumerate(st["candidates"])],
         "candidate_note": pack["candidate_note"],
+        **({"precedents_note": pack.get("precedents_note")}
+            if bank is not None else {}),
     }
 
 
@@ -257,8 +281,8 @@ def questions_for(st: dict, pack: dict) -> dict:
 
 # ---------------------------------------------------------------- loop
 
-def run_clip(cid: str, pack: dict, out_dir: Path) -> dict:
-    st = load_clip_state(cid)
+def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
+    st = load_clip_state(cid, bank=bank)
     transcript, jev_calls, jev_errors = [], 0, 0
     verdict = {}
 
@@ -267,7 +291,7 @@ def run_clip(cid: str, pack: dict, out_dir: Path) -> dict:
         if not unjudged and it == 0:
             break  # nothing to judge — conclude immediately
         try:
-            ans = jev(state_view(st, pack), questions_for(st, pack))
+            ans = jev(state_view(st, pack, bank), questions_for(st, pack))
             jev_calls += 1
         except Exception as e:
             jev_errors += 1
@@ -359,18 +383,26 @@ def main() -> None:
                     help="prompt pack JSON (default: built-in v1 strings)")
     ap.add_argument("--out", default=None,
                     help="output dir (default: results/jevloop)")
+    ap.add_argument("--bank", default=None,
+                    help="strip-bank dir (episodes.jsonl+embeddings.npy) "
+                         "to inject per-candidate precedents")
     args = ap.parse_args()
 
     pack = load_pack(args.pack)
     out_dir = Path(args.out) if args.out else OUT
     out_dir.mkdir(parents=True, exist_ok=True)
+    bank = None
+    if args.bank:
+        import strip_bank as sb
+        bank = sb.StripBank.load(args.bank)
+        print(f"bank: {len(bank._ids)} episodes from {args.bank}")
 
     cids = args.only or sorted(CLIPS)
     todo = [c for c in cids if not (out_dir / f"{c}.json").exists()]
     print(f"pack v{pack.get('version')} ({pack_hash(pack)}): "
           f"{len(todo)} clips to run ({len(cids)-len(todo)} cached)")
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = {ex.submit(run_clip, c, pack, out_dir): c for c in todo}
+        futs = {ex.submit(run_clip, c, pack, out_dir, bank): c for c in todo}
         for i, f in enumerate(as_completed(futs)):
             try:
                 r = f.result()

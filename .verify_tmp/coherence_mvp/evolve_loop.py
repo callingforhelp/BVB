@@ -216,6 +216,7 @@ def _validate_pack(p: dict) -> dict:
     req_top = {"task", "conclude_crit", "judge_crit_template", "signals",
                "typing_guide", "candidate_note", "questions", "type_desc",
                "none_desc"}
+    allowed_top = req_top | {"precedents_note"}
     missing = req_top - set(p)
     assert not missing, f"pack missing keys: {missing}"
     for k in ("recur_frac_max", "dup_dense_last_frame", "echo_best_score",
@@ -229,7 +230,7 @@ def _validate_pack(p: dict) -> dict:
     for k, v in p.items():
         if k in ("version", "parent", "notes"):
             continue
-        assert k in req_top, f"unexpected pack key: {k}"
+        assert k in allowed_top, f"unexpected pack key: {k}"
         if isinstance(v, dict):
             assert all(isinstance(x, str) for x in v.values()), \
                 f"pack.{k} has non-string leaf"
