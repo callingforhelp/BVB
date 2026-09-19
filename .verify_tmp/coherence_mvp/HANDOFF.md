@@ -25,7 +25,8 @@ arbitration, final verdict.
 |---|---|---|
 | 1. Prompt self-improvement (Evolve loop) | DONE, `a57a713` | v2 pack accepted: typing 82→83/90; 5 bad proposals correctly rejected by gate |
 | 2. Retrieval/comparison reasoning bank | DONE, `d7f09cd` | LOSO 5-fold: det 88/90 = base, type 83/90 = base, **judge calls 319 vs 375 (−15%)** |
-| 3. eSFT/RL on Qwen3.6-35B-A3B (OpenJev) | NOT STARTED | dataset emitter + provider choice are the next deliverables |
+| 3a. eSFT dataset emitter (`ft_dataset.py`) | DONE | 3029 rows/variant (1008 aug), plain+rag, LOSO×5; final-state gold type=truth 401/435 (rest = evidence-faithful hard negatives); 0 clean-FP labels |
+| 3b. OpenJev parity replay + provider choice + tune | NOT STARTED | parity replay over logged states is the next deliverable |
 
 Alignment (user-decided): Phases 1–2 use the **real TypeSafe Jev key** as
 oracle/production reference. Phase 3 fine-tunes the **Qwen behind OpenJev**
@@ -60,6 +61,10 @@ strip_bank.py        jev-strip-bank.v1 episode store; cv2 descriptor 268 app + 4
                      + 8 ctx dims; WEIGHTED cosine (seam×3, ctx×2) — unweighted floods
                      top-k with benign look-alikes. FIFO cap, rb_<sha> ids.
 bank_loso.py         per-source fold build + held-out eval vs no-bank baseline
+ft_dataset.py        Phase 3a emitter: replays transcripts -> wire-format
+                     states, oracle-policy labels (truth for POLICY only,
+                     evidence-derived verdicts), plain+rag variants, LOSO
+                     folds, evidence-subset aug. Stats: dataset_stats.json
 pairjudge.py         VLM strip judge (zenmux/oc-vision-exp routes)
 dupfrac_extract.py   timewarp signal (15/15 on dup-retiming)
 echo_detect.py       codec-echo seam signal
@@ -73,7 +78,9 @@ build_corpus_v3.py   corpus generator (manifest = truth labels)
   `results/banks/` LOSO folds + episode banks, `results/pairjudge*`,
   `dupfrac`, `echo`, `codec_stats`, `rateprobe`, `realplanted`).
 - **On disk only (untracked, required to run)**: `corpus_v3/` ~745MB videos +
-  `manifest.json` (truth labels); `results/signals_v3/` 1.7MB caches.
+  `manifest.json` (truth labels); `results/signals_v3/` 1.7MB caches;
+  `results/ft_dataset/` ~346MB JSONL (regenerable in ~12min via
+  `ft_dataset.py`; stats committed at `results/ft_dataset/dataset_stats.json`).
   Regenerable via `build_corpus_v3.py` + `rung1_signals_v3.py` but slow.
   Do NOT `git clean` `.verify_tmp/`.
 - **Credentials** (`~/.dsh/.credentials.yaml`, names only — never print values):
@@ -100,21 +107,40 @@ build_corpus_v3.py   corpus generator (manifest = truth labels)
   Timewarp coverage = `dup_frac` + (unbuilt) flow-magnitude-ratio pixel arm.
 - Marlin: deferred to the fact-stream/progress front-end, not in detection.
 
-## Phase 3 spec (agreed, not built)
+## Phase 3 spec (3a built as specified, with two measured refinements)
 
-1. `ft_dataset.py`: walk `results/evolve`/`jevloop*` transcripts + bank
-   episodes + `corpus_v3/manifest.json` truth → Fireworks-compatible JSONL
+1. `ft_dataset.py`: walk `results/evolve`/`jevloop*`/`banks/eval_*`
+   transcripts + bank episodes + `corpus_v3/manifest.json` truth →
+   Fireworks-compatible JSONL
    `{messages:[user=state+questions, assistant=gold answers]}`.
+   Replay is exact: reveal-sequence from each transcript drives state.
 2. Labels from **manifest truth + oracle policy** (NOT Jev's own answers —
    that clones its errors incl. `sufficient` mush). Oracle `action`: judge
    unjudged candidate nearest a true seam; conclude when break-adjacent
    candidates resolved or decisive free signal present.
+   **Refinement A — verdict labels are evidence-derived, not raw truth**:
+   `corrupted`/`break_type`/fan = calibrated read of the *visible* evidence
+   (a quiet splice and a clean clip are state-identical — truth-labeling
+   them teaches hallucinated certainty and breaks near-zero-FP). Truth is
+   used only for the gather/stop POLICY. Measured: 0 clean-FP labels;
+   final-state gold type=truth 401/435 — all 34 mismatches are the known
+   info-limit/ambiguous residuals.
+   **Refinement B — signal precedence measured, not prose-guessed**:
+   echo>10 fires on EVERY loop and swap (any doubled discontinuity echoes);
+   effective order is recur(+dup→room_swap caveat) → dup→timewarp →
+   echo>10→reverse → seam count. recur≥0.9+dup_dense = static-segment
+   signature (only the 3 09c1414f1b swaps; never on cleans) → oracle
+   verifies it at the seams rather than concluding on it.
 3. Include: all intermediate states, hard negatives (static swaps, high-
    photo-jump cleans, sub-perceptual splices), negative-evidence states,
-   partial-observation/streaming states, evidence-subset augmentation.
+   partial-observation/streaming states, evidence-subset augmentation
+   (mask_row: re-seal random subset of revealed verdicts, re-oracle).
 4. Two variants: retrieval-conditioned (precedents in state) + retrieval-free.
+   RAG rows always use `loso_<clip-source>` bank → source-excluded in both
+   train and val of every fold.
 5. Split LOSO by source (5 sources: 09c1414f1b, 0d2ee665be, 13c3e046d7,
-   1ada7a0617, 21d970d8de).
+   1ada7a0617, 21d970d8de). `results/ft_dataset/{plain,rag}/loso_<src>/
+   {train,val}.jsonl` + `all.jsonl` + `.meta.jsonl` sidecars.
 6. Eval: OpenJev parity replay over all logged states BEFORE any fine-tune;
    then Fireworks SFT (simplest) or Tinker (if RL reward
    `verdict_correct − λ·judge_calls` wanted).
@@ -131,6 +157,8 @@ python3 jev_loop.py --pack prompt_pack_v2.json --bank results/banks/loso_09c1414
 python3 bank_loso.py --pack prompt_pack_v2.json --out results/banks
 # evolve another round (proposer = ark-plan flash)
 python3 evolve_loop.py --rounds 3 --pack prompt_pack_v2.json
+# emit fine-tune dataset (plain ~2min; rag ~10min: ffmpeg per candidate)
+python3 ft_dataset.py --variants plain rag
 ```
 
 ## Housekeeping warnings
