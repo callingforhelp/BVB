@@ -1,0 +1,120 @@
+{
+ "clip_id": "09c1414f1b__w1__splice",
+ "operator": "splice",
+ "breaks_s": [
+  15.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "probabilities": {
+    "judge_0": 0.05801013867161383,
+    "judge_2": 0.014667260014308132,
+    "judge_3": 0.002249297173200169,
+    "judge_4": 0.002249297173200169,
+    "judge_5": 0.0009376465624773821,
+    "judge_6": 9.409988197273991e-14,
+    "judge_7": 9.409988197273991e-14,
+    "judge_8": 0.00136426769835086,
+    "judge_9": 9.409988197273991e-14,
+    "judge_10": 0.01142287358465508,
+    "judge_11": 0.000730239877101596,
+    "judge_12": 0.0009376465624773821,
+    "conclude": 0.9074313326823331
+   },
+   "confidence": 0.8358261163184074
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.999290329445773
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "splice",
+   "probabilities": {
+    "none": 9.357828016397088e-14,
+    "loop": 4.006262193789348e-05,
+    "reverse": 1.0129417137655358e-05,
+    "room_swap": 1.6700585494646797e-05,
+    "splice": 0.9999331073752425,
+    "timewarp": 9.357828016397088e-14
+   },
+   "confidence": 0.9995687347224952
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.033085982083187186
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 9.357631892963988e-14
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 9.357636355026332e-14
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 9.357668704979455e-14
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.9984988180331045
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 9.357636355026332e-14
+  }
+ },
+ "fan_type": "splice",
+ "fan_probs": {
+  "loop": 9.357631892963988e-14,
+  "reverse": 9.357636355026332e-14,
+  "room_swap": 9.357668704979455e-14,
+  "splice": 0.9984988180331045,
+  "timewarp": 9.357636355026332e-14
+ },
+ "composite_type": "splice",
+ "abstained": false,
+ "pack_version": 2,
+ "pack_hash": "16a2260f",
+ "n_candidates": 13,
+ "judge_calls": 1,
+ "discontinuous_at": [
+  449
+ ],
+ "jev_calls": 2,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_1",
+   "corrupted": 9.357647510182458e-14,
+   "break_type": "none",
+   "sufficient": 2.1444945858017638e-05,
+   "fan": {
+    "loop": 9.357630777448468e-14,
+    "reverse": 9.357634123995426e-14,
+    "room_swap": 9.357641932604328e-14,
+    "splice": 1.2098655392956961e-06,
+    "timewarp": 9.357636355026332e-14
+   },
+   "_revealed": 1
+  },
+  {
+   "iter": 1,
+   "action": "conclude",
+   "corrupted": 0.999290329445773,
+   "break_type": "splice",
+   "sufficient": 0.033085982083187186,
+   "fan": {
+    "loop": 9.357631892963988e-14,
+    "reverse": 9.357636355026332e-14,
+    "room_swap": 9.357668704979455e-14,
+    "splice": 0.9984988180331045,
+    "timewarp": 9.357636355026332e-14
+   }
+  }
+ ]
+}

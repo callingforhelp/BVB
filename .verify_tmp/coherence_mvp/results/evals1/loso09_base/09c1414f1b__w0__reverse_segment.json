@@ -1,0 +1,128 @@
+{
+ "clip_id": "09c1414f1b__w0__reverse_segment",
+ "operator": "reverse_segment",
+ "breaks_s": [
+  10.0,
+  16.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "probabilities": {
+    "judge_0": 0.39415445297492185,
+    "judge_2": 1.1718941021134356e-13,
+    "judge_4": 1.1718941021134356e-13,
+    "judge_5": 0.032354167730050044,
+    "conclude": 0.5734913792947938
+   },
+   "confidence": 0.5048963705702514
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.9999999999999034
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "reverse",
+   "probabilities": {
+    "none": 1.0832601112447194e-13,
+    "loop": 0.10803691920404442,
+    "reverse": 0.5486567472041054,
+    "room_swap": 0.25916709631490165,
+    "splice": 0.08413923727673189,
+    "timewarp": 1.0832601112447194e-13
+   },
+   "confidence": 0.3704631279998406
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.029312230221377453
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.07585817688736327
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.7772998560157665
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.24508501313237172
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.5621765008857981
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.07585817270885642
+  }
+ },
+ "fan_type": "reverse",
+ "fan_probs": {
+  "loop": 0.07585817688736327,
+  "reverse": 0.7772998560157665,
+  "room_swap": 0.24508501313237172,
+  "splice": 0.5621765008857981,
+  "timewarp": 0.07585817270885642
+ },
+ "composite_type": "reverse",
+ "abstained": false,
+ "pack_version": 2,
+ "pack_hash": "16a2260f",
+ "n_candidates": 6,
+ "judge_calls": 2,
+ "discontinuous_at": [
+  479
+ ],
+ "jev_calls": 3,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_1",
+   "corrupted": 0.977022631511694,
+   "break_type": "reverse",
+   "sufficient": 0.029312231175339414,
+   "fan": {
+    "loop": 0.08509905312815914,
+    "reverse": 0.9046505338155469,
+    "room_swap": 0.10669059820623795,
+    "splice": 0.4378234991142019,
+    "timewarp": 0.09534945590170514
+   },
+   "_revealed": 1
+  },
+  {
+   "iter": 1,
+   "action": "judge_3",
+   "corrupted": 0.9820137922092658,
+   "break_type": "reverse",
+   "sufficient": 0.025957357668740095,
+   "fan": {
+    "loop": 0.07585818628900447,
+    "reverse": 0.893309411735131,
+    "room_swap": 0.10669058684467357,
+    "splice": 0.6513548646660542,
+    "timewarp": 0.09534945847239201
+   },
+   "_revealed": 3
+  },
+  {
+   "iter": 2,
+   "action": "conclude",
+   "corrupted": 0.9999999999999034,
+   "break_type": "reverse",
+   "sufficient": 0.029312230221377453,
+   "fan": {
+    "loop": 0.07585817688736327,
+    "reverse": 0.7772998560157665,
+    "room_swap": 0.24508501313237172,
+    "splice": 0.5621765008857981,
+    "timewarp": 0.07585817270885642
+   }
+  }
+ ]
+}

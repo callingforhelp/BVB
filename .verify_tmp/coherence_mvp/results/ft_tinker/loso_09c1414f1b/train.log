@@ -1,0 +1,32 @@
+[22:28:02] new LoRA client: Qwen/Qwen3.6-35B-A3B rank=32
+[22:28:08] compiler ready: 64 labels, ending='<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+[22:28:08] train rows: 20583 | val rows: 9261
+[22:28:08] 160 batches/epoch x 1 epochs = 160 steps
+[22:28:24] epoch 0 step 0/160 nll=1.1035 lr=1.00e-04 tok=195011 (16s)
+[22:30:06] epoch 0 step 10/160 nll=0.4441 lr=9.38e-05 tok=195541 (117s)
+[22:30:22] new LoRA client: Qwen/Qwen3.6-35B-A3B rank=32
+[22:30:29] compiler ready: 64 labels, ending='<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+[22:30:30] train rows: 20583 | val rows: 9261
+[22:30:30] 160 batches/epoch x 1 epochs = 160 steps
+[22:30:43] epoch 0 step 0/160 nll=1.1035 lr=1.00e-04 tok=195011 (13s)
+[22:32:49] epoch 0 step 20/160 nll=0.1515 lr=8.75e-05 tok=195685 (281s)
+[22:32:58] epoch 0 step 10/160 nll=0.4197 lr=9.38e-05 tok=195541 (148s)
+[22:33:47] epoch 0 step 30/160 nll=0.0683 lr=8.13e-05 tok=187183 (339s)
+[22:34:37] epoch 0 step 40/160 nll=0.1058 lr=7.50e-05 tok=192061 (388s)
+[22:34:46]   val nll=3.1137 on 512 rows
+[22:35:33] epoch 0 step 50/160 nll=0.0838 lr=6.88e-05 tok=189781 (445s)
+[22:36:21] epoch 0 step 60/160 nll=0.0288 lr=6.25e-05 tok=194731 (493s)
+[22:37:09] epoch 0 step 70/160 nll=0.0405 lr=5.63e-05 tok=188153 (540s)
+[22:37:58] epoch 0 step 80/160 nll=0.0414 lr=5.00e-05 tok=193351 (589s)
+[22:38:07]   val nll=4.3996 on 512 rows
+[22:38:54] epoch 0 step 90/160 nll=0.0285 lr=4.37e-05 tok=190096 (646s)
+[22:39:42] epoch 0 step 100/160 nll=0.0477 lr=3.75e-05 tok=190929 (693s)
+[22:40:31] epoch 0 step 110/160 nll=0.0069 lr=3.13e-05 tok=190605 (743s)
+[22:41:19] epoch 0 step 120/160 nll=0.0067 lr=2.50e-05 tok=192904 (791s)
+[22:41:29]   val nll=4.8403 on 512 rows
+[22:42:18] epoch 0 step 130/160 nll=0.0405 lr=1.88e-05 tok=193299 (850s)
+[22:43:06] epoch 0 step 140/160 nll=0.0256 lr=1.25e-05 tok=190721 (898s)
+[22:43:53] epoch 0 step 150/160 nll=0.0264 lr=6.25e-06 tok=186919 (945s)
+[22:44:37] epoch 0 step 159/160 nll=0.0372 lr=6.25e-07 tok=189992 (989s)
+[22:44:41] SAMPLER CHECKPOINT: tinker://726604fd-27d4-5b14-be6d-0fe088a5d526:train:0/sampler_weights/final
+[22:44:41] done

@@ -9,14 +9,18 @@ Output rows (Fireworks-compatible JSONL):
   {"messages":[{"role":"user","content":<{"state":..., "questions":...}>},
                {"role":"assistant","content":<{"answers": {...}}>}]}
 
-Oracle policy (HANDOFF locked):
+Oracle policy (HANDOFF locked + ProgressGate addendum):
   - edited clip + decisive free signal consistent w/ truth -> conclude
   - edited clip -> judge unjudged candidate NEAREST a true seam, until
     all seam-adjacent (+-8f) candidates are resolved; then conclude
+  - edited clip + seams exhausted + no discontinuity + last-2 reveals
+    continuous -> ABSTAIN 'corrupt-but-untyped' (flatlined info gain —
+    better than conclude-none on sub-perceptual/coverage-gap clips)
   - clean clip -> judge the MIN_JUDGED strongest candidates (photo_jump z)
     then conclude; <2 candidates -> conclude immediately
   - loop/reverse/timewarp with matching decisive signal -> conclude at
     iter 0; withOUT it -> treated like splice/swap (seam-adjacent path)
+  'abstain' is a standing criterion in every row's action question.
 
 Verdict labels are EVIDENCE-derived, not raw truth: a quiet-evidence
 splice and a clean clip are state-identical, so labeling corrupted=high
@@ -124,9 +128,18 @@ def signal_claim(fs: dict) -> str | None:
 
 # ---------------------------------------------------------------- oracle
 
-def oracle_action(cid: str, st: dict) -> tuple[str, str]:
+ABSTAIN_CRIT = ("stop and report 'corrupt-but-untyped' for human review "
+                "— use only when further checks won't change the picture "
+                "(recent checks returned no new information: evidence has "
+                "flatlined)")
+
+
+def oracle_action(cid: str, st: dict, hist: list[int]) -> tuple[str, str]:
     """-> (action, reason). Uses truth for POLICY only (which evidence to
-    gather / when to stop), never for verdict labels."""
+    gather / when to stop), never for verdict labels.
+
+    hist = reveal-order list of candidate indices (time order, not index
+    order) — flatline is measured on the LAST 2 reveals."""
     fs = st["free_signals"]
     cands = st["candidates"]
     unjudged = [i for i, c in enumerate(cands) if not c["revealed"]]
@@ -134,16 +147,15 @@ def oracle_action(cid: str, st: dict) -> tuple[str, str]:
     op = truth_op(cid)
     seams = seam_frames(cid)
 
-    if not unjudged:
-        return "conclude", "no_candidates_left"
     # decisive free signal — except the room_swap caveat, which is a
     # suspicion the guide itself says to verify at the seams first
     if op != "none" and op != "room_swap" and signal_claim(fs) == op:
         return "conclude", "decisive_signal"
 
     if op == "none":
-        if judged_n >= MIN_JUDGED:
-            return "conclude", "clean_floor_met"
+        if judged_n >= MIN_JUDGED or not unjudged:
+            return ("conclude", "clean_floor_met" if judged_n >= MIN_JUDGED
+                    else "no_candidates_left")
         # strongest remaining = highest photo_jump z near the candidate
         pj = {p["frame"]: p["z"] for p in fs["photo_jump_top3"]}
         i = max(unjudged, key=lambda i: pj.get(cands[i]["frame"], 0.0))
@@ -156,16 +168,21 @@ def oracle_action(cid: str, st: dict) -> tuple[str, str]:
         i = min(seam_adj,
                 key=lambda i: min(abs(cands[i]["frame"] - s) for s in seams))
         return f"judge_{i}", "seam_adjacent"
-    # coverage gap: no unjudged candidate near a seam
-    if any(abs(cands[i]["frame"] - s) <= SEAM_TOL
-           for i in range(len(cands)) for s in seams):
+    ndis = sum(1 for c in cands
+               if c["revealed"] and c["revealed"].get("continuous") is False)
+    if ndis:
         return "conclude", "seams_resolved"
-    # no candidate ever covered a seam: probe the closest one once, then stop
-    if judged_n == 0:
-        i = min(unjudged,
-                key=lambda i: min(abs(cands[i]["frame"] - s) for s in seams))
-        return f"judge_{i}", "nearest_uncovered"
-    return "conclude", "seam_uncoverable"
+    # stagnation check (ProgressGate addendum): no discontinuity found and
+    # the last 2 reveals were both continuous -> blind probing gains
+    # nothing -> abstain 'corrupt-but-untyped' instead of burning calls
+    if len(hist) >= 2 and all(cands[i]["revealed"].get("continuous")
+                            for i in hist[-2:]):
+        return "abstain", "flatlined"
+    if not unjudged:
+        return "abstain", "no_evidence"
+    i = min(unjudged,
+            key=lambda i: min(abs(cands[i]["frame"] - s) for s in seams))
+    return f"judge_{i}", "probe_blind"
 
 
 def guide_type(st: dict) -> str:
@@ -182,9 +199,10 @@ def guide_type(st: dict) -> str:
     return "none"
 
 
-def gold_answers(cid: str, st: dict, pack: dict) -> tuple[dict, str]:
+def gold_answers(cid: str, st: dict, pack: dict,
+                 hist: list[int]) -> tuple[dict, str]:
     """Evidence-calibrated labels + oracle action. Returns (answers, reason)."""
-    action, why = oracle_action(cid, st)
+    action, why = oracle_action(cid, st, hist)
     cands = st["candidates"]
     judged = [c for c in cands if c["revealed"]]
     unjudged_n = len(cands) - len(judged)
@@ -218,7 +236,7 @@ def gold_answers(cid: str, st: dict, pack: dict) -> tuple[dict, str]:
         conf = 0.9
 
     crit = [f"judge_{i}" for i, c in enumerate(cands) if not c["revealed"]]
-    crit.append("conclude")
+    crit += ["conclude", "abstain"]   # abstain = standing option (gate v2)
     act_probs = {c: round(0.1 / max(len(crit) - 1, 1), 4) for c in crit}
     act_probs[action] = 0.9
 
@@ -229,7 +247,8 @@ def gold_answers(cid: str, st: dict, pack: dict) -> tuple[dict, str]:
         "break_type": {"type": "choice", "choice": gt,
                        "confidence": conf, "probabilities": probs},
         "sufficient": {"type": "noul",
-                       "noul": 0.85 if action == "conclude" else 0.15},
+                       "noul": 0.85 if action in ("conclude", "abstain")
+                       else 0.15},
     }
     for t in pack["type_desc"]:
         answers[f"is_{t}"] = {"type": "noul",
@@ -240,7 +259,7 @@ def gold_answers(cid: str, st: dict, pack: dict) -> tuple[dict, str]:
 # ---------------------------------------------------------------- replay + aug
 
 def mask_row(row: dict, pack: dict, cid: str, bank, rng: random.Random,
-             st_template: dict) -> dict | None:
+             st_template: dict, hist: list[int]) -> dict | None:
     """Evidence-subset augmentation: re-seal a subset of revealed verdicts,
     recompute oracle gold on the masked state."""
     revealed = [i for i, c in enumerate(st_template["candidates"])
@@ -252,9 +271,12 @@ def mask_row(row: dict, pack: dict, cid: str, bank, rng: random.Random,
     for i in revealed:
         if i not in keep:
             st["candidates"][i]["revealed"] = None
-    answers, why = gold_answers(cid, st, pack)
+    answers, why = gold_answers(cid, st, pack,
+                                [i for i in hist if i in keep])
+    ques = J.questions_for(st, pack)
+    ques["action"]["criteria"]["abstain"] = ABSTAIN_CRIT
     return {"state": J.state_view(st, pack, bank),
-            "questions": J.questions_for(st, pack),
+            "questions": ques,
             "answers": answers, "iter": row["iter"], "oracle": "aug:" + why}
 
 
@@ -279,17 +301,19 @@ def process_file(path: Path, variant: str, banks: dict, do_aug: bool,
     bank = banks.get(src) if variant == "rag" else None
     out = []
     st = J.load_clip_state(cid, bank=bank)   # replay + aug snapshot
+    hist: list[int] = []                     # reveal order (time, not index)
     for entry in result.get("transcript", []):
         state = J.state_view(st, pack, bank)
         ques = J.questions_for(st, pack)
-        answers, why = gold_answers(cid, st, pack)
+        ques["action"]["criteria"]["abstain"] = ABSTAIN_CRIT
+        answers, why = gold_answers(cid, st, pack, hist)
         row = {"state": state, "questions": ques, "answers": answers,
                "iter": entry["iter"], "oracle": why,
                "clip_id": cid, "source": src,
                "pack_hash": result.get("pack_hash")}
         out.append(row)
         if do_aug:
-            aug = mask_row(row, pack, cid, bank, rng, st)
+            aug = mask_row(row, pack, cid, bank, rng, st, hist)
             if aug:
                 aug.update({"clip_id": cid, "source": src,
                             "pack_hash": result.get("pack_hash")})
@@ -312,6 +336,7 @@ def process_file(path: Path, variant: str, banks: dict, do_aug: bool,
                 break
             st["candidates"][unjudged[0]]["revealed"] = \
                 st["candidates"][unjudged[0]]["verdict"]
+            hist.append(unjudged[0])
             continue
         if act.startswith("judge_"):
             i = int(act.split("_")[1])
@@ -319,11 +344,13 @@ def process_file(path: Path, variant: str, banks: dict, do_aug: bool,
                     and not st["candidates"][i]["revealed"]:
                 st["candidates"][i]["revealed"] = \
                     st["candidates"][i]["verdict"]
+                hist.append(i)
                 continue
         if not unjudged:
             break
         st["candidates"][unjudged[0]]["revealed"] = \
             st["candidates"][unjudged[0]]["verdict"]
+        hist.append(unjudged[0])
     return out
 
 

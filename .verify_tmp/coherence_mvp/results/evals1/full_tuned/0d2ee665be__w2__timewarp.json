@@ -1,0 +1,104 @@
+{
+ "clip_id": "0d2ee665be__w2__timewarp",
+ "operator": "timewarp",
+ "breaks_s": [
+  20.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "probabilities": {
+    "judge_0": 9.35836532255453e-14,
+    "judge_1": 1.3006778920437055e-05,
+    "judge_2": 3.7265045524052212e-06,
+    "judge_3": 8.939419703620803e-06,
+    "judge_4": 7.411039233937251e-06,
+    "judge_5": 9.35836532255453e-14,
+    "judge_6": 3.288628724965002e-06,
+    "judge_7": 9.35836532255453e-14,
+    "judge_8": 9.35836532255453e-14,
+    "judge_9": 9.35836532255453e-14,
+    "judge_10": 9.35836532255453e-14,
+    "judge_11": 9.35836532255453e-14,
+    "judge_12": 3.5007270551633497e-06,
+    "conclude": 0.9999601269011543
+   },
+   "confidence": 0.9998068469547581
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.9998911030906626
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "timewarp",
+   "probabilities": {
+    "none": 9.357763565477807e-14,
+    "loop": 6.143982395883583e-06,
+    "reverse": 9.357763565477807e-14,
+    "room_swap": 4.2226932297712575e-06,
+    "splice": 2.7535418751980936e-05,
+    "timewarp": 0.9999620979054353
+   },
+   "confidence": 0.9997471712455792
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.9875683482778345
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 9.357630777448468e-14
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 9.357630777448468e-14
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 9.357631892963988e-14
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 9.357639701573157e-14
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.9999038976193443
+  }
+ },
+ "fan_type": "timewarp",
+ "fan_probs": {
+  "loop": 9.357630777448468e-14,
+  "reverse": 9.357630777448468e-14,
+  "room_swap": 9.357631892963988e-14,
+  "splice": 9.357639701573157e-14,
+  "timewarp": 0.9999038976193443
+ },
+ "composite_type": "timewarp",
+ "abstained": false,
+ "pack_version": 2,
+ "pack_hash": "16a2260f",
+ "n_candidates": 13,
+ "judge_calls": 0,
+ "discontinuous_at": [],
+ "jev_calls": 1,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "conclude",
+   "corrupted": 0.9998911030906626,
+   "break_type": "timewarp",
+   "sufficient": 0.9875683482778345,
+   "fan": {
+    "loop": 9.357630777448468e-14,
+    "reverse": 9.357630777448468e-14,
+    "room_swap": 9.357631892963988e-14,
+    "splice": 9.357639701573157e-14,
+    "timewarp": 0.9999038976193443
+   }
+  }
+ ]
+}

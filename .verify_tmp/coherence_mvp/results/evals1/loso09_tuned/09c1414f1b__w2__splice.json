@@ -1,0 +1,121 @@
+{
+ "clip_id": "09c1414f1b__w2__splice",
+ "operator": "splice",
+ "breaks_s": [
+  15.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "probabilities": {
+    "judge_0": 8.930051532058393e-06,
+    "judge_1": 4.5350543703404494e-05,
+    "judge_2": 1.890491924171966e-05,
+    "judge_3": 2.9280511714806827e-05,
+    "judge_4": 2.2803685452223002e-05,
+    "judge_5": 9.358852239093052e-14,
+    "judge_6": 9.358852239093052e-14,
+    "judge_7": 9.358852239093052e-14,
+    "judge_8": 9.358852239093052e-14,
+    "judge_9": 1.775952808710528e-05,
+    "judge_10": 0.000626044646410704,
+    "judge_11": 0.00013968950882282003,
+    "judge_13": 0.00017936487977312745,
+    "conclude": 0.9989118717248877
+   },
+   "confidence": 0.9962111284383517
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.9999339478631828
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "splice",
+   "probabilities": {
+    "none": 9.357815130473831e-14,
+    "loop": 2.1444580696042528e-05,
+    "reverse": 6.143975236071618e-06,
+    "room_swap": 1.1478456897354485e-05,
+    "splice": 0.9999609329869834,
+    "timewarp": 9.357815130473831e-14
+   },
+   "confidence": 0.9997355157520476
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.8670357683915538
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 9.357630777448468e-14
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 9.357628546417296e-14
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 2.699578740032504e-07
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.9997694931745367
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 9.357638586057769e-14
+  }
+ },
+ "fan_type": "splice",
+ "fan_probs": {
+  "loop": 9.357630777448468e-14,
+  "reverse": 9.357628546417296e-14,
+  "room_swap": 2.699578740032504e-07,
+  "splice": 0.9997694931745367,
+  "timewarp": 9.357638586057769e-14
+ },
+ "composite_type": "splice",
+ "abstained": false,
+ "pack_version": 2,
+ "pack_hash": "16a2260f",
+ "n_candidates": 14,
+ "judge_calls": 1,
+ "discontinuous_at": [
+  450
+ ],
+ "jev_calls": 2,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_12",
+   "corrupted": 9.357687668741425e-14,
+   "break_type": "none",
+   "sufficient": 8.481101105723458e-05,
+   "fan": {
+    "loop": 9.357631892963988e-14,
+    "reverse": 9.357637470541453e-14,
+    "room_swap": 9.357643048120114e-14,
+    "splice": 1.8925145985517155e-05,
+    "timewarp": 9.35763523951028e-14
+   },
+   "_revealed": 12
+  },
+  {
+   "iter": 1,
+   "action": "conclude",
+   "corrupted": 0.9999339478631828,
+   "break_type": "splice",
+   "sufficient": 0.8670357683915538,
+   "fan": {
+    "loop": 9.357630777448468e-14,
+    "reverse": 9.357628546417296e-14,
+    "room_swap": 2.699578740032504e-07,
+    "splice": 0.9997694931745367,
+    "timewarp": 9.357638586057769e-14
+   }
+  }
+ ]
+}

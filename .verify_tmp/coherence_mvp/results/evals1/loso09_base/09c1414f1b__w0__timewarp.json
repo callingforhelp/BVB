@@ -1,0 +1,111 @@
+{
+ "clip_id": "09c1414f1b__w0__timewarp",
+ "operator": "timewarp",
+ "breaks_s": [
+  20.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "probabilities": {
+    "judge_0": 0.06678827523409969,
+    "judge_1": 1.220792732655521e-13,
+    "judge_2": 1.220792732655521e-13,
+    "judge_3": 0.05536942492211554,
+    "judge_4": 0.3843399873879573,
+    "conclude": 0.49350231245558324
+   },
+   "confidence": 0.41007154320358696
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.4073334000459302
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "none": 0.6940601905878072,
+    "loop": 0.06455765410898064,
+    "reverse": 1.0622190130894444e-13,
+    "room_swap": 0.06455765410898064,
+    "splice": 0.08289366871766696,
+    "timewarp": 0.09393083247645828
+   },
+   "confidence": 0.4218776693684366
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.02931222863144092
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.025957356444287677
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.025957360023456458
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.04208773001828046
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.3486451421018059
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.06008665522337757
+  }
+ },
+ "fan_type": "splice",
+ "fan_probs": {
+  "loop": 0.025957356444287677,
+  "reverse": 0.025957360023456458,
+  "room_swap": 0.04208773001828046,
+  "splice": 0.3486451421018059,
+  "timewarp": 0.06008665522337757
+ },
+ "composite_type": "none",
+ "abstained": false,
+ "pack_version": 2,
+ "pack_hash": "16a2260f",
+ "n_candidates": 6,
+ "judge_calls": 1,
+ "discontinuous_at": [],
+ "jev_calls": 2,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_5",
+   "corrupted": 0.5312093733737563,
+   "break_type": "none",
+   "sufficient": 0.010986940404201095,
+   "fan": {
+    "loop": 0.025957358422249308,
+    "reverse": 0.02931223053936477,
+    "room_swap": 0.029312233083263427,
+    "splice": 0.26894141551050293,
+    "timewarp": 0.06754668550840877
+   },
+   "_revealed": 5
+  },
+  {
+   "iter": 1,
+   "action": "conclude",
+   "corrupted": 0.4073334000459302,
+   "break_type": "none",
+   "sufficient": 0.02931222863144092,
+   "fan": {
+    "loop": 0.025957356444287677,
+    "reverse": 0.025957360023456458,
+    "room_swap": 0.04208773001828046,
+    "splice": 0.3486451421018059,
+    "timewarp": 0.06008665522337757
+   }
+  }
+ ]
+}

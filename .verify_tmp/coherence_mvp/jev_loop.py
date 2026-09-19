@@ -41,6 +41,7 @@ MAX_ITERS = 8
 SUFF_TAU = 0.5
 FAN_MARGIN = 0.2
 MIN_JUDGED = 2
+FLAT_EPS = 0.1     # gate v2: |d corrupted| + L1(d fan) below this = no info gain
 TYPES = ["none", "loop", "reverse", "room_swap", "splice", "timewarp"]
 
 manifest = json.loads((ROOT / "corpus_v3" / "manifest.json").read_text())
@@ -285,6 +286,9 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
     st = load_clip_state(cid, bank=bank)
     transcript, jev_calls, jev_errors = [], 0, 0
     verdict = {}
+    abstained = False
+    reveal_deltas: list[float] = []   # info gain produced by each reveal
+    prev_belief = None                # (corrupted, fan) at last jev call
 
     for it in range(MAX_ITERS):
         unjudged = [i for i, c in enumerate(st["candidates"]) if not c["revealed"]]
@@ -301,6 +305,15 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
         act = ans.get("action", {}).get("choice", "conclude")
         suff = ans.get("sufficient", {}).get("noul", 0)
         fan = {t: ans.get(f"is_{t}", {}).get("noul") for t in pack["type_desc"]}
+        belief = (ans.get("corrupted", {}).get("noul", 0), fan)
+        # info gain from the previous iter's reveal (if any)
+        if prev_belief is not None and transcript \
+                and transcript[-1].get("_revealed") is not None:
+            d = abs(belief[0] - prev_belief[0]) + sum(
+                abs((belief[1].get(t) or 0) - (prev_belief[1].get(t) or 0))
+                for t in pack["type_desc"])
+            reveal_deltas.append(d)
+        prev_belief = belief
         transcript.append({"iter": it, "action": act,
                            "corrupted": ans.get("corrupted", {}).get("noul"),
                            "break_type": ans.get("break_type", {}).get("choice"),
@@ -322,9 +335,20 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
             if not unjudged:
                 transcript[-1]["forced_end"] = True  # out of options, still uncertain
                 break
+            # gate v2 (ProgressGate addendum): conclude is blocked AND the
+            # last 2 reveals moved the belief by ~nothing -> the remaining
+            # forced judges would burn calls without changing the verdict.
+            # Abstain 'corrupt_untyped' instead of forcing. (Blocked path
+            # already implies corrupted>=0.5, so the verdict is consistent.)
+            if len(reveal_deltas) >= 2 and \
+                    all(d < FLAT_EPS for d in reveal_deltas[-2:]):
+                abstained = True
+                transcript[-1]["abstained"] = True
+                break
             # confidence-gated: wants to stop but evidence thin/ambiguous -> force a check
             st["candidates"][unjudged[0]]["revealed"] = st["candidates"][unjudged[0]]["verdict"]
             transcript[-1]["forced_judge"] = unjudged[0]
+            transcript[-1]["_revealed"] = unjudged[0]
             continue
         if not unjudged:
             break
@@ -332,10 +356,12 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
             i = int(act.split("_")[1])
             if 0 <= i < len(st["candidates"]) and not st["candidates"][i]["revealed"]:
                 st["candidates"][i]["revealed"] = st["candidates"][i]["verdict"]
+                transcript[-1]["_revealed"] = i
                 continue
         # invalid/duplicate action -> reveal next unjudged deterministically
         jev_errors += 1
         st["candidates"][unjudged[0]]["revealed"] = st["candidates"][unjudged[0]]["verdict"]
+        transcript[-1]["_revealed"] = unjudged[0]
 
     judged = [c for c in st["candidates"] if c["revealed"]]
     discont = [c["frame"] for c in judged
@@ -352,6 +378,8 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
         composite = "room_swap"
     elif composite == "room_swap" and ndis < 2:
         composite = "splice"
+    if abstained:
+        composite = "corrupt_untyped"   # refusal class: corrupt, untyped
     out = {
         "clip_id": cid,
         "operator": CLIPS[cid]["operator"],
@@ -360,6 +388,7 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
         "fan_type": fan_type,
         "fan_probs": last_fan,
         "composite_type": composite,
+        "abstained": abstained,
         "pack_version": pack.get("version"),
         "pack_hash": pack_hash(pack),
         "n_candidates": len(st["candidates"]),

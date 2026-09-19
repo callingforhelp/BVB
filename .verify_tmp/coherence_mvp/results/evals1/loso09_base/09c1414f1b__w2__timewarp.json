@@ -1,0 +1,97 @@
+{
+ "clip_id": "09c1414f1b__w2__timewarp",
+ "operator": "timewarp",
+ "breaks_s": [
+  20.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "probabilities": {
+    "judge_0": 0.14018183476076365,
+    "judge_1": 0.02760343991593949,
+    "judge_2": 1.3584788390739487e-13,
+    "judge_3": 1.3584788390739487e-13,
+    "judge_4": 1.3584788390739487e-13,
+    "judge_5": 0.20396336606233847,
+    "conclude": 0.6282513592605509
+   },
+   "confidence": 0.49082581946140935
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.18242552602881168
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "none": 0.8891080622382762,
+    "loop": 0.02090981651150685,
+    "reverse": 1.0055970494371219e-13,
+    "room_swap": 0.013500392218532003,
+    "splice": 0.019642954771942438,
+    "timewarp": 0.056838774259641976
+   },
+   "confidence": 0.7300549499450115
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.015906393344589397
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.01243165062450692
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.009708477484315619
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.0203323551977555
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.1480471961522176
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.07585817793199003
+  }
+ },
+ "fan_type": "splice",
+ "fan_probs": {
+  "loop": 0.01243165062450692,
+  "reverse": 0.009708477484315619,
+  "room_swap": 0.0203323551977555,
+  "splice": 0.1480471961522176,
+  "timewarp": 0.07585817793199003
+ },
+ "composite_type": "none",
+ "abstained": false,
+ "pack_version": 2,
+ "pack_hash": "16a2260f",
+ "n_candidates": 6,
+ "judge_calls": 0,
+ "discontinuous_at": [],
+ "jev_calls": 1,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "conclude",
+   "corrupted": 0.18242552602881168,
+   "break_type": "none",
+   "sufficient": 0.015906393344589397,
+   "fan": {
+    "loop": 0.01243165062450692,
+    "reverse": 0.009708477484315619,
+    "room_swap": 0.0203323551977555,
+    "splice": 0.1480471961522176,
+    "timewarp": 0.07585817793199003
+   }
+  }
+ ]
+}

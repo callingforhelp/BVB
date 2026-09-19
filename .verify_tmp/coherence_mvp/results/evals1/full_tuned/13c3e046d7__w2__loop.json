@@ -1,0 +1,100 @@
+{
+ "clip_id": "13c3e046d7__w2__loop",
+ "operator": "loop",
+ "breaks_s": [
+  15.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "probabilities": {
+    "judge_0": 2.42901732635619e-05,
+    "judge_1": 6.602753659246204e-05,
+    "judge_2": 0.0002959148890877838,
+    "judge_3": 2.143600266833653e-05,
+    "judge_4": 2.143600266833653e-05,
+    "judge_5": 9.35954193035917e-14,
+    "judge_6": 9.512168522965185e-06,
+    "judge_7": 9.35954193035917e-14,
+    "judge_8": 9.35954193035917e-14,
+    "conclude": 0.9995613832269157
+   },
+   "confidence": 0.9981292860308135
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.9997040428298269
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "loop",
+   "probabilities": {
+    "none": 9.357689948719927e-14,
+    "loop": 0.9999976210673481,
+    "reverse": 1.067701469990297e-06,
+    "room_swap": 9.422432401514567e-07,
+    "splice": 3.6898775454148876e-07,
+    "timewarp": 9.357689948719927e-14
+   },
+   "confidence": 0.9999801317682472
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.9149009491921662
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.999820472012364
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 3.726638839833152e-06
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 9.35763523951028e-14
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 9.357650856727952e-14
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 9.357640817088675e-14
+  }
+ },
+ "fan_type": "loop",
+ "fan_probs": {
+  "loop": 0.999820472012364,
+  "reverse": 3.726638839833152e-06,
+  "room_swap": 9.35763523951028e-14,
+  "splice": 9.357650856727952e-14,
+  "timewarp": 9.357640817088675e-14
+ },
+ "composite_type": "loop",
+ "abstained": false,
+ "pack_version": 2,
+ "pack_hash": "16a2260f",
+ "n_candidates": 9,
+ "judge_calls": 0,
+ "discontinuous_at": [],
+ "jev_calls": 1,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "conclude",
+   "corrupted": 0.9997040428298269,
+   "break_type": "loop",
+   "sufficient": 0.9149009491921662,
+   "fan": {
+    "loop": 0.999820472012364,
+    "reverse": 3.726638839833152e-06,
+    "room_swap": 9.35763523951028e-14,
+    "splice": 9.357650856727952e-14,
+    "timewarp": 9.357640817088675e-14
+   }
+  }
+ ]
+}

@@ -1,0 +1,101 @@
+{
+ "clip_id": "1ada7a0617__w2__timewarp",
+ "operator": "timewarp",
+ "breaks_s": [
+  20.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "probabilities": {
+    "judge_0": 8.93914502273097e-06,
+    "judge_1": 2.1443894144218276e-05,
+    "judge_2": 2.4299115477249716e-05,
+    "judge_3": 5.093371301731023e-06,
+    "judge_4": 3.966721558261541e-06,
+    "judge_5": 6.961813143691731e-06,
+    "judge_6": 9.358881013482306e-14,
+    "judge_7": 9.358881013482306e-14,
+    "judge_8": 9.358881013482306e-14,
+    "judge_9": 9.358881013482306e-14,
+    "conclude": 0.9999292959389778
+   },
+   "confidence": 0.9996424334320286
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.9999151889889427
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "timewarp",
+   "probabilities": {
+    "none": 9.357780479042656e-14,
+    "loop": 6.143981782016128e-06,
+    "reverse": 9.357780479042656e-14,
+    "room_swap": 3.7265133235086433e-06,
+    "splice": 2.7535416000817866e-05,
+    "timewarp": 0.9999625940887065
+   },
+   "confidence": 0.9997506151385542
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.9902915252645446
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 9.357634123995426e-14
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 9.357634123995426e-14
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 9.357637470541453e-14
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 4.450851049984919e-07
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.9998911031296221
+  }
+ },
+ "fan_type": "timewarp",
+ "fan_probs": {
+  "loop": 9.357634123995426e-14,
+  "reverse": 9.357634123995426e-14,
+  "room_swap": 9.357637470541453e-14,
+  "splice": 4.450851049984919e-07,
+  "timewarp": 0.9998911031296221
+ },
+ "composite_type": "timewarp",
+ "abstained": false,
+ "pack_version": 2,
+ "pack_hash": "16a2260f",
+ "n_candidates": 10,
+ "judge_calls": 0,
+ "discontinuous_at": [],
+ "jev_calls": 1,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "conclude",
+   "corrupted": 0.9999151889889427,
+   "break_type": "timewarp",
+   "sufficient": 0.9902915252645446,
+   "fan": {
+    "loop": 9.357634123995426e-14,
+    "reverse": 9.357634123995426e-14,
+    "room_swap": 9.357637470541453e-14,
+    "splice": 4.450851049984919e-07,
+    "timewarp": 0.9998911031296221
+   }
+  }
+ ]
+}

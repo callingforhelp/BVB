@@ -1,0 +1,8 @@
+[22:21:30] new LoRA client: Qwen/Qwen3.6-35B-A3B rank=32
+[22:21:39] compiler ready: 64 labels, ending='<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+[22:21:39] train rows: 512 | val rows: 0
+[22:21:39] 4 batches/epoch x 1 epochs = 3 steps
+[22:21:50] epoch 0 step 0/3 nll=0.8693 lr=1.00e-04 tok=194662 (11s)
+[22:22:07] epoch 0 step 2/3 nll=0.4952 lr=3.33e-05 tok=187647 (27s)
+[22:22:10] SAMPLER CHECKPOINT: tinker://f3ee9ca0-52b2-59cc-8d75-c3abe4b6864c:train:0/sampler_weights/final
+[22:22:10] done
