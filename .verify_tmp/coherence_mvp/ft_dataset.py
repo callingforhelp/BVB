@@ -187,7 +187,13 @@ def oracle_action(cid: str, st: dict, hist: list[int]) -> tuple[str, str]:
 
 def guide_type(st: dict) -> str:
     """typing_guide applied to REVEALED evidence (matches code arbitration)."""
-    sig = signal_claim(st["free_signals"])
+    fs = st["free_signals"]
+    nscene = sum(1 for c in st["candidates"]
+                 if c["revealed"]
+                 and c["revealed"].get("break_kind") == "scene_change")
+    if nscene >= 1 and fs.get("dup_trailing_run", 0) >= J.DUP_TRAIL_MIN:
+        return "room_swap"      # dup_swap signature — code-exact
+    sig = signal_claim(fs)
     if sig:
         return sig
     ndis = sum(1 for c in st["candidates"]
@@ -324,6 +330,20 @@ def process_file(path: Path, variant: str, banks: dict, do_aug: bool,
         unjudged = [i for i, c in enumerate(st["candidates"])
                     if not c["revealed"]]
         act = entry.get("action", "conclude")
+        # _revealed/forced_judge = the run's own record of what actually
+        # got revealed this iter (covers seam_look + forced backstops the
+        # floor re-derivation below cannot reconstruct). Present on all
+        # current-run entries; absent on terminal entries.
+        rev = entry.get("_revealed", entry.get("forced_judge"))
+        if rev is not None:
+            if 0 <= rev < len(st["candidates"]) \
+                    and not st["candidates"][rev]["revealed"]:
+                st["candidates"][rev]["revealed"] = \
+                    st["candidates"][rev]["verdict"]
+                hist.append(rev)
+            continue
+        if entry.get("abstained") or entry.get("forced_end"):
+            break
         if act == "conclude":
             fan = entry.get("fan") or {}
             vals = sorted((v for v in fan.values() if v is not None),
@@ -354,7 +374,20 @@ def process_file(path: Path, variant: str, banks: dict, do_aug: bool,
     return out
 
 
-def transcript_files() -> list[Path]:
+def transcript_files(dirs: list[str] | None = None) -> list[Path]:
+    """Transcript sources. Default = legacy layout (jevloop + evolve +
+    banks/eval_*). --transcripts dirs = explicit run dirs, one file per
+    clip, later dirs win (transcript judge_i indices are only valid
+    against the candidate list their own code version produced, so
+    mixing code generations misaligns replays)."""
+    if dirs:
+        by_clip = {}
+        for d in dirs:
+            for f in sorted((ROOT / d).glob("*.json")):
+                cid = json.loads(f.read_text()).get("clip_id")
+                if cid in CLIPS:
+                    by_clip[cid] = f
+        return sorted(by_clip.values(), key=lambda p: str(p))
     files = sorted((ROOT / "results" / "jevloop").glob("*.json"))
     for d in sorted((ROOT / "results" / "evolve").iterdir()):
         if d.is_dir():
@@ -368,6 +401,9 @@ def transcript_files() -> list[Path]:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(ROOT / "results" / "ft_dataset"))
+    ap.add_argument("--transcripts", nargs="*", default=None,
+                    help="explicit run dirs (e.g. results/jevloop_v9); "
+                         "one transcript per clip, later dirs win")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--no-aug", action="store_true")
     ap.add_argument("--variants", nargs="*", default=["plain", "rag"])
@@ -383,7 +419,7 @@ def main() -> None:
             banks[src] = _sb.StripBank.load(d)
         print(f"loaded {len(banks)} loso banks")
 
-    files = transcript_files()
+    files = transcript_files(args.transcripts)
     print(f"{len(files)} transcript files")
 
     for variant in args.variants:

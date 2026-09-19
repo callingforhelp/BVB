@@ -153,6 +153,8 @@ def load_clip_state(cid: str, bank=None) -> dict:
     W, thr = 60, 0.2
     dense = np.convolve(d, np.ones(W), "same") / W >= thr
     dup_last = int(np.where(dense)[0].max()) if dense.any() else None
+    nz = np.flatnonzero(d[::-1] <= 0.5)
+    dup_trail = int(nz[0]) if nz.size else len(d)
 
     echo = json.loads((ROOT / "results" / "echo" / f"{cid}.json").read_text())
 
@@ -199,6 +201,7 @@ def load_clip_state(cid: str, bank=None) -> dict:
             "recur_frac_max": round(float(recur.max()), 3),
             "recur_argmax_frame": int(recur.argmax()),
             "dup_dense_last_frame": dup_last,
+            "dup_trailing_run": dup_trail,
             "echo_best_score": round(float(echo["best_score"]), 2),
             "echo_best_pair": echo["best_pair"],
             "scenecut_iframe_frames": scenecut,
@@ -245,6 +248,9 @@ LESSON_GATES: dict = {
 # seam, which requires checking the likely places first. Bounded like the
 # TowerH boundary review: never more than MAX_SEAM_LOOKS targeted reveals.
 MAX_SEAM_LOOKS = 3
+# dup_trailing_run >= this = clip ends in untouched original footage.
+# Measured: room_swap resumes ~297, true loops <=7, timewarp <=5.
+DUP_TRAIL_MIN = 50
 SEAM_TOL = 10          # frames: candidate counts as "at a signal seam"
 
 
@@ -319,6 +325,14 @@ def state_view(st: dict, pack: dict, bank=None) -> dict:
             "dup_dense_last_frame": {
                 "value": fs["dup_dense_last_frame"],
                 "meaning": sig["dup_dense_last_frame"]},
+            "dup_trailing_run": {
+                "value": fs["dup_trailing_run"],
+                "meaning": ("contiguous run of pixel-duplicate frames ending at "
+                            "the last frame. Long run = the clip ENDS in untouched "
+                            "original footage (a foreign segment was inserted "
+                            "before it). A true loop can never produce this: its "
+                            "tail is re-encoded replay, never pixel-identical. "
+                            "Timewarp dups flicker (runs <=5), they do not trail.")},
             "echo_best_score": {
                 "value": fs["echo_best_score"], "pair": fs["echo_best_pair"],
                 "meaning": sig["echo_best_score"]},
@@ -413,9 +427,23 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
                 max(fan, key=lambda k: fan.get(k) or 0) if fan else None)
             ndis = len([c for c in st["candidates"] if c["revealed"]
                         and c["revealed"].get("continuous") is False])
-            if lead in ("splice", "room_swap") and ndis < 2 \
+            nscene = len([c for c in st["candidates"] if c["revealed"]
+                          and c["revealed"].get("break_kind") == "scene_change"])
+            # dup-tail contradiction: a non-swap conclude on a clip ending
+            # in a long pixel-continuous run is inconsistent regardless of
+            # which edited type leads — the tail proves untouched original,
+            # so a foreign segment is inserted mid-clip. Its seams are VLM
+            # events, not signal-locatable, so scan unjudged in frame
+            # order (not seam-targeted). 'none' excluded: a clean verdict
+            # never triggers looks (clean clips show trail=0 anyway).
+            foreign_lead = (lead in ("loop", "reverse", "timewarp")
+                            and nscene == 0
+                            and st["free_signals"]["dup_trailing_run"]
+                            >= DUP_TRAIL_MIN)
+            if (lead in ("splice", "room_swap") and ndis < 2
+                    or foreign_lead) \
                     and seam_looks < MAX_SEAM_LOOKS and unjudged:
-                tgt = _seam_target(st, unjudged)
+                tgt = unjudged[0] if foreign_lead else _seam_target(st, unjudged)
                 if tgt is not None:
                     seam_looks += 1
                     st["candidates"][tgt]["revealed"] = \
@@ -479,10 +507,24 @@ def run_clip(cid: str, pack: dict, out_dir: Path, bank=None) -> dict:
     # seam-count arbitration: room_swap = TWO confirmed discontinuities,
     # splice = ONE. Jev gathers the evidence; code arbitrates the type.
     ndis = len(discont)
-    if composite == "splice" and ndis >= 2:
+    nscene = len([c for c in judged
+                  if c["revealed"].get("break_kind") == "scene_change"])
+    # dup-tail swap signature: one VLM-confirmed foreign boundary
+    # (scene_change) + a long pixel-continuous run ending the clip
+    # (untouched original = the resume; the run's own edge is the second
+    # seam — the VLM often reads that exit 'continuous', but pixels are
+    # unambiguous). Only room_swap produces this combination: a loop tail
+    # is re-encoded (~0), a timewarp's dups flicker (<=5), a splice tail
+    # is foreign content.
+    dup_swap = nscene >= 1 \
+        and st["free_signals"]["dup_trailing_run"] >= DUP_TRAIL_MIN
+    if composite == "splice" and (ndis >= 2 or dup_swap):
         composite = "room_swap"
-    elif composite == "room_swap" and ndis < 2:
+    elif composite == "room_swap" and ndis < 2 and not dup_swap:
         composite = "splice"
+    elif composite in ("loop", "reverse", "timewarp") and dup_swap:
+        composite = "room_swap"   # 'repeat' is a foreign insert; tail is
+                                  # pixel-proven untouched original
     if abstained:
         composite = "corrupt_untyped"   # refusal class: corrupt, untyped
     out = {

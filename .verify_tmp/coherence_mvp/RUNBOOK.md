@@ -64,8 +64,14 @@ What lives in code (deterministic boundaries — do NOT move into the model):
 - candidate union over the 4 gates; reveals are cached-verdict lookups
 - seam-count arbitration: room_swap needs >=2 revealed discontinuous, else splice
 - **seam second-look**: on a {splice, room_swap} conclude with <2 discont
-  revealed, code reveals unjudged candidates (signal-seam positions first,
-  MAX_SEAM_LOOKS=3) — "splice asserts a second seam is absent; prove it"
+  revealed, code reveals unjudged candidates (signal-seam positions first);
+  on a {loop, reverse, timewarp} conclude with dup_trailing_run>=50 and no
+  scene_change, reveals in frame order (foreign-island seams aren't
+  signal-locatable). Shared budget MAX_SEAM_LOOKS=3.
+- **dup_swap arbitration**: >=1 revealed scene_change + dup_trailing_run>=50
+  (untouched original tail — a loop tail is re-encoded ~0, timewarp dups
+  flicker <=5, a splice tail is foreign) -> room_swap, remapping
+  {splice, loop, reverse, timewarp}; never touches 'none' verdicts.
 - info-gain stagnation -> abstain corrupt_untyped; evidence floor on conclude
 - LESSON_GATES: a lesson injects only when its declared signal conditions
   hold; a lesson with no gate fires everywhere (r2_00 intentionally).
@@ -139,10 +145,13 @@ judges well under v7's ~5-8/clip, confirmed on >=2 runs (noise band).
 - thresholds fit to n=1 clips (reverse gate recur>=0.9 never fires fresh)
 - claiming gains from single runs (noise +/-2-3/98)
 
-## Current residual (7 of 98)
+## Current residual (3 of 98, v9)
 
-- 3x static room_swap->loop (recur=1.0 + dup_dense set = loop signature;
-  needs the trained discrimination — prime SFT target)
-- 2x splice->none (invisible to VLM at every strip width; likely a hard
+- 3x splice->none (invisible to VLM at every strip width; likely a hard
   floor unless a new signal or stronger judge arrives)
-- 2x loop->reverse boundary coin-flips (dup-null loops; Jev noise range)
+- v9: 87/90 in-sample typing, 8/8 OOD, 0 clean FPs. The dup-tail swap
+  signature (dup_trailing_run>=50 + >=1 scene_change) eliminated the
+  static-swap class; loops/reverse/timewarp all correct.
+- NOTE: raw model still types static swaps 'timewarp' (the pack's
+  dup_dense meaning is misleading) — arbitration owns the verdict. SFT
+  target: learn the corrected signal semantics.

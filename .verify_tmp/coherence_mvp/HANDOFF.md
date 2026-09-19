@@ -537,3 +537,67 @@ discrimination: recur=1.0+dup_dense set = loop signature, needs
 "static inserted segment" distinction), 2x splice->none (truly
 invisible: bracket strip also continuous), 2x loop->reverse (boundary
 coin-flip on dup-null loops, Jev noise range).
+
+## Phase 2.7 — dup-tail swap signature (v9, current best)
+
+**Discovery:** the residual static-swap->loop errors were separable by a
+free signal that was already computed but never used correctly.
+`dup` (dupfrac) = per-frame "pixel-near-dup of the LAST frame". A
+room_swap clip ENDS in untouched original footage (the resume region):
+measured trailing contiguous dup-run ~297 frames. A true loop can never
+produce this — its tail is the re-encoded replay, pixel-identity lost
+(run <=7). Timewarp dup-frames flicker (run <=5). Clean clips: 0.
+Separation is 297 vs <=7 — threshold DUP_TRAIL_MIN=50 sits in a ~40x gap.
+
+**v9 changes (`jev_loop.py`):**
+- `free_signals["dup_trailing_run"]` = contiguous dup run ending at the
+  last frame; exposed in state with corrected meaning (the pack's
+  "dup_dense -> timewarp" text is now known-misleading — the raw model
+  still types the swaps `timewarp`; arbitration owns the verdict).
+- Foreign-lead second look: on a conclude with lead in
+  {loop, reverse, timewarp}, no revealed scene_change, and
+  dup_trailing_run >= 50 -> reveal unjudged in frame order (the foreign
+  island's seams are VLM events, not signal-locatable; seam-targeting
+  would not reach them). Shares the MAX_SEAM_LOOKS=3 budget.
+- `dup_swap` arbitration signature: >=1 revealed scene_change +
+  dup_trailing_run >= 50 -> room_swap, remapping composite
+  {splice, loop, reverse, timewarp} and protecting room_swap from the
+  ndis<2 demotion (the swap's exit seam reads 'continuous' even to the
+  VLM — the pixel trail IS the second-seam evidence). `none` verdicts
+  are never remapped (FP safety; all 18 clean clips show trail=0 and no
+  scene_change verdicts, so the signature cannot fire there anyway).
+
+**v9 results (98 clips):**
+
+| arm | detection | typing | clean FPs |
+|---|---|---|---|
+| in-sample 90 | 87/90 | **87/90** | 0 |
+| OOD w3 | 8/8 | **8/8** | 0 |
+
+All 3 static swaps correct (w0/w1 via arbitration over raw 'timewarp'
+leads; w2 the model typed correctly itself). Both v7 loop->reverse
+coin-flips stayed fixed — `dup_trailing_run ~= 0` in state acts as a
+loop-CONFIRMING signal (a true loop tail can't be pixel-identical).
+Residual = 3x splice->none only: the truly-invisible class (VLM reads
+continuous at every strip width). `0d2ee w2 splice` flipped det->none
+vs v7 — within the ±2-3/98 Jev noise band, unrelated mechanism
+(splices have dup_trail=0; nothing in this change touches them).
+
+**ft_dataset refresh (`ft_dataset.py` + `results/ft_dataset_v9/`):**
+- `--transcripts` flag: explicit run dirs, one file per clip (later dir
+  wins). Transcript judge_i indices are only valid against the
+  candidate list of their own code generation — legacy transcripts are
+  kept in the old dataset dirs, not mixed.
+- Replay now honors `entry["_revealed"]`/`forced_judge` — the run's own
+  record of what actually got revealed (seam_look/forced backstops were
+  not reconstructible by the old floor re-derivation).
+- `guide_type` applies the dup_swap signature code-exactly, so oracle
+  labels match what code arbitration produces.
+- Emitted: 792 plain / 784 rag rows over all 98 clips (incl. w3
+  trajectories). Previous `results/ft_dataset/` untouched.
+
+**Residual landscape after v9:** 3 clips total, all splice->none =
+invisible-evidence hard floor. Everything else detected AND typed
+correctly including all OOD. Typing ceiling is now a coverage question
+again, not a reasoning one — the policy layer (SFT) inherits this same
+floor; its value remains the ~82% judge-cost reduction, not accuracy.
