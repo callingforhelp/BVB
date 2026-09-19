@@ -220,11 +220,16 @@ def jev(state: dict, questions: dict) -> dict:
         return json.loads(r.read().decode())["answers"]
 
 
+LESSONS: list = []  # curated dsh-pes-reasoning.v1 entries, set via --lessons
+
+
 def state_view(st: dict, pack: dict, bank=None) -> dict:
     """Serialize evidence Jev may see (signals + revealed verdicts only)."""
     fs = st["free_signals"]
     sig = pack["signals"]
     return {
+        **({"precedent_lessons": [{"cue": l["cue"], "lesson": l["lesson"]}
+                                  for l in LESSONS]} if LESSONS else {}),
         "task": pack["task"],
         "clip": {"duration_s": 30, "fps": 30},
         "free_signal_evidence": {
@@ -415,6 +420,9 @@ def main() -> None:
     ap.add_argument("--bank", default=None,
                     help="strip-bank dir (episodes.jsonl+embeddings.npy) "
                          "to inject per-candidate precedents")
+    ap.add_argument("--lessons", default=None,
+                    help="jsonl of curated reasoning-bank entries "
+                         "(cue+lesson) injected into every state")
     ap.add_argument("--jev", default="typesafe",
                     help="jev backend: 'typesafe' (default TypeSafe/OpenJev "
                          "endpoint), 's1:base' (Tinker base model), "
@@ -444,6 +452,11 @@ def main() -> None:
         import strip_bank as sb
         bank = sb.StripBank.load(args.bank)
         print(f"bank: {len(bank._ids)} episodes from {args.bank}")
+    if args.lessons:
+        global LESSONS
+        LESSONS = [json.loads(l) for l in open(args.lessons)
+                   if json.loads(l).get("cue") and json.loads(l).get("lesson")]
+        print(f"lessons: {len(LESSONS)} curated entries from {args.lessons}")
 
     cids = args.only or sorted(CLIPS)
     todo = [c for c in cids if not (out_dir / f"{c}.json").exists()]
