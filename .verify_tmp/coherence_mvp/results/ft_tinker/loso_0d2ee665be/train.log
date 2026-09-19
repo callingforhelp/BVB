@@ -1,0 +1,32 @@
+[23:10:03] new LoRA client: Qwen/Qwen3.6-35B-A3B rank=32
+[23:10:13] compiler ready: 64 labels, ending='<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+[23:10:14] train rows: 23832 | val rows: 6012
+[23:10:14] 186 batches/epoch x 1 epochs = 186 steps
+[23:10:26] epoch 0 step 0/186 nll=1.0147 lr=1.00e-04 tok=193504 (12s)
+[23:11:38] epoch 0 step 10/186 nll=0.3469 lr=9.46e-05 tok=194192 (84s)
+[23:12:44] epoch 0 step 20/186 nll=0.1887 lr=8.92e-05 tok=186325 (150s)
+[23:13:51] epoch 0 step 30/186 nll=0.1927 lr=8.39e-05 tok=185194 (218s)
+[23:15:02] epoch 0 step 40/186 nll=0.2505 lr=7.85e-05 tok=192255 (289s)
+[23:15:11]   val nll=0.1031 on 512 rows
+[23:16:14] epoch 0 step 50/186 nll=0.1246 lr=7.31e-05 tok=193766 (360s)
+[23:17:29] epoch 0 step 60/186 nll=0.1353 lr=6.77e-05 tok=190927 (435s)
+[23:18:29] epoch 0 step 70/186 nll=0.0630 lr=6.24e-05 tok=194436 (495s)
+[23:19:45] epoch 0 step 80/186 nll=0.1058 lr=5.70e-05 tok=190397 (572s)
+[23:19:56]   val nll=0.0445 on 512 rows
+[23:20:01]   saved sampler: tinker://60bf1921-f443-5b4d-9e98-c46f8a058a28:train:0/sampler_weights/step000080
+[23:21:13] epoch 0 step 90/186 nll=0.0299 lr=5.16e-05 tok=194914 (659s)
+[23:22:21] epoch 0 step 100/186 nll=0.0202 lr=4.62e-05 tok=186986 (728s)
+[23:23:29] epoch 0 step 110/186 nll=0.0224 lr=4.09e-05 tok=190811 (796s)
+[23:24:38] epoch 0 step 120/186 nll=0.0144 lr=3.55e-05 tok=191407 (865s)
+[23:24:49]   val nll=0.0239 on 512 rows
+[23:25:53] epoch 0 step 130/186 nll=0.0023 lr=3.01e-05 tok=194353 (939s)
+[23:26:59] epoch 0 step 140/186 nll=0.0021 lr=2.47e-05 tok=192178 (1005s)
+[23:28:10] epoch 0 step 150/186 nll=0.0298 lr=1.94e-05 tok=193173 (1077s)
+[23:29:17] epoch 0 step 160/186 nll=0.0101 lr=1.40e-05 tok=194506 (1143s)
+[23:29:28]   val nll=0.0360 on 512 rows
+[23:29:31]   saved sampler: tinker://60bf1921-f443-5b4d-9e98-c46f8a058a28:train:0/sampler_weights/step000160
+[23:30:39] epoch 0 step 170/186 nll=0.0053 lr=8.60e-06 tok=192256 (1225s)
+[23:31:49] epoch 0 step 180/186 nll=0.0047 lr=3.23e-06 tok=186057 (1295s)
+[23:32:31] epoch 0 step 185/186 nll=0.0046 lr=5.38e-07 tok=191032 (1337s)
+[23:32:36] SAMPLER CHECKPOINT: tinker://60bf1921-f443-5b4d-9e98-c46f8a058a28:train:0/sampler_weights/final
+[23:32:36] done

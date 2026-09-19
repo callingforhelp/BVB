@@ -415,7 +415,20 @@ def main() -> None:
     ap.add_argument("--bank", default=None,
                     help="strip-bank dir (episodes.jsonl+embeddings.npy) "
                          "to inject per-candidate precedents")
+    ap.add_argument("--jev", default="typesafe",
+                    help="jev backend: 'typesafe' (default TypeSafe/OpenJev "
+                         "endpoint), 's1:base' (Tinker base model), or "
+                         "'s1:tinker://<sampler-path>' (tuned checkpoint). "
+                         "s1 backends need tinker (s1-spike venv).")
     args = ap.parse_args()
+
+    if args.jev != "typesafe":
+        import s1_serve
+        global jev
+        path = args.jev.removeprefix("s1:")
+        backend = s1_serve.S1Jev(model_path=None if path == "base" else path)
+        jev = backend.answers
+        print(f"jev backend: S1Jev({path or 'base model'})")
 
     pack = load_pack(args.pack)
     out_dir = Path(args.out) if args.out else OUT

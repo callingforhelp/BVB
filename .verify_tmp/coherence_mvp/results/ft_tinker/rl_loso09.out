@@ -1,0 +1,8 @@
+[23:22:33] new LoRA client: Qwen/Qwen3.6-35B-A3B rank=32
+[23:22:38] SFT warm-start: 20583 rows, 160 steps
+[23:22:57]   sft 0/160
+[23:27:24]   sft 20/160
+[23:30:48]   sft 40/160
+The job is paused due to billing status. Error: Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}
+The job is paused due to billing status. Error: Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}
+The job is paused due to billing status. Error: Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}

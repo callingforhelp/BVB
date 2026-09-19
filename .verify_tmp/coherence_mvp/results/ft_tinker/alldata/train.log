@@ -1,0 +1,33 @@
+[23:11:46] new LoRA client: Qwen/Qwen3.6-35B-A3B rank=32
+[23:11:53] compiler ready: 64 labels, ending='<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+[23:11:53] train rows: 29844 | val rows: 0
+[23:11:53] 233 batches/epoch x 1 epochs = 233 steps
+[23:12:02] epoch 0 step 0/233 nll=0.8693 lr=1.00e-04 tok=194662 (9s)
+[23:13:03] epoch 0 step 10/233 nll=0.3963 lr=9.57e-05 tok=189061 (70s)
+[23:14:13] epoch 0 step 20/233 nll=0.2959 lr=9.14e-05 tok=188426 (139s)
+[23:15:05] epoch 0 step 30/233 nll=0.2391 lr=8.71e-05 tok=187554 (191s)
+[23:15:50] epoch 0 step 40/233 nll=0.1317 lr=8.28e-05 tok=191777 (236s)
+[23:16:38] epoch 0 step 50/233 nll=0.1742 lr=7.85e-05 tok=188548 (285s)
+[23:17:34] epoch 0 step 60/233 nll=0.0355 lr=7.42e-05 tok=192464 (341s)
+[23:18:21] epoch 0 step 70/233 nll=0.1068 lr=7.00e-05 tok=190684 (387s)
+[23:19:08] epoch 0 step 80/233 nll=0.0755 lr=6.57e-05 tok=189031 (434s)
+[23:19:12]   saved sampler: tinker://4877bbea-315e-5032-bb7f-0bd0af2260cf:train:0/sampler_weights/step000080
+[23:20:02] epoch 0 step 90/233 nll=0.0059 lr=6.14e-05 tok=185565 (488s)
+[23:21:16] epoch 0 step 100/233 nll=0.0235 lr=5.71e-05 tok=189535 (563s)
+[23:22:11] epoch 0 step 110/233 nll=0.0107 lr=5.28e-05 tok=189955 (618s)
+[23:23:00] epoch 0 step 120/233 nll=0.0030 lr=4.85e-05 tok=194037 (666s)
+[23:23:50] epoch 0 step 130/233 nll=0.0136 lr=4.42e-05 tok=195930 (717s)
+[23:24:39] epoch 0 step 140/233 nll=0.0410 lr=3.99e-05 tok=189245 (765s)
+[23:25:27] epoch 0 step 150/233 nll=0.0218 lr=3.56e-05 tok=192625 (814s)
+[23:26:16] epoch 0 step 160/233 nll=0.0242 lr=3.13e-05 tok=192465 (863s)
+[23:26:19]   saved sampler: tinker://4877bbea-315e-5032-bb7f-0bd0af2260cf:train:0/sampler_weights/step000160
+[23:27:07] epoch 0 step 170/233 nll=0.0055 lr=2.70e-05 tok=193540 (914s)
+[23:27:54] epoch 0 step 180/233 nll=0.0116 lr=2.27e-05 tok=193236 (961s)
+[23:28:43] epoch 0 step 190/233 nll=0.0481 lr=1.85e-05 tok=188593 (1010s)
+[23:29:41] epoch 0 step 200/233 nll=0.0018 lr=1.42e-05 tok=192325 (1068s)
+[23:30:43] epoch 0 step 210/233 nll=0.0023 lr=9.87e-06 tok=191063 (1130s)
+[23:31:43] epoch 0 step 220/233 nll=0.0021 lr=5.58e-06 tok=186293 (1190s)
+[23:32:32] epoch 0 step 230/233 nll=0.0131 lr=1.29e-06 tok=192118 (1239s)
+[23:32:42] epoch 0 step 232/233 nll=0.0006 lr=4.29e-07 tok=191585 (1248s)
+[23:32:46] SAMPLER CHECKPOINT: tinker://4877bbea-315e-5032-bb7f-0bd0af2260cf:train:0/sampler_weights/final
+[23:32:46] done
