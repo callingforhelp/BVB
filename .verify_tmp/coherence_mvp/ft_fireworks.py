@@ -109,13 +109,16 @@ def train(set_name: str, model_name: str, val: bool = True) -> None:
         "loraRank": LORA_RANK,
         "batchSizeSamples": BATCH_SAMPLES,
         "epochs": EPOCHS,
-        "evalAutoCarveout": False,
     }
+    # every round gets an eval set: fold jobs use the true held-out val;
+    # 'all' has no fold val so auto-carve a slice out of training data.
     if val and (DATA / f"{set_name}_val.jsonl").exists():
         job["evaluationDataset"] = \
             f"accounts/{acct}/datasets/{ds_id(set_name + '_val')}"
-    r = _req("POST", f"/accounts/{acct}/supervisedFineTuningJobs",
-             {"supervisedFineTuningJob": job})
+        job["evalAutoCarveout"] = False
+    else:
+        job["evalAutoCarveout"] = True
+    r = _req("POST", f"/accounts/{acct}/supervisedFineTuningJobs", job)
     print(json.dumps(r, indent=1)[:2000])
     est = r.get("supervisedFineTuningJob", {}).get("estimatedCost") \
         or r.get("estimatedCost")
