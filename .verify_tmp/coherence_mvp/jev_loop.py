@@ -226,6 +226,13 @@ LESSONS: list = []  # curated dsh-pes-reasoning.v1 entries, set via --lessons
 # signals satisfy every condition. Ungated lessons inject always.
 # Ops: ">="|"<="|">"|"<", "null", "notnull".
 LESSON_GATES: dict = {
+    "curate_00": {"recur_frac_max": ">=0.9"},
+    "curate_01": {"recur_frac_max": ">=0.9"},
+    # r2_00 ungated: action-steering lesson ("judge BOTH seams before
+    # concluding room_swap") — needed on low-recur swaps too; its stated
+    # cue describes its origin clip, not its domain.
+    "curate_r2_01": {"recur_frac_max": ">=0.9"},
+    "curate_r2_03": {"recur_frac_max": "<=0.4"},
     "curate_r3_reverse_v2": {"recur_frac_max": ">=0.9",
                              "dup_dense_last_frame": "null",
                              "echo_best_score": "<1e6"},

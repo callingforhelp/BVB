@@ -444,3 +444,54 @@ chat). Reasoning bank already integrated (.codex/reasoning-bank).
 | Tinker (A) | ~$40 | evals + RL + everything essential |
 | + folds 3-5 | +~$112 | optional confirmation (skip) |
 | Fireworks (B) | ~$20-70 | 8B arm + eval (fallback only) |
+
+---
+
+## Phase 2.5 addendum — OOD generalization test (w3 fresh-window arm)
+
+**What was built:** `build_ood.py` synthesizes clips on windows the corpus
+never used (gaps between the 3 tiled windows; sources have 90-180s). 8 clips,
+`__w3__` ids, appended to `corpus_v3/manifest.json` (now 98 clips):
+`09c1414f1b__w3__{clean,reverse_segment,loop}` @110s,
+`13c3e046d7__w3__{clean,reverse_segment,room_swap}` @95s,
+`21d970d8de__w3__{clean,splice}` @95s.
+Signals: rung1_signals_v3/dupfrac/echo/codec_stats + 3 pairjudge passes
+(64 VLM calls). Results: `results/jevloop_ood_{base,lessons,gated}`,
+`results/jevloop_lessons_v{5,6}` (full 98).
+
+**Result matrix (typing):**
+
+| config | in-sample 90 | OOD w3 | clean FPs |
+|---|---|---|---|
+| baseline | 78/90 | 6/8 | 0 |
+| lessons ungated (v4) | 84/90 | 6/8 (+1 fix -1 break) | 0 |
+| lessons all-gated (v5) | 77/90 | ~6.5/8 | 0 |
+| hybrid v6 (r2_00 ungated) | 78/90 | ~6.5/8 | 0 |
+
+**Verdict: the in-sample +5 was partly overfit** — it depended on ungated
+lessons applying loosely outside their declared cue domains (e.g. curate_00
+"recur~1.0" was silently helping on recur=0.35 room_swaps). On fresh footage
+that loose application also caused a real regression (fresh reverse ->
+room_swap). After gating every lesson to its declared cue, in-sample gains
+evaporate to ~baseline and OOD effect is ~+1 fix (r2_03 "judge top-z first"
+fixed the fresh splice within its declared domain) with no attributable
+breaks.
+
+**Other findings:**
+- `09c1414f1b__w3__loop` is a measurement-unstable boundary case (loop 0.38-
+  0.66 vs reverse 0.23-0.52 across identical configs). Jev sampling noise is
+  ~+/-2-3 clips per 98-clip run — treat single-run deltas below that as noise.
+- Fresh reverses sit at recur 0.76 (corpus: 0.97) — the reverse lesson's
+  `recur>=0.9` gate was calibrated on n=1 and does NOT fire on fresh reverses.
+  Its declared domain is too tight; needs more reverse samples to recalibrate.
+- The OOD `room_swap->splice` miss reproduces the known arbitration/coverage
+  gap (second seam VLM verdict is `continuous`) — same upstream ceiling.
+- Structural note: action-steering lessons (r2_00 "judge BOTH seams") have a
+  different domain semantics than typing lessons — the gate DSL only sees
+  free_signals, can't express "about to conclude X". r2_00 left ungated: no
+  OOD harm observed.
+
+**Honest bottom line:** the bank's runtime-injection value is much smaller
+than in-sample suggested. The residual is upstream (candidate/verdict
+coverage). This argues for rag_s1 (learned retrieval at train time) over
+runtime injection — but also that neither fixes the coverage ceiling.
