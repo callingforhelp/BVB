@@ -222,14 +222,49 @@ def jev(state: dict, questions: dict) -> dict:
 
 LESSONS: list = []  # curated dsh-pes-reasoning.v1 entries, set via --lessons
 
+# Machine-checkable cue gates: lesson only injects when the clip's free
+# signals satisfy every condition. Ungated lessons inject always.
+# Ops: ">="|"<="|">"|"<", "null", "notnull".
+LESSON_GATES: dict = {
+    "curate_r3_reverse_v2": {"recur_frac_max": ">=0.9",
+                             "dup_dense_last_frame": "null",
+                             "echo_best_score": "<1e6"},
+}
+
+
+def _gate_ok(gate: dict, fs: dict) -> bool:
+    for k, cond in gate.items():
+        v = fs.get(k)
+        if cond == "null":
+            if v is not None:
+                return False
+        elif cond == "notnull":
+            if v is None:
+                return False
+        else:
+            if v is None:
+                return False
+            op, num = (cond[:2], float(cond[2:])) if cond[:2] in (">=", "<=") \
+                      else (cond[0], float(cond[1:]))
+            if not {">": v > num, "<": v < num,
+                    ">=": v >= num, "<=": v <= num}[op]:
+                return False
+    return True
+
+
+def active_lessons(fs: dict) -> list:
+    return [l for l in LESSONS
+            if _gate_ok(LESSON_GATES.get(l.get("id"), {}), fs)]
+
 
 def state_view(st: dict, pack: dict, bank=None) -> dict:
     """Serialize evidence Jev may see (signals + revealed verdicts only)."""
     fs = st["free_signals"]
     sig = pack["signals"]
+    lessons = active_lessons(fs)
     return {
         **({"precedent_lessons": [{"cue": l["cue"], "lesson": l["lesson"]}
-                                  for l in LESSONS]} if LESSONS else {}),
+                                  for l in lessons]} if lessons else {}),
         "task": pack["task"],
         "clip": {"duration_s": 30, "fps": 30},
         "free_signal_evidence": {
