@@ -8,7 +8,7 @@
   "1ada7a0617",
   "21d970d8de"
  ],
- "entries": 261,
+ "entries": 262,
  "ids": [
   "rb_f3f3d98f104a00945e2d2980",
   "rb_f8d783d847e278451033a102",
@@ -270,14 +270,16 @@
   "curate_01",
   "curate_r2_01",
   "curate_r2_03",
-  "curate_r3_reverse"
+  "curate_r3_reverse",
+  "curate_r3_reverse_v2"
  ],
  "curated": {
-  "count": 5,
+  "count": 6,
   "active": [
    "curate_r2_01",
-   "curate_r2_03"
+   "curate_r2_03",
+   "curate_r3_reverse_v2"
   ],
-  "note": "curated_lesson entries are distilled by bank_curate.py (ARK glm-5.3-flash); only validated.status=active entries may be injected via jev_loop --lessons"
+  "note": "curated_lesson entries distilled by bank_curate.py (ARK glm-5.3-flash); only validated.status=active entries are injectable via jev_loop --lessons"
  }
 }
