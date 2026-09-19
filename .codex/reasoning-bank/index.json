@@ -276,6 +276,8 @@
  "curated": {
   "count": 6,
   "active": [
+   "curate_00",
+   "curate_01",
    "curate_r2_01",
    "curate_r2_03",
    "curate_r3_reverse_v2"
