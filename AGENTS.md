@@ -35,6 +35,19 @@ Read `.verify_tmp/coherence_mvp/HANDOFF.md` first — it is the running state do
 
 ## Fireworks (alternative training backend — prepped, not yet launched)
 
+- **Skills exist**: `~/.codex/skills/configure` (train/monitor workflow +
+  mandatory plan-approval gate before job creation), `debug`, and
+  `fireworks-training` (references: models/cost, managed RFT, deploy/teardown).
+  Follow configure's final-plan gate: show the full resolved plan + cost and
+  get explicit approval before `train`.
+- Preflight verified 2026-09-19: account `zhangye1987-q56dy8y3`, datasets READY,
+  managed-SFT quota ok (concurrent-runs=8, submissions=8), deploy quota b200=16.
+  `training-*-count: 0` = dedicated Training API path only (not managed SFT).
+  Payment-method-on-file unknown — job create rejects up front if absent.
+- Managed RFT exists (GRPO + `--warm-start-from` a previous LoRA) — our ft_rl
+  algorithm is portable IF the reward evaluator is wrapped per eval-protocol
+  contract. `rftLoraManaged:false` on this model in the catalog; recheck
+  live matrix before relying on it.
 - Pure-REST driver `ft_fireworks.py` (no firectl signin needed):
   `upload` / `train --set <all|loso_src> --name <id>` / `status <job> [--watch]` / `jobs`.
   Account auto-discovered from the API key (`zhangye1987-q56dy8y3`).
