@@ -21,13 +21,15 @@ sys.path.insert(0, str(ROOT))
 
 import jev_loop as J          # noqa: E402
 import jev_score              # noqa: E402
-import s1_serve               # noqa: E402
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model-path", default=None,
                     help="tinker:// sampler checkpoint; omit for base model")
+    ap.add_argument("--fw-model", default=None,
+                    help="Fireworks model id accounts/<acct>/models/<id>; "
+                         "overrides --model-path (no tinker needed)")
     ap.add_argument("--pack", default=str(ROOT / "prompt_pack_v2.json"))
     ap.add_argument("--out", required=True)
     ap.add_argument("--only", nargs="*", default=None)
@@ -39,7 +41,12 @@ def main() -> None:
                     help="low default: sampler calls are serialized upstream")
     args = ap.parse_args()
 
-    adapter = s1_serve.S1Jev(model_path=args.model_path)
+    if args.fw_model:
+        import s1_fw_serve
+        adapter = s1_fw_serve.FWJev(args.fw_model)
+    else:
+        import s1_serve
+        adapter = s1_serve.S1Jev(model_path=args.model_path)
     J.jev = adapter.answers
 
     pack = J.load_pack(args.pack)

@@ -322,3 +322,22 @@ stagnation check would have caught it and saved ~40% of calls.
   to warrant a second bank type.
 - No ProgressGate integration/vendor — vocabulary only.
 - No change to phase ordering, pack gate, bank schema, or fine-tune target.
+
+## Phase 3d — Fireworks backend (prepped 2026-09-19, not yet launched)
+
+Tinker account is billing-blocked (402, key valid — wrong-account likely).
+Fireworks prepped as alternate backend; `qwen3p6-35b-a3b` is managed-SFT-tunable.
+
+- `ft_fw_dataset.py` -> `results/ft_fw/*.jsonl` (chat format,
+  `[user:state w0, user:EVAL+Question/Options/Answer: w0, assistant:label]`).
+- All 11 datasets uploaded: `jev-s1-all` (29,844 ex / ~40.8M tok) + per-fold
+  `_train`/`_val`. Account `zhangye1987-q56dy8y3` (key auto-discovered).
+- `ft_fireworks.py` — pure-REST driver (upload/train/status/jobs); job-create
+  prints `estimatedCost`. Knobs: loraRank 32, batchSizeSamples 128, 1 epoch.
+- `s1_fw_serve.FWJev` — same answers() contract; uniform logit_bias on label
+  ids defeats the top_logprobs cap while preserving normalized distribution.
+  Wired as `--jev fw:<model-id>` (jev_loop) / `--fw-model` (eval_s1).
+- Launch when ready: `python3 ft_fireworks.py train --set all --name jev-s1-all`
+  (read estimatedCost in the response before confirming spend).
+- Eval needs a dedicated LoRA deployment (4xB200/hr) — undeploy after.
+  Managed RFT not available on this model (`rftLoraManaged:false`) — RL stays Tinker.

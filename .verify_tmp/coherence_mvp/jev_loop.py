@@ -417,14 +417,20 @@ def main() -> None:
                          "to inject per-candidate precedents")
     ap.add_argument("--jev", default="typesafe",
                     help="jev backend: 'typesafe' (default TypeSafe/OpenJev "
-                         "endpoint), 's1:base' (Tinker base model), or "
-                         "'s1:tinker://<sampler-path>' (tuned checkpoint). "
-                         "s1 backends need tinker (s1-spike venv).")
+                         "endpoint), 's1:base' (Tinker base model), "
+                         "'s1:tinker://<sampler-path>' (Tinker ckpt), or "
+                         "'fw:accounts/<acct>/models/<id>' (Fireworks "
+                         "deployment). s1 backends need tinker (s1-spike venv).")
     args = ap.parse_args()
 
-    if args.jev != "typesafe":
+    global jev
+    if args.jev.startswith("fw:"):
+        import s1_fw_serve
+        backend = s1_fw_serve.FWJev(args.jev.removeprefix("fw:"))
+        jev = backend.answers
+        print(f"jev backend: FWJev({args.jev[3:]})")
+    elif args.jev != "typesafe":
         import s1_serve
-        global jev
         path = args.jev.removeprefix("s1:")
         backend = s1_serve.S1Jev(model_path=None if path == "base" else path)
         jev = backend.answers

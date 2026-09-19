@@ -33,6 +33,29 @@ Read `.verify_tmp/coherence_mvp/HANDOFF.md` first — it is the running state do
 - Weights live on Tinker as `tinker://` URIs. Locally keep only `sampler_path.txt`,
   `train.log`, eval transcripts — never model-sized files.
 
+## Fireworks (alternative training backend — prepped, not yet launched)
+
+- Pure-REST driver `ft_fireworks.py` (no firectl signin needed):
+  `upload` / `train --set <all|loso_src> --name <id>` / `status <job> [--watch]` / `jobs`.
+  Account auto-discovered from the API key (`zhangye1987-q56dy8y3`).
+- Datasets already uploaded: `jev-s1-all` (29,844 ex, ~40.8M tok) + 5 fold
+  `*_train` / `*_val` pairs, format CHAT, avgTurns 3.
+- Format: `[user:state(w0), user:EVAL+Question/Options/Answer:(w0), assistant:label]`
+  — `weight:0` replicates single-token loss. Built by `ft_fw_dataset.py`.
+- Job knobs mirror Tinker: loraRank 32, batchSizeSamples 128, 1 epoch,
+  `evaluationDataset` per fold, `warmStartFrom` available. The job-create
+  response carries `estimatedCost` — read it before confirming.
+- Serving: `s1_fw_serve.FWJev(model_id)` — same answers() contract via
+  chat completions + UNIFORM logit_bias on all label token-ids (preserves
+  relative probs → exact normalized dist even at top_logprobs cap 5).
+  `--jev fw:<model-id>` in jev_loop; `--fw-model <id>` in eval_s1.py.
+  `results/ft_fw/label_ids.json` caches the 64 label token-ids.
+- Inference needs a dedicated deployment (LoRA shape qwen3p6-35b-a3b-256k-lora,
+  4×B200 — per-hour; undeploy after eval). `prompt_token_ids` exists if exact
+  compiled-token fidelity is ever needed. `reasoning_effort:"none"` disables thinking.
+- RL: REST has create-reinforcement-fine-tuning-job, but this model shows
+  `rftLoraManaged:false` — keep RL on Tinker unless that changes.
+
 ## Evaluation fidelity (do not shortcut)
 
 - **Faithful eval = `eval_s1.py` + `S1Jev`** — uses SamplingClient with the exact
