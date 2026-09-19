@@ -1,0 +1,140 @@
+{
+ "clip_id": "1ada7a0617__w1__room_swap",
+ "operator": "room_swap",
+ "breaks_s": [
+  10.0,
+  16.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "confidence": 0.18,
+   "probabilities": {
+    "judge_1": 0.12,
+    "judge_4": 0.12,
+    "judge_5": 0.16,
+    "conclude": 0.32,
+    "judge_3": 0.16,
+    "judge_0": 0.12
+   }
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.82
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "room_swap",
+   "confidence": 0.86,
+   "probabilities": {
+    "loop": 0.0,
+    "splice": 0.07,
+    "room_swap": 0.89,
+    "reverse": 0.0,
+    "none": 0.04,
+    "timewarp": 0.0
+   }
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.22
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.42
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.16
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.07
+  }
+ },
+ "fan_type": "room_swap",
+ "fan_probs": {
+  "loop": 0.08,
+  "reverse": 0.06,
+  "room_swap": 0.42,
+  "splice": 0.16,
+  "timewarp": 0.07
+ },
+ "composite_type": "splice",
+ "pack_version": 3,
+ "pack_hash": "5b726464",
+ "n_candidates": 8,
+ "judge_calls": 3,
+ "discontinuous_at": [
+  299
+ ],
+ "jev_calls": 4,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_6",
+   "corrupted": 0.47,
+   "break_type": "none",
+   "sufficient": 0.11,
+   "fan": {
+    "loop": 0.09,
+    "reverse": 0.08,
+    "room_swap": 0.17,
+    "splice": 0.29,
+    "timewarp": 0.1
+   }
+  },
+  {
+   "iter": 1,
+   "action": "judge_7",
+   "corrupted": 0.8,
+   "break_type": "room_swap",
+   "sufficient": 0.18,
+   "fan": {
+    "loop": 0.07,
+    "reverse": 0.06,
+    "room_swap": 0.37,
+    "splice": 0.14,
+    "timewarp": 0.08
+   }
+  },
+  {
+   "iter": 2,
+   "action": "judge_2",
+   "corrupted": 0.8,
+   "break_type": "room_swap",
+   "sufficient": 0.23,
+   "fan": {
+    "loop": 0.08,
+    "reverse": 0.07,
+    "room_swap": 0.48,
+    "splice": 0.13,
+    "timewarp": 0.08
+   }
+  },
+  {
+   "iter": 3,
+   "action": "conclude",
+   "corrupted": 0.82,
+   "break_type": "room_swap",
+   "sufficient": 0.22,
+   "fan": {
+    "loop": 0.08,
+    "reverse": 0.06,
+    "room_swap": 0.42,
+    "splice": 0.16,
+    "timewarp": 0.07
+   }
+  }
+ ]
+}

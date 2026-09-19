@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "parent": null,
+  "notes": "v1 baseline: strings extracted verbatim from jev_loop.py @ f438e71 (detection 88/90, composite typing 82/90, 34% judge calls on corpus_v3)",
+  "task": "Decide whether this 30s video clip was tampered with, and which candidates (if any) need a VLM continuity check.",
+  "conclude_crit": "stop gathering evidence and report the final verdict",
+  "judge_crit_template": "run the VLM continuity check on candidate {i} at frame {frame} (~{secs:.1f}s)",
+  "signals": {
+    "recur_frac_max": "fraction of frames that are near-exact replays of an earlier frame (lag 2-10s); >=0.9 usually = loop edit. CAVEAT: a static motionless segment (e.g. a still room swapped in) also scores ~1.0 — if dup_dense also fires and the repeated region is contiguous, suspect STATIC segment => room_swap, not loop. Values 0.5-0.8 ambiguous (splices of same scene reach ~0.6).",
+    "dup_dense_last_frame": "last frame of a dense run of adjacent-duplicate frames (setpts slowdown). Non-null strongly indicates timewarp; null on clean/other.",
+    "echo_best_score": "self-anchored 4-factor score for a reversed segment: high only when TWO discontinuities echo each other (content after seam A matches content after seam B). >10 = strong reverse evidence; clean and other edits typically <3. NOTE: best_pair is always the argmax — a pair existing with score<10 is NOT an echo. Two discontinuities WITHOUT high echo => room_swap or splice, not reverse.",
+    "scenecut_iframe_frames": "frames where the video encoder inserted a scene-cut I-frame; flags abrupt visual discontinuity. BASE RATE: clean unedited clips average ~2-3 of these per 30s from natural motion, so a few are normal.",
+    "photo_jump_top3": "top frame-difference peaks. IMPORTANT: z is normalized WITHIN this clip, so the largest peak always scores high even on clean clips — read peak POSITIONS and co-occurrence with other signals, not z magnitude."
+  },
+  "typing_guide": "How to type — count judge-confirmed discontinuities first: recur_frac>=0.9 => loop. dup_dense_last_frame non-null => timewarp. echo_score>10 => reverse. TWO confirmed discontinuities separated by seconds + echo<10 => room_swap. ONE confirmed discontinuity => splice (even if its break_kind says scene_change). No confirmed discontinuities + quiet signals => none.",
+  "candidate_note": "Each candidate is a suspicious transition the gates flagged. BASE RATE: the gates are permissive and nominate ~4-8 candidates per clip INCLUDING on clean unedited clips, so a candidate existing is weak evidence — only its VLM verdict is strong evidence. A VLM check costs ~2s and is near-perfect precision. Judge candidates whose verdict would change your conclusion. IMPORTANT: splice edits leave NO free-signal trace — quiet signals do not rule them out. Before concluding 'none', check at least the 2-3 strongest candidates unless a decisive free signal already explains the clip.",
+  "questions": {
+    "action": "What is the best next step?",
+    "corrupted": "This clip contains an artificial temporal discontinuity (an edit: replayed footage, reversed segment, swapped scene, cut/splice, or retimed segment).",
+    "break_type": "Which edit type best fits the evidence?",
+    "sufficient": "The current evidence is sufficient to conclude with confidence; more VLM checks would not change the verdict.",
+    "is_type_template": "The evidence indicates this clip was edited with a {type} corruption ({desc})."
+  },
+  "type_desc": {
+    "loop": "footage repeats itself — a segment is replayed",
+    "reverse": "a segment plays backward in time",
+    "room_swap": "the scene/location changes to a different place then returns",
+    "splice": "a hard cut joins non-contiguous footage of the same scene",
+    "timewarp": "part of the clip plays at altered speed (slowed or sped up)"
+  },
+  "none_desc": "no artificial edit"
+}

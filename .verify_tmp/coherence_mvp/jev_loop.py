@@ -47,6 +47,92 @@ manifest = json.loads((ROOT / "corpus_v3" / "manifest.json").read_text())
 CLIPS = {c["id"]: c for c in manifest["clips"]}
 
 
+# ---------------------------------------------------------------- prompt pack
+# All mutable prompt text lives in a versioned pack (prompt_pack_vN.json) so
+# evolve_loop.py can propose/apply edits as data diffs. DEFAULT_PACK mirrors
+# v1 so this script still runs standalone without a pack file.
+
+DEFAULT_PACK = {
+    "version": 0,
+    "task": ("Decide whether this 30s video clip was tampered with, and "
+             "which candidates (if any) need a VLM continuity check."),
+    "conclude_crit": "stop gathering evidence and report the final verdict",
+    "judge_crit_template": ("run the VLM continuity check on candidate "
+                            "{i} at frame {frame} (~{secs:.1f}s)"),
+    "signals": {
+        "recur_frac_max": ("fraction of frames that are near-exact replays of an earlier frame (lag 2-10s); "
+                           ">=0.9 usually = loop edit. CAVEAT: a static motionless segment (e.g. a still "
+                           "room swapped in) also scores ~1.0 — if dup_dense also fires and the repeated "
+                           "region is contiguous, suspect STATIC segment => room_swap, not loop. "
+                           "Values 0.5-0.8 ambiguous (splices of same scene reach ~0.6)."),
+        "dup_dense_last_frame": "last frame of a dense run of adjacent-duplicate frames (setpts slowdown). Non-null strongly indicates timewarp; null on clean/other.",
+        "echo_best_score": ("self-anchored 4-factor score for a reversed segment: high only when TWO "
+                            "discontinuities echo each other (content after seam A matches content after "
+                            "seam B). >10 = strong reverse evidence; clean and other edits typically <3. "
+                            "NOTE: best_pair is always the argmax — a pair existing with score<10 is NOT "
+                            "an echo. Two discontinuities WITHOUT high echo => room_swap or splice, not reverse."),
+        "scenecut_iframe_frames": "frames where the video encoder inserted a scene-cut I-frame; flags abrupt visual discontinuity. BASE RATE: clean unedited clips average ~2-3 of these per 30s from natural motion, so a few are normal.",
+        "photo_jump_top3": ("top frame-difference peaks. IMPORTANT: z is normalized WITHIN this clip, so "
+                            "the largest peak always scores high even on clean clips — read peak POSITIONS "
+                            "and co-occurrence with other signals, not z magnitude."),
+    },
+    "typing_guide": ("How to type — count judge-confirmed discontinuities first: "
+                     "recur_frac>=0.9 => loop. dup_dense_last_frame non-null => timewarp. "
+                     "echo_score>10 => reverse. TWO confirmed discontinuities separated by seconds "
+                     "+ echo<10 => room_swap. ONE confirmed discontinuity => splice (even if its "
+                     "break_kind says scene_change). No confirmed discontinuities + quiet signals => none."),
+    "candidate_note": ("Each candidate is a suspicious transition the "
+                       "gates flagged. BASE RATE: the gates are permissive "
+                       "and nominate ~4-8 candidates per clip INCLUDING on "
+                       "clean unedited clips, so a candidate existing is "
+                       "weak evidence — only its VLM verdict is strong "
+                       "evidence. A VLM check costs ~2s and is "
+                       "near-perfect precision. Judge candidates whose "
+                       "verdict would change your conclusion. "
+                       "IMPORTANT: splice edits leave NO free-signal trace "
+                       "— quiet signals do not rule them out. Before "
+                       "concluding 'none', check at least the 2-3 "
+                       "strongest candidates unless a decisive free "
+                       "signal already explains the clip."),
+    "questions": {
+        "action": "What is the best next step?",
+        "corrupted": "This clip contains an artificial temporal discontinuity (an edit: replayed footage, reversed segment, swapped scene, cut/splice, or retimed segment).",
+        "break_type": "Which edit type best fits the evidence?",
+        "sufficient": "The current evidence is sufficient to conclude with confidence; more VLM checks would not change the verdict.",
+        "is_type_template": "The evidence indicates this clip was edited with a {type} corruption ({desc}).",
+    },
+    "type_desc": {
+        "loop": "footage repeats itself — a segment is replayed",
+        "reverse": "a segment plays backward in time",
+        "room_swap": "the scene/location changes to a different place then returns",
+        "splice": "a hard cut joins non-contiguous footage of the same scene",
+        "timewarp": "part of the clip plays at altered speed (slowed or sped up)",
+    },
+    "none_desc": "no artificial edit",
+}
+
+
+def load_pack(path) -> dict:
+    """Load a prompt pack JSON; falls back to DEFAULT_PACK when absent."""
+    if path is None:
+        return dict(DEFAULT_PACK)
+    pack = json.loads(Path(path).read_text())
+    merged = dict(DEFAULT_PACK)
+    merged.update(pack)
+    merged["signals"] = {**DEFAULT_PACK["signals"], **pack.get("signals", {})}
+    merged["questions"] = {**DEFAULT_PACK["questions"], **pack.get("questions", {})}
+    merged["type_desc"] = {**DEFAULT_PACK["type_desc"], **pack.get("type_desc", {})}
+    return merged
+
+
+def pack_hash(pack: dict) -> str:
+    import hashlib
+    blob = json.dumps({k: v for k, v in pack.items()
+                       if k not in ("version", "parent", "notes")},
+                      sort_keys=True)
+    return hashlib.sha1(blob.encode()).hexdigest()[:8]
+
+
 # ---------------------------------------------------------------- evidence
 
 def load_clip_state(cid: str) -> dict:
@@ -114,98 +200,64 @@ def jev(state: dict, questions: dict) -> dict:
         return json.loads(r.read().decode())["answers"]
 
 
-def state_view(st: dict) -> dict:
+def state_view(st: dict, pack: dict) -> dict:
     """Serialize evidence Jev may see (signals + revealed verdicts only)."""
     fs = st["free_signals"]
+    sig = pack["signals"]
     return {
-        "task": ("Decide whether this 30s video clip was tampered with, and "
-                 "which candidates (if any) need a VLM continuity check."),
+        "task": pack["task"],
         "clip": {"duration_s": 30, "fps": 30},
         "free_signal_evidence": {
             "recur_frac_max": {
                 "value": fs["recur_frac_max"], "frame": fs["recur_argmax_frame"],
-                "meaning": ("fraction of frames that are near-exact replays of an earlier frame (lag 2-10s); "
-                            ">=0.9 usually = loop edit. CAVEAT: a static motionless segment (e.g. a still "
-                            "room swapped in) also scores ~1.0 — if dup_dense also fires and the repeated "
-                            "region is contiguous, suspect STATIC segment => room_swap, not loop. "
-                            "Values 0.5-0.8 ambiguous (splices of same scene reach ~0.6).")},
+                "meaning": sig["recur_frac_max"]},
             "dup_dense_last_frame": {
                 "value": fs["dup_dense_last_frame"],
-                "meaning": "last frame of a dense run of adjacent-duplicate frames (setpts slowdown). Non-null strongly indicates timewarp; null on clean/other."},
+                "meaning": sig["dup_dense_last_frame"]},
             "echo_best_score": {
                 "value": fs["echo_best_score"], "pair": fs["echo_best_pair"],
-                "meaning": ("self-anchored 4-factor score for a reversed segment: high only when TWO "
-                            "discontinuities echo each other (content after seam A matches content after "
-                            "seam B). >10 = strong reverse evidence; clean and other edits typically <3. "
-                            "NOTE: best_pair is always the argmax — a pair existing with score<10 is NOT "
-                            "an echo. Two discontinuities WITHOUT high echo => room_swap or splice, not reverse.")},
+                "meaning": sig["echo_best_score"]},
             "scenecut_iframe_frames": {
                 "value": fs["scenecut_iframe_frames"],
-                "meaning": "frames where the video encoder inserted a scene-cut I-frame; flags abrupt visual discontinuity. BASE RATE: clean unedited clips average ~2-3 of these per 30s from natural motion, so a few are normal."},
+                "meaning": sig["scenecut_iframe_frames"]},
             "photo_jump_top3": {
                 "value": fs["photo_jump_top3"],
-                "meaning": ("top frame-difference peaks. IMPORTANT: z is normalized WITHIN this clip, so "
-                            "the largest peak always scores high even on clean clips — read peak POSITIONS "
-                            "and co-occurrence with other signals, not z magnitude.")},
-            "typing_guide": ("How to type — count judge-confirmed discontinuities first: "
-                            "recur_frac>=0.9 => loop. dup_dense_last_frame non-null => timewarp. "
-                            "echo_score>10 => reverse. TWO confirmed discontinuities separated by seconds "
-                            "+ echo<10 => room_swap. ONE confirmed discontinuity => splice (even if its "
-                            "break_kind says scene_change). No confirmed discontinuities + quiet signals => none."),
+                "meaning": sig["photo_jump_top3"]},
+            "typing_guide": pack["typing_guide"],
         },
         "candidates": [
             {"id": i, "frame": c["frame"], "gate": c["gate"],
              "vlm_verdict": c["revealed"] if c["revealed"] else "not_judged"}
             for i, c in enumerate(st["candidates"])],
-        "candidate_note": ("Each candidate is a suspicious transition the "
-                           "gates flagged. BASE RATE: the gates are permissive "
-                           "and nominate ~4-8 candidates per clip INCLUDING on "
-                           "clean unedited clips, so a candidate existing is "
-                           "weak evidence — only its VLM verdict is strong "
-                           "evidence. A VLM check costs ~2s and is "
-                           "near-perfect precision. Judge candidates whose "
-                           "verdict would change your conclusion. "
-                           "IMPORTANT: splice edits leave NO free-signal trace "
-                           "— quiet signals do not rule them out. Before "
-                           "concluding 'none', check at least the 2-3 "
-                           "strongest candidates unless a decisive free "
-                           "signal already explains the clip."),
+        "candidate_note": pack["candidate_note"],
     }
 
 
-TYPE_DESC = {
-    "loop": "footage repeats itself — a segment is replayed",
-    "reverse": "a segment plays backward in time",
-    "room_swap": "the scene/location changes to a different place then returns",
-    "splice": "a hard cut joins non-contiguous footage of the same scene",
-    "timewarp": "part of the clip plays at altered speed (slowed or sped up)",
-}
-
-
-def questions_for(st: dict) -> dict:
+def questions_for(st: dict, pack: dict) -> dict:
     crit = {}
     for i, c in enumerate(st["candidates"]):
         if not c["revealed"]:
-            crit[f"judge_{i}"] = (f"run the VLM continuity check on candidate "
-                                  f"{i} at frame {c['frame']} (~{c['frame']/30:.1f}s)")
-    crit["conclude"] = "stop gathering evidence and report the final verdict"
+            crit[f"judge_{i}"] = pack["judge_crit_template"].format(
+                i=i, frame=c["frame"], secs=c["frame"] / 30)
+    crit["conclude"] = pack["conclude_crit"]
+    pq = pack["questions"]
     q = {
-        "action": {"type": "choice", "instructions": "What is the best next step?", "criteria": crit},
-        "corrupted": {"type": "noul", "instructions": "This clip contains an artificial temporal discontinuity (an edit: replayed footage, reversed segment, swapped scene, cut/splice, or retimed segment)."},
-        "break_type": {"type": "choice", "instructions": "Which edit type best fits the evidence?", "criteria": {
-            "none": "no artificial edit", **TYPE_DESC}},
-        "sufficient": {"type": "noul", "instructions": "The current evidence is sufficient to conclude with confidence; more VLM checks would not change the verdict."},
+        "action": {"type": "choice", "instructions": pq["action"], "criteria": crit},
+        "corrupted": {"type": "noul", "instructions": pq["corrupted"]},
+        "break_type": {"type": "choice", "instructions": pq["break_type"], "criteria": {
+            "none": pack["none_desc"], **pack["type_desc"]}},
+        "sufficient": {"type": "noul", "instructions": pq["sufficient"]},
     }
     # speculative fan-out: per-type nouls — parallel, no added latency
-    for t, desc in TYPE_DESC.items():
+    for t, desc in pack["type_desc"].items():
         q[f"is_{t}"] = {"type": "noul",
-                        "instructions": f"The evidence indicates this clip was edited with a {t} corruption ({desc})."}
+                        "instructions": pq["is_type_template"].format(type=t, desc=desc)}
     return q
 
 
 # ---------------------------------------------------------------- loop
 
-def run_clip(cid: str) -> dict:
+def run_clip(cid: str, pack: dict, out_dir: Path) -> dict:
     st = load_clip_state(cid)
     transcript, jev_calls, jev_errors = [], 0, 0
     verdict = {}
@@ -215,7 +267,7 @@ def run_clip(cid: str) -> dict:
         if not unjudged and it == 0:
             break  # nothing to judge — conclude immediately
         try:
-            ans = jev(state_view(st), questions_for(st))
+            ans = jev(state_view(st, pack), questions_for(st, pack))
             jev_calls += 1
         except Exception as e:
             jev_errors += 1
@@ -224,7 +276,7 @@ def run_clip(cid: str) -> dict:
         verdict = {k: v for k, v in ans.items()}
         act = ans.get("action", {}).get("choice", "conclude")
         suff = ans.get("sufficient", {}).get("noul", 0)
-        fan = {t: ans.get(f"is_{t}", {}).get("noul") for t in TYPE_DESC}
+        fan = {t: ans.get(f"is_{t}", {}).get("noul") for t in pack["type_desc"]}
         transcript.append({"iter": it, "action": act,
                            "corrupted": ans.get("corrupted", {}).get("noul"),
                            "break_type": ans.get("break_type", {}).get("choice"),
@@ -284,6 +336,8 @@ def run_clip(cid: str) -> dict:
         "fan_type": fan_type,
         "fan_probs": last_fan,
         "composite_type": composite,
+        "pack_version": pack.get("version"),
+        "pack_hash": pack_hash(pack),
         "n_candidates": len(st["candidates"]),
         "judge_calls": len(judged),
         "discontinuous_at": discont,
@@ -291,7 +345,8 @@ def run_clip(cid: str) -> dict:
         "jev_errors": jev_errors,
         "transcript": transcript,
     }
-    (OUT / f"{cid}.json").write_text(json.dumps(out, indent=1))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / f"{cid}.json").write_text(json.dumps(out, indent=1))
     return out
 
 
@@ -300,13 +355,22 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--only", nargs="*", default=None)
+    ap.add_argument("--pack", default=None,
+                    help="prompt pack JSON (default: built-in v1 strings)")
+    ap.add_argument("--out", default=None,
+                    help="output dir (default: results/jevloop)")
     args = ap.parse_args()
 
+    pack = load_pack(args.pack)
+    out_dir = Path(args.out) if args.out else OUT
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     cids = args.only or sorted(CLIPS)
-    todo = [c for c in cids if not (OUT / f"{c}.json").exists()]
-    print(f"{len(todo)} clips to run ({len(cids)-len(todo)} cached)")
+    todo = [c for c in cids if not (out_dir / f"{c}.json").exists()]
+    print(f"pack v{pack.get('version')} ({pack_hash(pack)}): "
+          f"{len(todo)} clips to run ({len(cids)-len(todo)} cached)")
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = {ex.submit(run_clip, c): c for c in todo}
+        futs = {ex.submit(run_clip, c, pack, out_dir): c for c in todo}
         for i, f in enumerate(as_completed(futs)):
             try:
                 r = f.result()

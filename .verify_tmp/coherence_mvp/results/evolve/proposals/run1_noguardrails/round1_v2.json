@@ -1,0 +1,60 @@
+{
+ "round": 1,
+ "parent": 1,
+ "version": 2,
+ "route": "ark-plan",
+ "rationale": "Room_swap and reverse both replay frames, so the crisp 'recur_frac>=0.9 => loop' rule was overriding the existing caveat and swallowing reverse (echo>10 with [300,480]) and A-B-A room_swaps; the typing guide now makes recurrence non-decisive, promotes echo>10 to reverse, and requires two opposed seams (jugde both big peaks) for room_swap so a single confirmation no longer types splice. Splice misses are addressed by naming the dominant photo_jump peak at a scenecut I-frame as a splice lead and by stressing that a confirmed break is strong positive evidence. dup_dense and extreme echo values are hedged so existing timewarp/reverse wins are not destabilized.",
+ "diff_fields": [
+  "version",
+  "signals",
+  "typing_guide",
+  "candidate_note",
+  "questions",
+  "type_desc",
+  "parent",
+  "notes"
+ ],
+ "pack": {
+  "version": 2,
+  "task": "Decide whether this 30s video clip was tampered with, and which candidates (if any) need a VLM continuity check.",
+  "conclude_crit": "stop gathering evidence and report the final verdict",
+  "judge_crit_template": "run the VLM continuity check on candidate {i} at frame {frame} (~{secs:.1f}s)",
+  "signals": {
+   "recur_frac_max": "fraction of frames that near-exactly replay an earlier frame (lag 2-10s). It CANNOT identify the type: a true loop, a reversed segment (frames replay in reverse) AND a swapped-in-then-returned scene (A-B-A: the return leg replays the pre-swap scene) all score high, so >=0.9 does NOT by itself mean loop. ~0.3-0.5 fits an A-B-A room_swap or a partially repeating scene; a static/frozen stretch also scores ~1.0. Corroborate with echo (reverse) or two opposed seams (room_swap) before naming a type.",
+   "dup_dense_last_frame": "last frame of a dense run of adjacent-duplicate frames. Non-null means a contiguous duplicate stretch exists and usually indicates timewarp (setpts slowdown); it can also come from a frozen/static swapped-in segment, so check whether the duplicated span is one scene played slow (timewarp) or a still inserted between two live scenes (room_swap). Null on clean/other.",
+   "echo_best_score": "self-anchored 4-factor score for a reversed segment: high only when TWO discontinuities echo each other (content after seam A matches content after seam B). A genuine reversed segment typically lands ~10-1e4 and should be preferred over loop even when recur_frac>=0.9 (reversal replays frames). Clean and other edits are typically <3; a pair existing with score<10 is NOT an echo; two discontinuities WITHOUT echo => room_swap or splice. Values so extreme they look degenerate (>1e6) usually mean near-static matches \u2014 corroborate locally instead of trusting them.",
+   "scenecut_iframe_frames": "frames where the video encoder inserted a scene-cut I-frame; flags abrupt visual discontinuity. BASE RATE: clean unedited clips average ~2-3 of these per 30s from natural motion, so a few are normal. A scene-cut I-frame coinciding (within a few frames) with the top photo_jump peak that motion cannot explain is the best free-signal hint of a same-scene splice \u2014 use it to justify a VLM check, not to conclude.",
+   "photo_jump_top3": "top frame-difference peaks. z is normalized WITHIN this clip, so the largest peak always scores high even on clean clips \u2014 read peak POSITIONS and co-occurrence, not z magnitude. An INSULATED peak that clearly dominates the runner-up and sits at a scene-cut I-frame is a splice lead; TWO comparable large peaks a few seconds apart are the signature of room_swap entry+return (judge both before typing splice)."
+  },
+  "typing_guide": "Recurrence signals cannot pick the type: loop, reverse and room_swap all replay frames, so recur_frac>=0.9 is NOT sufficient for loop. Decide structurally: echo_best_score>10 with two mirrored seams (sane range ~10-1e4) => reverse, overriding recur_frac>=0.9. recur_frac>=0.9 with a single fixed lag across the whole clip, no mirrored seams and no distinct intervening scene => loop. TWO judge-confirmed discontinuities seconds apart with echo<10, especially with a distinct intervening scene, => room_swap (the return leg replays the pre-swap scene, so recur_frac ~0.3-0.5 and a static/frozen stretch also fit room_swap). ONE confirmed discontinuity => splice (even if break_kind says scene_change) \u2014 but if a second equally large peak sits seconds away, judge it first: that pair means room_swap. No confirmed discontinuity + quiet signals => none. dup_dense_last_frame non-null points to a dense duplicate run (timewarp, or a frozen swap-in) and is not decisive alone.",
+  "candidate_note": "Each candidate is a suspicious transition the gates flagged. BASE RATE: the gates are permissive and nominate ~4-8 candidates per clip INCLUDING on clean clips, so a candidate existing is weak evidence \u2014 only its VLM verdict is strong evidence; a judge-confirmed discontinuity is strong evidence of corruption in the other direction too. Splice leaves NO free-signal trace and a same-scene cut is the case a judge can miss, so quiet signals do not rule it out: before concluding 'none', check the 2-3 strongest candidates, preferring the dominant photo_jump peak that coincides with a scenecut I-frame. For a room_swap lead, judge BOTH of the two largest peaks when they are seconds apart \u2014 one confirmation alone looks like splice. A judge call costs ~2s; a handful of well-chosen checks is enough, then conclude.",
+  "questions": {
+   "action": "What is the best next step?",
+   "corrupted": "This clip contains an artificial temporal discontinuity (an edit: replayed footage, reversed segment, swapped scene, cut/splice, or retimed segment). One confirmed break is sufficient.",
+   "break_type": "Which edit type best fits the evidence?",
+   "sufficient": "The current evidence is sufficient to conclude with confidence; more VLM checks would not change the verdict.",
+   "is_type_template": "The evidence indicates this clip was edited with a {type} corruption ({desc})."
+  },
+  "type_desc": {
+   "loop": "footage repeats itself \u2014 a segment is replayed",
+   "reverse": "a segment plays backward in time (two mirrored seams)",
+   "room_swap": "the scene changes to a different place and later returns to the original (A-B-A)",
+   "splice": "a hard cut joins non-contiguous footage of the same scene (no replay)",
+   "timewarp": "part of the clip plays at altered speed (slowed or sped up)"
+  },
+  "none_desc": "no artificial edit",
+  "parent": 1,
+  "notes": "evolve round 1 via ark-plan"
+ },
+ "decision": "rejected_subset",
+ "scores": {
+  "subset": {
+   "n": 38,
+   "detection": 25,
+   "typing": 16,
+   "judge_calls": 208,
+   "gate": "fixed=['0d2ee665be__w2__reverse_segment', '0d2ee665be__w2__room_swap', '13c3e046d7__w2__splice', '1ada7a0617__w0__splice'] broken=['09c1414f1b__w0__clean', '09c1414f1b__w0__loop', '09c1414f1b__w0__timewarp', '09c1414f1b__w1__clean', '09c1414f1b__w1__loop', '09c1414f1b__w1__timewarp', '09c1414f1b__w2__loop', '0d2ee665be__w0__clean', '0d2ee665be__w1__clean', '0d2ee665be__w2__clean', '13c3e046d7__w0__clean', '13c3e046d7__w1__clean', '1ada7a0617__w0__clean', '1ada7a0617__w1__clean', '1ada7a0617__w2__clean', '21d970d8de__w0__clean', '21d970d8de__w1__clean', '21d970d8de__w2__clean'] clean_regress=['09c1414f1b__w0__clean', '09c1414f1b__w1__clean', '0d2ee665be__w0__clean', '0d2ee665be__w1__clean', '0d2ee665be__w2__clean', '13c3e046d7__w0__clean', '13c3e046d7__w1__clean', '1ada7a0617__w0__clean', '1ada7a0617__w1__clean', '1ada7a0617__w2__clean', '21d970d8de__w0__clean', '21d970d8de__w1__clean', '21d970d8de__w2__clean']"
+  }
+ },
+ "ts": 1789777381.8117492
+}

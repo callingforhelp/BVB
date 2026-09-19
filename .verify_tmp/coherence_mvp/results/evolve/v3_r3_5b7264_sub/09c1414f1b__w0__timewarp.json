@@ -1,0 +1,174 @@
+{
+ "clip_id": "09c1414f1b__w0__timewarp",
+ "operator": "timewarp",
+ "breaks_s": [
+  20.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "confidence": 1.0,
+   "probabilities": {
+    "conclude": 1.0
+   }
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.53
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "timewarp",
+   "confidence": 0.51,
+   "probabilities": {
+    "none": 0.23,
+    "timewarp": 0.6,
+    "reverse": 0.0,
+    "loop": 0.0,
+    "splice": 0.15,
+    "room_swap": 0.02
+   }
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.29
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.17
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.21
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.63
+  }
+ },
+ "fan_type": "timewarp",
+ "fan_probs": {
+  "loop": 0.07,
+  "reverse": 0.06,
+  "room_swap": 0.17,
+  "splice": 0.21,
+  "timewarp": 0.63
+ },
+ "composite_type": "timewarp",
+ "pack_version": 3,
+ "pack_hash": "5b726464",
+ "n_candidates": 6,
+ "judge_calls": 6,
+ "discontinuous_at": [],
+ "jev_calls": 7,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_5",
+   "corrupted": 0.59,
+   "break_type": "timewarp",
+   "sufficient": 0.15,
+   "fan": {
+    "loop": 0.08,
+    "reverse": 0.07,
+    "room_swap": 0.18,
+    "splice": 0.25,
+    "timewarp": 0.61
+   }
+  },
+  {
+   "iter": 1,
+   "action": "judge_4",
+   "corrupted": 0.64,
+   "break_type": "timewarp",
+   "sufficient": 0.2,
+   "fan": {
+    "loop": 0.08,
+    "reverse": 0.06,
+    "room_swap": 0.19,
+    "splice": 0.22,
+    "timewarp": 0.66
+   }
+  },
+  {
+   "iter": 2,
+   "action": "judge_3",
+   "corrupted": 0.57,
+   "break_type": "timewarp",
+   "sufficient": 0.21,
+   "fan": {
+    "loop": 0.08,
+    "reverse": 0.07,
+    "room_swap": 0.17,
+    "splice": 0.24,
+    "timewarp": 0.63
+   }
+  },
+  {
+   "iter": 3,
+   "action": "judge_2",
+   "corrupted": 0.57,
+   "break_type": "timewarp",
+   "sufficient": 0.2,
+   "fan": {
+    "loop": 0.08,
+    "reverse": 0.07,
+    "room_swap": 0.17,
+    "splice": 0.25,
+    "timewarp": 0.63
+   }
+  },
+  {
+   "iter": 4,
+   "action": "judge_1",
+   "corrupted": 0.56,
+   "break_type": "timewarp",
+   "sufficient": 0.21,
+   "fan": {
+    "loop": 0.09,
+    "reverse": 0.07,
+    "room_swap": 0.21,
+    "splice": 0.25,
+    "timewarp": 0.59
+   }
+  },
+  {
+   "iter": 5,
+   "action": "judge_0",
+   "corrupted": 0.55,
+   "break_type": "timewarp",
+   "sufficient": 0.22,
+   "fan": {
+    "loop": 0.08,
+    "reverse": 0.07,
+    "room_swap": 0.17,
+    "splice": 0.25,
+    "timewarp": 0.61
+   }
+  },
+  {
+   "iter": 6,
+   "action": "conclude",
+   "corrupted": 0.53,
+   "break_type": "timewarp",
+   "sufficient": 0.29,
+   "fan": {
+    "loop": 0.07,
+    "reverse": 0.06,
+    "room_swap": 0.17,
+    "splice": 0.21,
+    "timewarp": 0.63
+   }
+  }
+ ]
+}

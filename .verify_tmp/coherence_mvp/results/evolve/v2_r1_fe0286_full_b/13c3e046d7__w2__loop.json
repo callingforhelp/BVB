@@ -1,0 +1,99 @@
+{
+ "clip_id": "13c3e046d7__w2__loop",
+ "operator": "loop",
+ "breaks_s": [
+  15.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "confidence": 0.32,
+   "probabilities": {
+    "judge_7": 0.05,
+    "judge_5": 0.01,
+    "judge_0": 0.09,
+    "judge_4": 0.12,
+    "judge_3": 0.01,
+    "judge_2": 0.27,
+    "conclude": 0.39,
+    "judge_6": 0.0,
+    "judge_8": 0.0,
+    "judge_1": 0.06
+   }
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.85
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "loop",
+   "confidence": 0.92,
+   "probabilities": {
+    "timewarp": 0.0,
+    "none": 0.01,
+    "reverse": 0.05,
+    "loop": 0.9299999999999999,
+    "room_swap": 0.01,
+    "splice": 0.0
+   }
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.49
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.83
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.13
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.1
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.14
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.1
+  }
+ },
+ "fan_type": "loop",
+ "fan_probs": {
+  "loop": 0.83,
+  "reverse": 0.13,
+  "room_swap": 0.1,
+  "splice": 0.14,
+  "timewarp": 0.1
+ },
+ "composite_type": "loop",
+ "pack_version": 2,
+ "pack_hash": "fe0286a3",
+ "n_candidates": 9,
+ "judge_calls": 0,
+ "discontinuous_at": [],
+ "jev_calls": 1,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "conclude",
+   "corrupted": 0.85,
+   "break_type": "loop",
+   "sufficient": 0.49,
+   "fan": {
+    "loop": 0.83,
+    "reverse": 0.13,
+    "room_swap": 0.1,
+    "splice": 0.14,
+    "timewarp": 0.1
+   }
+  }
+ ]
+}

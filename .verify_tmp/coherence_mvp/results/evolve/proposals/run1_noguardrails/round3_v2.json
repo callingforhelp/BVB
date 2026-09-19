@@ -1,0 +1,60 @@
+{
+ "round": 3,
+ "parent": 1,
+ "version": 2,
+ "route": "ark-plan",
+ "rationale": "The residual errors are all typing confusions driven by recur_frac>=0.9, which fires for reverse (reversed footage), room_swap (returning/static scene), and loop alike, plus dup_dense firing on static swaps and high echo firing on room_swap. I reframed recur_frac/dup_dense as corruption evidence only, made the typing guide ordered so a confirmed location change beats both echo and recur_frac, and noted reverse's echo override. I also stressed that splices leave no free-signal trace and that loop requires the same scene as its source, pushing the model to judge near recurrence boundaries before typing none or loop.",
+ "diff_fields": [
+  "version",
+  "task",
+  "signals",
+  "typing_guide",
+  "candidate_note",
+  "type_desc",
+  "parent",
+  "notes"
+ ],
+ "pack": {
+  "version": 2,
+  "task": "Decide whether this 30s video clip was edited, and which candidate boundaries (if any) need a VLM continuity check.",
+  "conclude_crit": "stop gathering evidence and report the final verdict",
+  "judge_crit_template": "run the VLM continuity check on candidate {i} at frame {frame} (~{secs:.1f}s)",
+  "signals": {
+   "recur_frac_max": "fraction of frames that are near-exact replays of an earlier frame (lag 2-10s). >=0.9 means the clip is EDITED, but is NOT specific to loop: reverse (reversed footage) and room_swap (original scene returning, or a static still swapped in) also replay frames and reach ~1.0. Use recur_frac for corruption only, then apply the typing disambiguators. 0.5-0.8 is ambiguous (same-scene splices reach ~0.6).",
+   "dup_dense_last_frame": "last frame of a dense run of adjacent-duplicate frames. Fires on setpts slowdown (timewarp) OR on a static swapped-in segment (room_swap). Non-null alone does not prove timewarp: if a scene change (photo_jump/scenecut) sits at the run boundary, suspect room_swap; null on clean/other.",
+   "echo_best_score": "self-anchored 4-factor score: high only when TWO discontinuities echo (content after seam A matches content after seam B). >10 indicates reverse, but note reversed footage also replays frames so reverse ALSO shows recur_frac~1.0; a matched pair does not by itself beat a confirmed location change. Magnitude beyond >10 adds nothing and values >>1e4 can be degenerate. best_pair is always the argmax, so a pair scoring <10 is NOT an echo. Two discontinuities WITHOUT high echo => room_swap or splice, not reverse.",
+   "scenecut_iframe_frames": "frames where the encoder inserted a scene-cut I-frame; flags abrupt visual discontinuity. BASE RATE: clean clips average ~2-3 per 30s from natural motion. A room_swap places cuts at BOTH its swap-in and swap-out boundaries; a loop usually shows one seam.",
+   "photo_jump_top3": "top frame-difference peaks. z is normalized WITHIN the clip, so the largest peak always scores high even on clean clips \u2014 read peak POSITIONS and co-occurrence, not z magnitude. TWO strong peaks a few seconds apart that flank repeated content suggest room_swap's two boundaries."
+  },
+  "typing_guide": "Type by arrangement, not recur_frac alone (many edit types replay frames): 1) a judge-confirmed change to a DIFFERENT place/location, or scene-cut/photo_jump peaks at TWO boundaries with a different scene between them => room_swap. 2) else echo_best_score>10 with same-scene mirror content => reverse (reversed footage also replays, so this overrides loop). 3) else recur_frac>=0.9 with ONE seam and no scene change => loop (loop must be the SAME scene as its source \u2014 never call loop when a different place appears). 4) else dup_dense_last_frame with no coincident scene change => timewarp. 5) else ONE confirmed discontinuity with the SAME scene on both sides => splice (even if break_kind says scene_change). 6) no discontinuities and quiet signals that survive candidate checks => none.",
+  "candidate_note": "Each candidate is a suspicious transition the gates flagged. BASE RATE: the gates are permissive and nominate ~4-8 candidates per clip INCLUDING on clean clips, so a candidate existing is weak evidence \u2014 only its VLM verdict is strong. A VLM check costs ~2s and is near-perfect precision. splices leave NO free-signal trace, so quiet signals do not rule them out. recur_frac>=0.9 does NOT distinguish loop from reverse or room_swap \u2014 judge at least one candidate near each recurrence boundary before typing. Before concluding 'none', check the strongest photo_jump/scenecut candidates unless a decisive free signal (echo>10 or dup_dense) already explains the clip.",
+  "questions": {
+   "action": "What is the best next step?",
+   "corrupted": "This clip contains an artificial temporal discontinuity (an edit: replayed footage, reversed segment, swapped scene, cut/splice, or retimed segment).",
+   "break_type": "Which edit type best fits the evidence?",
+   "sufficient": "The current evidence is sufficient to conclude with confidence; more VLM checks would not change the verdict.",
+   "is_type_template": "The evidence indicates this clip was edited with a {type} corruption ({desc})."
+  },
+  "type_desc": {
+   "loop": "footage of the SAME scene repeats \u2014 a segment is replayed",
+   "reverse": "a segment plays backward in time",
+   "room_swap": "the scene/location changes to a different place then returns to the original",
+   "splice": "a hard cut joins non-contiguous footage of the same scene",
+   "timewarp": "part of the clip plays at altered speed (slowed or sped up)"
+  },
+  "none_desc": "no artificial edit",
+  "parent": 1,
+  "notes": "evolve round 3 via ark-plan"
+ },
+ "decision": "rejected_subset",
+ "scores": {
+  "subset": {
+   "n": 38,
+   "detection": 33,
+   "typing": 18,
+   "judge_calls": 198,
+   "gate": "fixed=['0d2ee665be__w2__room_swap', '13c3e046d7__w2__splice'] broken=['09c1414f1b__w0__clean', '09c1414f1b__w0__loop', '09c1414f1b__w0__reverse_segment', '09c1414f1b__w0__timewarp', '09c1414f1b__w1__loop', '09c1414f1b__w1__reverse_segment', '09c1414f1b__w1__timewarp', '09c1414f1b__w2__loop', '09c1414f1b__w2__reverse_segment', '09c1414f1b__w2__timewarp', '0d2ee665be__w0__clean', '0d2ee665be__w1__clean', '1ada7a0617__w0__clean', '21d970d8de__w1__clean'] clean_regress=['09c1414f1b__w0__clean', '0d2ee665be__w0__clean', '0d2ee665be__w1__clean', '1ada7a0617__w0__clean', '21d970d8de__w1__clean']"
+  }
+ },
+ "ts": 1789777531.31236
+}

@@ -1,0 +1,123 @@
+{
+ "clip_id": "21d970d8de__w0__reverse_segment",
+ "operator": "reverse_segment",
+ "breaks_s": [
+  10.0,
+  16.0
+ ],
+ "final": {
+  "action": {
+   "type": "choice",
+   "choice": "conclude",
+   "confidence": 0.34,
+   "probabilities": {
+    "judge_4": 0.05,
+    "judge_0": 0.08,
+    "conclude": 0.47,
+    "judge_5": 0.03,
+    "judge_2": 0.37
+   }
+  },
+  "corrupted": {
+   "type": "noul",
+   "noul": 0.81
+  },
+  "break_type": {
+   "type": "choice",
+   "choice": "reverse",
+   "confidence": 0.92,
+   "probabilities": {
+    "timewarp": 0.0,
+    "reverse": 0.95,
+    "loop": 0.0,
+    "room_swap": 0.0,
+    "splice": 0.02,
+    "none": 0.03
+   }
+  },
+  "sufficient": {
+   "type": "noul",
+   "noul": 0.29
+  },
+  "is_loop": {
+   "type": "noul",
+   "noul": 0.12
+  },
+  "is_reverse": {
+   "type": "noul",
+   "noul": 0.74
+  },
+  "is_room_swap": {
+   "type": "noul",
+   "noul": 0.11
+  },
+  "is_splice": {
+   "type": "noul",
+   "noul": 0.19
+  },
+  "is_timewarp": {
+   "type": "noul",
+   "noul": 0.12
+  }
+ },
+ "fan_type": "reverse",
+ "fan_probs": {
+  "loop": 0.12,
+  "reverse": 0.74,
+  "room_swap": 0.11,
+  "splice": 0.19,
+  "timewarp": 0.12
+ },
+ "composite_type": "reverse",
+ "pack_version": 2,
+ "pack_hash": "fe0286a3",
+ "n_candidates": 6,
+ "judge_calls": 2,
+ "discontinuous_at": [],
+ "jev_calls": 3,
+ "jev_errors": 0,
+ "transcript": [
+  {
+   "iter": 0,
+   "action": "judge_1",
+   "corrupted": 0.83,
+   "break_type": "reverse",
+   "sufficient": 0.24,
+   "fan": {
+    "loop": 0.12,
+    "reverse": 0.74,
+    "room_swap": 0.12,
+    "splice": 0.22,
+    "timewarp": 0.12
+   }
+  },
+  {
+   "iter": 1,
+   "action": "judge_3",
+   "corrupted": 0.82,
+   "break_type": "reverse",
+   "sufficient": 0.24,
+   "fan": {
+    "loop": 0.13,
+    "reverse": 0.74,
+    "room_swap": 0.11,
+    "splice": 0.22,
+    "timewarp": 0.12
+   }
+  },
+  {
+   "iter": 2,
+   "action": "conclude",
+   "corrupted": 0.81,
+   "break_type": "reverse",
+   "sufficient": 0.29,
+   "fan": {
+    "loop": 0.12,
+    "reverse": 0.74,
+    "room_swap": 0.11,
+    "splice": 0.19,
+    "timewarp": 0.12
+   }
+  }
+ ]
+}

@@ -1,0 +1,71 @@
+{
+ "round": 1,
+ "parent": 1,
+ "version": 2,
+ "route": "zenmux",
+ "rationale": "Reworked typing_guide into an ordered, precedence-based rule set so room_swap no longer loses to loop when recur~1.0 co-occurs with dup_dense (a static swapped-in still), and reverse is reachable when a strong echo pair coexists with recur high-but-below-1.0, while genuine forward loops (dup_dense null) stay loop. Added a same-scene vs different-location test to split a single confirmed discontinuity into splice vs room_swap. Made candidate_note prioritize judging the candidate nearest the photo_jump peak / scene-cut I-frame so splices (whose only trace is one sharp jump) are checked before concluding none; detection-threshold texts for recur_frac, dup_dense and echo were preserved and only annotated.",
+ "diff_fields": [
+  "version",
+  "signals",
+  "typing_guide",
+  "candidate_note",
+  "type_desc",
+  "parent",
+  "notes"
+ ],
+ "pack": {
+  "version": 2,
+  "task": "Decide whether this 30s video clip was tampered with, and which candidates (if any) need a VLM continuity check.",
+  "conclude_crit": "stop gathering evidence and report the final verdict",
+  "judge_crit_template": "run the VLM continuity check on candidate {i} at frame {frame} (~{secs:.1f}s)",
+  "signals": {
+   "recur_frac_max": "fraction of frames that are near-exact replays of an earlier frame (lag 2-10s); >=0.9 usually = loop (a forward replay of MOVING footage). CAVEAT: a static motionless segment (e.g. a still room swapped in) also scores ~1.0 \u2014 if dup_dense also fires, the repeated region is static => room_swap, not loop. If recur is high but clearly below 1.0 AND echo_best_score>10, the span is replayed REVERSED => reverse. Values 0.5-0.8 ambiguous (splices of same scene reach ~0.6).",
+   "dup_dense_last_frame": "last frame of a dense run of adjacent-duplicate frames (a static/frozen or slowed stretch). Non-null with a NORMAL recur_frac strongly indicates timewarp; non-null together with recur_frac>=0.9 means the whole clip is duplicated and the run IS the swapped-in still => room_swap. Null on clean/loop/other.",
+   "echo_best_score": "self-anchored 4-factor score for a reversed segment: high only when TWO discontinuities echo each other (content after seam A matches content after seam B). >10 = strong reverse evidence; clean and other edits typically <3. NOTE: a forward LOOP replay also echoes, so echo>10 implies reverse only when recur_frac is high but clearly below 1.0; with recur_frac~1.0 and dup_dense null it is a loop. Two discontinuities WITHOUT high echo => room_swap or splice, not reverse.",
+   "scenecut_iframe_frames": "frames where the encoder inserted a scene-cut I-frame; flags abrupt visual discontinuity. BASE RATE: clean unedited clips average ~2-3 of these per 30s from natural motion, so a few are normal.",
+   "photo_jump_top3": "top frame-difference peaks. IMPORTANT: z is normalized WITHIN this clip, so the largest peak always scores high even on clean clips \u2014 read peak POSITIONS and co-occurrence with other signals, not z magnitude; a splice's whole signature is one sharp jump at the peak frame."
+  },
+  "typing_guide": "Type from judge-confirmed discontinuities; free signals pick the type, checked in order: 1) dup_dense_last_frame non-null = a run of static/duplicated frames: if recur_frac is ALSO >=0.9 (whole clip duplicated) the run is the edit => room_swap (a still scene swapped in), not loop and not timewarp; if recur_frac is normal it is a local slowed stretch => timewarp. 2) recur_frac>=0.9 with dup_dense null = replay of moving footage => loop; EXCEPTION: if echo_best_score>10 and recur is high but clearly below 1.0, the span is replayed reversed => reverse. 3) echo_best_score>10 with recur below 0.9 => reverse. 4) TWO judge-confirmed discontinuities, echo<10 => room_swap. 5) ONE judge-confirmed discontinuity: same location/scene across it => splice; location visibly changes place => room_swap. 6) No confirmed discontinuity + quiet signals => none.",
+  "candidate_note": "Each candidate is a suspicious transition the gates flagged. BASE RATE: the gates are permissive and nominate ~4-8 candidates per clip INCLUDING on clean unedited clips, so a candidate existing is weak evidence \u2014 only its VLM verdict is strong. A VLM check costs ~2s and is near-perfect precision. Judge candidates whose verdict would change your conclusion. Splice edits leave NO free-signal trace \u2014 quiet signals do NOT rule them out. PRIORITIZE the candidates whose frame sits at (or next to) the top photo_jump peak positions and any scene-cut I-frame, since a splice concentrates all its evidence in one sharp jump there; judge those before concluding none (at least the 2-3 strongest unless a decisive free signal already explains the clip).",
+  "questions": {
+   "action": "What is the best next step?",
+   "corrupted": "This clip contains an artificial temporal discontinuity (an edit: replayed footage, reversed segment, swapped scene, cut/splice, or retimed segment).",
+   "break_type": "Which edit type best fits the evidence?",
+   "sufficient": "The current evidence is sufficient to conclude with confidence; more VLM checks would not change the verdict.",
+   "is_type_template": "The evidence indicates this clip was edited with a {type} corruption ({desc})."
+  },
+  "type_desc": {
+   "loop": "footage repeats itself \u2014 a moving segment is replayed forward",
+   "reverse": "a segment plays backward in time",
+   "room_swap": "the scene/location changes to a DIFFERENT place then returns (a still/swapped-in scene counts)",
+   "splice": "a hard cut joins non-contiguous footage of the SAME scene/location (content jumps in time, place stays)",
+   "timewarp": "part of the clip plays at altered speed (slowed or sped up)"
+  },
+  "none_desc": "no artificial edit",
+  "parent": 1,
+  "notes": "evolve round 1 via zenmux"
+ },
+ "decision": "accepted",
+ "scores": {
+  "subset": {
+   "n": 38,
+   "detection": 36,
+   "typing": 31,
+   "judge_calls": 183,
+   "gate": "fixed=['0d2ee665be__w2__room_swap'] broken=[] clean_regress=[]"
+  },
+  "confirm": {
+   "detection": 88,
+   "typing": 83,
+   "judge_calls": 375,
+   "gate": "det 88->88 type 82->83 judges 262->375"
+  },
+  "confirm_rerun": {
+   "detection": 88,
+   "typing": 83,
+   "judge_calls": 369,
+   "gate": "det 88->88 type 82->83 judges 262->369"
+  }
+ },
+ "ts": 1789778828.390763
+}
