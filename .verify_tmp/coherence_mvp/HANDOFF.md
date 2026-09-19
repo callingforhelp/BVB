@@ -1,5 +1,10 @@
 # HANDOFF — Jev-loop video edit detection: Phases 1+2 complete, Phase 3 ready
 
+> **UPDATE (post-handoff, same day)**: a design refinement was added after this
+> doc was first committed — see **"ADDENDUM: ProgressGate-style stagnation
+> supervision"** at the bottom. It changes gate v2 + ft_dataset labels; it does
+> NOT change phase ordering, baselines, or anything else in this file.
+
 **For the next agent**: read this file, the plan at
 `/Users/oldap/.devin/plans/plan-86c3dea77ff525d6.md`, and the conversation
 summaries at `/Users/oldap/.local/share/devin/cli/summaries/history_470eba28506f4ea6.md`
@@ -136,3 +141,64 @@ python3 evolve_loop.py --rounds 3 --pack prompt_pack_v2.json
 - Remote exists (`github.com/yunlong10/BVB.git`) but nothing was pushed;
   ask before pushing.
 - OpenJev endpoint is a personal Modal deployment — may be cold (~0.9s warm).
+
+---
+
+## ADDENDUM: ProgressGate-style stagnation supervision
+
+### Where this came from (context provenance — do NOT go looking for it in the repo)
+
+The user pasted a ChatGPT analysis of **ProgressGate** — an external OSS
+loop-supervisor concept that watches whether an agent's recent actions produce
+*material progress* and emits `CONTINUE`/`WARN`/`REPLAN`/`HALT` recommendations
+(the host agent must act on them; the supervisor does not plan or execute).
+**It is a conceptual import, not a dependency** — there is no ProgressGate code
+in this repo, none is being vendored, and its own docs warn `materialProgress`
+alone is not a success signal. Its value here is vocabulary for a gap we had
+already measured, nothing more.
+
+Its three-way decomposition maps onto existing components:
+
+| their component | our analog | status |
+|---|---|---|
+| task progress estimator | signal arms + pair-judge | exists |
+| loop supervisor | evidence-floor gate | **partial — no stagnation detection** |
+| reasoning bank | strip_bank precedents | exists (per-boundary, not per-strategy) |
+
+### The measured gap it names
+
+Our gate supervises evidence **quantity** (`≥2 judged`) but not **information
+gain**. Measured instance: the run2 margin-gate experiment pushed judge usage
+to 76% because Jev kept attempting `conclude`, the gate kept blocking, and
+every forced judge burned a call without changing the distribution. A
+stagnation check would have caught it and saved ~40% of calls.
+
+### Edit plan — existing implementation (`jev_loop.py`, ~30 lines, gate v2)
+
+- Track Δ(`corrupted`, fan vector) across the last 2 judged candidates.
+- If Δ ≈ 0 AND evidence floor unmet → stop forcing judges → emit
+  `corrupt-but-untyped` abstain verdict (the refusal class already in the
+  taxonomy) instead of burning remaining candidates.
+- Code-owned like the existing floor — Jev cannot self-halt; the supervisor's
+  REPLAN/HALT is enforced by code, not requested from the model.
+- **Gate discipline unchanged**: must hold det 88/90 and type ≥83/90 on
+  corpus_v3, and show judge-call reduction vs the 319 (banked) / 375 (base)
+  reference points. Costs accuracy → reject, same as every other change.
+
+### Edit plan — future implementation (`ft_dataset.py`)
+
+- Add `abstain`/`replan` to the oracle action label set (was: `judge_i`,
+  `conclude`).
+- Derivation: replay transcripts; mark states where marginal information gain
+  flatlined before the verdict → abstain supervision.
+- The RL reward (`verdict_correct − λ·judge_calls`) already punishes
+  stagnation implicitly; the SFT labels make it explicit.
+
+### Explicitly NOT doing (scope control)
+
+- No strategy-level bank (episodes = `{stuck-state, action-taken, outcome}`).
+  Speculative — LOSO already showed the boundary bank's yield is cost, not
+  accuracy. Phase-3 trace data decides whether stagnation is frequent enough
+  to warrant a second bank type.
+- No ProgressGate integration/vendor — vocabulary only.
+- No change to phase ordering, pack gate, bank schema, or fine-tune target.
