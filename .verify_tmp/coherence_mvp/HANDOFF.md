@@ -28,6 +28,11 @@ arbitration, final verdict.
 | 3a. eSFT dataset emitter (`ft_dataset.py`) | DONE | 3029 rows/variant (1008 aug), plain+rag, LOSO×5; final-state gold type=truth 401/435 (rest = evidence-faithful hard negatives); 0 clean-FP labels |
 | 3a+. s1-format emitter (`ft_s1.py`) | DONE | 29,844 rows (3,316 states × 9 questions) compiled to the EXACT OpenJev serving contract — see "OpenJev contract" below |
 | 3b. Tinker LoRA SFT + parity eval | DONE, first fold | **Full corpus: det 88/90, type 83/90, judge calls 69 vs 375 baseline (−82%), 0 clean FPs** — exact OpenJev parity at ~1/5 the cost. LOSO holdout `09c1414f1b`: det 18/18, type 15/18, 9 judges vs OpenJev's 77. Checkpoint `tinker://726604fd-27d4-5b14-be6d-0fe088a5d526:train:0/sampler_weights/final` |
+| 2+. Shared reasoning bank | DONE, `9d74f56` | `.codex/reasoning-bank/` — 782 strip episodes → 256 stratified `dsh-pes-reasoning.v1` entries (~50/source, ~43/op) via `bank_export_pes.py` |
+| 3c. Production flag + RL driver + cross-val | DONE, `f43737a` | `jev_loop.py --jev s1:<ckpt>` drop-in; `ft_rl.py` GRPO (smoke: r 0.36→0.73); `crossval.sh` |
+| 3c+. Trained checkpoints (UNEVALUATED) | DONE, blocked on eval | alldata `tinker://4877bbea-...` (room_swap-fix candidate — 188 signature rows confirmed in-train), fold-2 `tinker://60bf1921-...`, RL warmstart `tinker://a5d4c168-.../sft_warmstart` |
+| 3d. Fireworks backend | DONE (prepped), `47a423b` | `ft_fw_dataset.py`→chat JSONL (weight:0 = single-token loss), 11 datasets uploaded (~40.8M tok all), `ft_fireworks.py` REST driver, `s1_fw_serve.FWJev` + `--jev fw:`/`--fw-model`, label_ids cached |
+| —. Ops rules | DONE, `33626d2` | `AGENTS.md` at repo root — envs, Tinker/Fireworks discipline, eval fidelity, hygiene |
 
 Alignment (user-decided): Phases 1–2 use the **real TypeSafe Jev key** as
 oracle/production reference. Phase 3 fine-tunes the **Qwen behind OpenJev**
@@ -341,6 +346,29 @@ Fireworks prepped as alternate backend; `qwen3p6-35b-a3b` is managed-SFT-tunable
   (read estimatedCost in the response before confirming spend).
 - Eval needs a dedicated LoRA deployment (4xB200/hr) — undeploy after.
   Managed RFT not available on this model (`rftLoraManaged:false`) — RL stays Tinker.
+
+## CURRENT STATE SNAPSHOT (2026-09-19)
+
+**Blocker: billing on BOTH training backends.** No compute can run.
+
+- **Tinker**: `402 Access blocked due to billing status` (account name empty
+  in error — key is valid, account isn't billing-enabled; user's balance is
+  likely on a different account). Paused runs auto-resume when fixed; all
+  checkpoints are remote `tinker://` URIs, nothing lost. Rates: train
+  $1.177/1M tok — ~$150 already spent (3 SFT runs + smoke + partial RL).
+- **Fireworks**: `payment method is required` (verified by a free
+  job-create probe). Everything else verified working: account
+  `zhangye1987-q56dy8y3`, datasets READY, quota ok (managed-SFT 8 concurrent,
+  deploy b200:16). Rates: LoRA SFT $3/1M (16-80B tier) / $0.50/1M (≤16B);
+  eval deployment 4×B200 ≈ $52/hr.
+
+**Session commits**: `df52b45` (SFT stack + fold-1 parity), `f43737a`
+(prod flag + RL + crossval), `9d74f56` (shared bank), `33626d2` (AGENTS.md),
+`47a423b` (Fireworks stack), `a94205b` + `ead1a04` (eval-always + plan).
+
+**Read first**: `AGENTS.md` (repo root) → this file → THE PLAN below.
+Two paused processes (`rl_loso09`, crossval driver) may still be alive and
+retry-looping on 402 — check `pgrep -f ft_rl.py` before relaunching.
 
 ## THE PLAN (2026-09-19) — Phase 3 completion
 
