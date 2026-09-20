@@ -23,6 +23,13 @@ lightweight harness, **Mini-BVB**, in an identical sandbox under a shared cost
 limit. External asset libraries are disallowed.
 
 <p align="center">
+  <img src="assets/bvb-kitchen-input-vs-gpt-6-astra.gif" alt="Kitchen scene: source video on the left versus GPT-6 Astra Blender reconstruction on the right" width="800">
+</p>
+<p align="center">
+  <em>Source kitchen video vs GPT-6 Astra reconstruction.</em>
+</p>
+
+<p align="center">
   <a href="https://yoloytang.me/BVB/">
     <img src="assets/bvb-figure1.png?v=c12e59389209" alt="BVB Figure 1: benchmark overview and Overall cost frontier across 51 configurations">
   </a>

@@ -6,6 +6,7 @@ fresh GitHub checkout without the local, ignored `misc/` manuscript directory.
 | File | Content |
 | --- | --- |
 | [bvb-logo.png](bvb-logo.png) | BVB logo |
+| [bvb-kitchen-input-vs-gpt-6-astra.gif](bvb-kitchen-input-vs-gpt-6-astra.gif) | README teaser: source kitchen video vs GPT-6 Astra reconstruction |
 | [bvb-figure1.png](bvb-figure1.png) | Complete Figure 1: benchmark overview and Overall cost frontier across 51 configurations |
 | [bvb-cost-frontier.png](bvb-cost-frontier.png) | Standalone Overall versus Stage-1 cost plot |
 | [bvb-pipeline.png](bvb-pipeline.png) | Reconstruction pipeline with Dual VQA and Latent Similarity |
