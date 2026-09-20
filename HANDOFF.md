@@ -473,3 +473,82 @@ timewarp:  det 15/15, type 15/15
 
 Artifacts: `results/replay_side_by_side_final.json` (canonical),
 `results/replay_max10.json` (identical cap-10 probe).
+
+## Canonical final handoff summary (2026-09-19 22:32 EDT)
+
+Canonical worktree:
+
+```text
+/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp_flinter
+```
+
+Branch: `flinter-evidence-policy`
+
+Latest commit: `1accfba Improve bounded replay parity`
+
+Parent worktree was not modified:
+
+```text
+/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp
+```
+
+### Purpose
+
+This is a bounded evidence-acquisition policy, not a complete video editor or a raw-video Jev model. Existing cheap candidate gates produce a fixed candidate union; the bounded policy chooses which candidate evidence to reveal; existing deterministic arbitration produces the final result. The experiment tests whether expensive VLM judge calls can be reduced without losing detection quality.
+
+### Main files
+
+- `flinter_mvp/jev_adapter.py` — parent-state to evidence-state adapter.
+- `flinter_mvp/jev_replay.py` — bounded replay, seam-first selection, signal-aware stopping, arbitration, abstention.
+- `replay_side_by_side.py` — 98-clip side-by-side replay.
+- `tests/test_jev_replay.py` and `tests/test_flinter_mvp.py` — focused tests.
+- `results/replay_max10.json` — latest full replay.
+- `TLCD_EXPERIMENT.md` — RLCD/TLCD probability-learning context.
+
+### Final measured results
+
+Existing policy:
+
+```text
+n=98, detection=95/98, typing=95/98, clean FPs=0,
+abstentions=0, judge calls=474
+```
+
+Bounded policy with a ten-reveal cap:
+
+```text
+n=98, detection=95/98, typing=94/98, clean FPs=0,
+abstentions=21,
+judge calls=437
+```
+
+Per-class bounded typing:
+
+```text
+loop 16/16; none 18/18; reverse 16/17;
+room_swap 16/16; splice 13/16; timewarp 15/15
+```
+
+Additional checks:
+
+```text
+candidate coverage: 78/80 changed clips
+replay fidelity mismatches: 0
+bounded replay deterministic: true
+focused tests: 26 passed
+```
+
+The ten-reveal change recovered room-swap typing from 3/16 to 16/16 while retaining detection parity and zero clean false positives. It reduces cached judge reveals by 37 (7.8%) relative to the existing policy. It is an improvement over the prior eight-reveal bounded result (81/98 typing, 323 calls), but not full policy parity because of one reverse miss and 21 abstentions.
+
+### Next work
+
+1. Freeze this deterministic baseline: 95/98 detection, 94/98 typing, 437 calls, zero clean FPs.
+2. Diagnose the 21 abstentions and the single reverse typing miss; classify them as insufficient evidence, reveal-order, budget, or arbitration errors.
+3. Compare against a simple fixed-order deterministic policy before adding a learned scorer.
+4. If the contract is stable, train a local next-evidence/stop policy with CE and direct Brier first.
+5. Keep TLCD/RLCD as a later controlled comparison; do not change reward functions yet.
+6. Use source-grouped/OOD evaluation and independent reviewed outcomes. Do not measure success only by agreement with Jev.
+
+### Interpretation boundary
+
+The result supports cost-efficient evidence gathering on this structured corpus. It does not establish universal video understanding, broad OOD generalization, Jev superiority, or a need for RLCD/TLCD. Candidate coverage and evidence extraction remain separate failure modes from policy ranking.
