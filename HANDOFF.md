@@ -366,26 +366,88 @@ Final replay remains:
 
 ```text
 existing: n=98 det=95/98 type=95/98 clean_fp=0 abstained=0 judge_calls=474
-bounded:  n=98 det=95/98 type=81/98 clean_fp=0 abstained=25 judge_calls=323
+bounded:  n=98 det=95/98 type=94/98 clean_fp=0 abstained=21 judge_calls=437
 coverage: 78/80 changed fully covered
 fidelity mismatches: []
 bounded deterministic: True
 ```
 
-The result is detection parity and 31.9% fewer cached judge reveals, but not typing parity. Do not claim this as a replacement policy or begin RLCD/TLCD reward experiments from this result alone.
+## 2026-09-19 late session: typing-parity diagnosis + fix
 
+### Diagnosis of the 81/98 typing gap (pre-fix artifact)
 
-## Focused parity fix: reveal budget 10
+room_swap was 3/16. All 16 room_swap clips carry their two seams (~f300
+enter / ~f480 exit) in the candidate union with cached `scene_change`
+verdicts; the failures were acquisition/stopping, not arbitration:
 
-The bounded policy was stopping before reaching the second room-swap seam
-because its eight-reveal cap was too small for the candidate-union ordering.
-The policy now allows up to ten bounded reveals while retaining seam-first
-selection and the existing deterministic arbitration.
+- 9x `second_seam_not_judged`: `choose_next_request` selects as soon as ONE
+  candidate meets the floor (`len(complete)==1 and judged>=min(2,n)`). With
+  `ndis==1` the deterministic verdict is `splice`; arbitration cannot remap
+  to room_swap without a second revealed seam.
+- 3x `multiple candidates meet the rubric` abstains: both seams WERE
+  revealed (`discont=[299,479]`, arbitrated type room_swap) and the generic
+  core treats two complete candidates as ambiguity. For this task >=2
+  confirmed seams IS the room_swap signature, so the review discarded a
+  correct answer.
+- 1x cap abstain (`0d2ee665be__w2`, 12 candidates): six false predicted
+  seams consumed the whole reveal budget before the first true seam.
 
-Validation:
+The 25 abstentions were 18 clean clips (all cached verdicts continuous ->
+floor never met -> review -> composite `none`; correct by design, zero FP)
++ 4 room_swap above + 3 splice cap-reviews that never found a seam (the
+same information-limit class as the existing arm's misses).
+
+Safety surface for gathering more reveals: only the 13 two-seam room_swap
+clips have >=2 discontinuous verdicts in cache (splices <=1, loops <=1,
+timewarps/cleans 0; reverses <=2 but all have echo>10 which locks the
+verdict regardless of ndis). `dup_trailing_run>=50` exists only on the 3
+static `09c1414f1b` swaps. So extra reveals can only change composites on
+room_swap clips.
+
+### Fix (flinter_mvp/jev_replay.py only; core.py generic semantics unchanged)
+
+- `conclusion_determined(st)`: the composite is locked when
+  `dup_swap_signature` holds, `ndis>=2`, or every candidate is judged.
+- `run_bounded` gathers (seam-target order, unchanged) while the composite
+  is undetermined; it consults `choose_next_request` only at terminal
+  states, where floor-met (`floor_candidate_id`) maps any outcome to
+  `select` -- this resolves the multi-complete review -- and
+  floor-unmet stays `review`. Iteration cap with floor met now emits the
+  best-effort type instead of abstaining.
+- `MAX_ITERS` 8 -> 10 for the bounded arm: the deterministic acquisition is
+  weaker than Jev's; the two cap-boundary room_swaps needed reveals 9-10.
+  Aggregate spend stays below the recorded existing total (437 < 474).
+
+Measured effect (same candidates, same cached verdicts, same arbitration):
+type 81->94/98, room_swap 3->16/16, abstained 25->21, judge_calls 323->437,
+det unchanged 95/98, clean_fp still 0, replay still deterministic, existing
+arm fidelity mismatches still none.
+
+### Residuals (bounded arm)
+
+- `0d2ee665be__w2__reverse_segment` typed loop: recur_frac_max=0.97 wins the
+  typing-guide precedence over echo=1065. echo-first would mistype the 9
+  loop clips whose echo scores are astronomical, so this is an information-
+  level signal conflict, not an acquisition gap.
+- `13c3e046d7__w0__splice` seam_not_judged: 14 candidates, the lone
+  discontinuous verdict sits at index 10 far from predicted seams; the
+  seam-first walk does not reach it within 10 reveals (existing Jev found
+  it with its learned ordering).
+- `13c3e046d7__w2__splice`, `1ada7a0617__w0__splice` evidence_invisible:
+  identical misses on the existing arm -- information-limit.
+
+Alternating seam-prior/frame-order acquisition was simulated and rejected:
+it fixed the two cap-boundary room_swaps inside budget 8 but pushed the
+single discontinuous verdict past the cap on two splice clips (detection
+regression to 93) and dropped a found seam on `1ada7a0617__w1__room_swap`.
+
+Still true: do not claim the bounded arm as a replacement policy or begin
+RLCD/TLCD reward experiments from this result alone.
+
+### Validation
 
 ```text
-26 passed
+26 passed (PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q)
 ```
 
 Full 98-clip replay:
@@ -409,34 +471,5 @@ splice:    det 13/16, type 13/16
 timewarp:  det 15/15, type 15/15
 ```
 
-This improves the prior bounded result from typing 81/98 and 323 calls to
-94/98 and 437 calls. It now reaches room-swap typing parity and remains below
-the existing policy's 474 calls, but it still has 21 abstentions and one
-reverse typing miss. This is a better deterministic policy result, not yet a
-trained-policy result. Fine-tuning and TLCD/RLCD experiments remain deferred.
-
-Artifact:
-
-```text
-/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp_flinter/results/replay_max10.json
-```
-
-## Focused parity fix: reveal budget 10
-
-The bounded policy was stopping before reaching the second room-swap seam because its eight-reveal cap was too small for the candidate-union ordering. The policy now allows up to ten bounded reveals while retaining seam-first selection and existing deterministic arbitration.
-
-Validation: `26 passed`.
-
-Full 98-clip replay:
-
-```text
-existing: n=98 det=95/98 type=95/98 clean_fp=0 abstained=0 judge_calls=474
-bounded:  n=98 det=95/98 type=94/98 clean_fp=0 abstained=21 judge_calls=437
-coverage: 78/80 changed fully covered
-fidelity mismatches: []
-bounded deterministic: True
-```
-
-Room-swap typing is now 16/16. The prior bounded result was 81/98 typing and 323 calls. The new result is 94/98 typing and 437 calls, below the existing 474 calls. There are still 21 abstentions and one reverse typing miss. Fine-tuning and TLCD/RLCD experiments remain deferred.
-
-Artifact: `results/replay_max10.json`.
+Artifacts: `results/replay_side_by_side_final.json` (canonical),
+`results/replay_max10.json` (identical cap-10 probe).
