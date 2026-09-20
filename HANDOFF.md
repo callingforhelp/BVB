@@ -346,3 +346,97 @@ Read these documents in this order:
    `/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp/jev_loop.py`
 
 The requested next implementation is the replay adapter: reuse the existing candidate union and cached judgments, put the new bounded evidence policy above it, preserve current arbitration, and produce a side-by-side report of accuracy, abstention, candidate coverage, judge calls, and error decomposition.
+
+
+## Final verification on Mac worktree
+
+After disabling unrelated pytest plugin autoload, the focused suite passed:
+
+```text
+24 passed in 1.07s
+```
+
+The replay loader was made independent of the unavailable live `system_one_adapter` by stubbing `routes.cred`; cached replay does not call the live API. Final artifact:
+
+```text
+/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp_flinter/results/replay_side_by_side_final.json
+```
+
+Final replay remains:
+
+```text
+existing: n=98 det=95/98 type=95/98 clean_fp=0 abstained=0 judge_calls=474
+bounded:  n=98 det=95/98 type=81/98 clean_fp=0 abstained=25 judge_calls=323
+coverage: 78/80 changed fully covered
+fidelity mismatches: []
+bounded deterministic: True
+```
+
+The result is detection parity and 31.9% fewer cached judge reveals, but not typing parity. Do not claim this as a replacement policy or begin RLCD/TLCD reward experiments from this result alone.
+
+
+## Focused parity fix: reveal budget 10
+
+The bounded policy was stopping before reaching the second room-swap seam
+because its eight-reveal cap was too small for the candidate-union ordering.
+The policy now allows up to ten bounded reveals while retaining seam-first
+selection and the existing deterministic arbitration.
+
+Validation:
+
+```text
+26 passed
+```
+
+Full 98-clip replay:
+
+```text
+existing: n=98 det=95/98 type=95/98 clean_fp=0 abstained=0 judge_calls=474
+bounded:  n=98 det=95/98 type=94/98 clean_fp=0 abstained=21 judge_calls=437
+coverage: 78/80 changed fully covered
+fidelity mismatches: []
+bounded deterministic: True
+```
+
+Per-class bounded result:
+
+```text
+loop:      det 16/16, type 16/16
+none:      det 18/18, type 18/18
+reverse:   det 17/17, type 16/17
+room_swap: det 16/16, type 16/16
+splice:    det 13/16, type 13/16
+timewarp:  det 15/15, type 15/15
+```
+
+This improves the prior bounded result from typing 81/98 and 323 calls to
+94/98 and 437 calls. It now reaches room-swap typing parity and remains below
+the existing policy's 474 calls, but it still has 21 abstentions and one
+reverse typing miss. This is a better deterministic policy result, not yet a
+trained-policy result. Fine-tuning and TLCD/RLCD experiments remain deferred.
+
+Artifact:
+
+```text
+/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp_flinter/results/replay_max10.json
+```
+
+## Focused parity fix: reveal budget 10
+
+The bounded policy was stopping before reaching the second room-swap seam because its eight-reveal cap was too small for the candidate-union ordering. The policy now allows up to ten bounded reveals while retaining seam-first selection and existing deterministic arbitration.
+
+Validation: `26 passed`.
+
+Full 98-clip replay:
+
+```text
+existing: n=98 det=95/98 type=95/98 clean_fp=0 abstained=0 judge_calls=474
+bounded:  n=98 det=95/98 type=94/98 clean_fp=0 abstained=21 judge_calls=437
+coverage: 78/80 changed fully covered
+fidelity mismatches: []
+bounded deterministic: True
+```
+
+Room-swap typing is now 16/16. The prior bounded result was 81/98 typing and 323 calls. The new result is 94/98 typing and 437 calls, below the existing 474 calls. There are still 21 abstentions and one reverse typing miss. Fine-tuning and TLCD/RLCD experiments remain deferred.
+
+Artifact: `results/replay_max10.json`.
