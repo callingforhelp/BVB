@@ -86,10 +86,17 @@ training cost of `$1.954854012`, below the approved `$2.548486` ceiling.
 
 The resulting output model is
 `accounts/dave-z-d5jskgf9ohx3/models/jev-agentic-s1-bbe6341d88b3`.
-The next action is to prepare a separate serving and held-out behavioral
-evaluation cost plan. Do not provision a deployment or run paid inference
-until that plan is separately approved. Hugging Face publication, GMI, and
-all-data training remain separate later approvals.
+The read-only serving/evaluation preflight is complete. No addon-compatible
+shape was returned, so the prepared plan uses sequential live-merge
+preemptible deployments: base first, tuned second, never concurrently. The
+validated recommended shape is one BF16 B200; the conservative 60 GPU-minute
+evaluation envelope is `$13.02` at the published `$0.217/minute` rate. The
+preemptible account treatment remains an explicit unknown to verify in usage.
+
+The exact plan is `FIREWORKS_AGENTIC_S1_EVAL_PLAN.md`. Do not provision a
+deployment or run paid inference until that plan is separately approved.
+Hugging Face publication, GMI, and all-data training remain separate later
+approvals.
 
 ---
 
