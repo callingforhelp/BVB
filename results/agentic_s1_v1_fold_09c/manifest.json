@@ -1,0 +1,71 @@
+{
+  "answer_contract": "stable_physical_frame_id",
+  "augment": {
+    "scheme": "sha256-hash-order",
+    "seed_scope": "clip|step",
+    "timeline_translation": "variant0_identity; other_variants_sha256_offset",
+    "train_variants_requested": 4,
+    "val_variants": 4
+  },
+  "base_model": "accounts/fireworks/models/qwen3p6-35b-a3b",
+  "dataset_ids": {
+    "train": "jev-act-v1-eeabaaea",
+    "val": "jev-act-v1-e0365874"
+  },
+  "exporter": {
+    "file": "agentic_s1_export.py",
+    "git_revision": "0ebbc35c706e297f1b74e6dc6bf7a11ede03e7f6",
+    "sha256": "c4cec45a89c82c447ca64a9b6aa03dbc791b05ca7ed020c27160f28b926cdc38"
+  },
+  "outputs": {
+    "train.jsonl": {
+      "rows": 460,
+      "sha256": "eeabaaea9004c50a8932a849230dc6e91fe0017ee054f5c2b70e228ad565f4d4"
+    },
+    "val.jsonl": {
+      "rows": 72,
+      "sha256": "e03658748b1f9aced2cb8d0d1bf604874ad03fc5782aa68d739cbc37810858e9"
+    }
+  },
+  "prompt_version": "agentic-s1-frame-v3",
+  "quality_passed": true,
+  "schema": "agentic-s1-export/v1",
+  "serving_score_contract": "sequence_logprob_over_complete_candidate_strings",
+  "shortcut_gate": {
+    "max_frequency_prior_accuracy": 0.5,
+    "observed": {
+      "best_fixed_position": 2,
+      "best_fixed_position_accuracy": 0.1527777777777778,
+      "best_fixed_position_correct": 11,
+      "frequency_prior_accuracy": 0.09722222222222222,
+      "frequency_prior_correct": 7,
+      "frequency_prior_total": 72,
+      "frequency_then_first_accuracy": 0.2361111111111111,
+      "frequency_then_first_correct": 17,
+      "max_allowed_frequency_prior_accuracy": 0.5,
+      "passed": true,
+      "random_expected_accuracy": 0.10839469172802503,
+      "status": "measured",
+      "strongest_shortcut_accuracy": 0.2361111111111111,
+      "unseen_target_labels": 64
+    }
+  },
+  "source": {
+    "benchmark_file": "action_utility_benchmark.json",
+    "benchmark_sha256": "0490ce7f24cb2911c1a84b67ed1365b0f04eee7c9f5c45a9af42768a5660d05c",
+    "states": 437
+  },
+  "split": {
+    "mode": "holdout",
+    "train_sources": [
+      "0d2ee665be",
+      "13c3e046d7",
+      "1ada7a0617",
+      "21d970d8de"
+    ],
+    "val_sources": [
+      "09c1414f1b"
+    ]
+  },
+  "tie_policy": "unique_lexicographic_best"
+}
