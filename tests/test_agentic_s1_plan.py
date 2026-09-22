@@ -126,6 +126,7 @@ def test_plan_exact_token_cost_ids_and_hash_are_deterministic(tmp_path: Path) ->
     assert first["cost"]["point_estimate_usd"] == pytest.approx(expected)
     assert first["resources"]["train_dataset_id"].startswith("jev-act-v1-")
     assert first["resources"]["output_model_id"].startswith("jev-agentic-s1-")
+    assert first["training"]["purpose"] == "omitted; platform default"
 
 
 def test_plan_rejects_tampered_export(tmp_path: Path) -> None:

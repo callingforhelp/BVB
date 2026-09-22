@@ -331,7 +331,7 @@ def build_plan(
                 // batch_size_samples * epochs),
             "evaluation_dataset_required": True,
             "eval_auto_carveout": False,
-            "purpose": "PURPOSE_PILOT",
+            "purpose": "omitted; platform default",
             "learning_rate": "model-selected platform default",
             "learning_rate_scheduler": "constant after warmup (API default)",
             "learning_rate_warmup_steps": (
