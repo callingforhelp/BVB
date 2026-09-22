@@ -1,0 +1,193 @@
+{
+  "answer_contract": "stable_physical_frame_id",
+  "approval_hash": "f66147ebf62fb7242f02461abd12c26a5773e13c4139a7e2ae1b90f032b98ead",
+  "base_model": "accounts/fireworks/models/qwen3p6-35b-a3b",
+  "cost": {
+    "billable_train_tokens": 653458,
+    "estimate_type": "planning_range",
+    "excludes": [
+      "paid evaluation inference",
+      "post-training deployment uptime",
+      "Hugging Face or GMI hosting"
+    ],
+    "planning_high_usd": 2.548486,
+    "planning_low_usd": 1.372262,
+    "point_estimate_usd": 1.960374,
+    "pricing_fetched_at_utc": "2026-09-22T00:00:00Z",
+    "pricing_source": "https://fireworks.ai/pricing",
+    "rate_certainty": "published",
+    "rate_usd_per_million_tokens": 3.0,
+    "route": "managed-sft",
+    "usage_certainty": "dataset-derived"
+  },
+  "data": {
+    "manifest_sha256": "f33dd82c3bd7885a967ccea985f8b6052004f0d7eeacd943a432d54a64ed5af3",
+    "split": {
+      "mode": "holdout",
+      "train_sources": [
+        "0d2ee665be",
+        "13c3e046d7",
+        "1ada7a0617",
+        "21d970d8de"
+      ],
+      "val_sources": [
+        "09c1414f1b"
+      ]
+    },
+    "tie_policy": "unique_lexicographic_best",
+    "train": {
+      "rendered_tokens": 326729,
+      "rows": 460,
+      "sha256": "eeabaaea9004c50a8932a849230dc6e91fe0017ee054f5c2b70e228ad565f4d4"
+    },
+    "validation": {
+      "rendered_tokens": 50085,
+      "rows": 72,
+      "sha256": "e03658748b1f9aced2cb8d0d1bf604874ad03fc5782aa68d739cbc37810858e9"
+    }
+  },
+  "gates": {
+    "exact_tokenization": true,
+    "local_quality_passed": true,
+    "paid_mutation_approved": false,
+    "remote_inventory_checked": true
+  },
+  "method": "managed_lora_sft",
+  "prompt_version": "agentic-s1-frame-v3",
+  "remote_inventory": {
+    "account_id": "dave-z-d5jskgf9ohx3",
+    "base_model": {
+      "contextLength": 262144,
+      "createTime": "2026-04-17T04:13:27.544374Z",
+      "displayName": "Qwen3.6-35B-A3B",
+      "name": "accounts/fireworks/models/qwen3p6-35b-a3b",
+      "state": "READY",
+      "supervisedLoraTunable": true,
+      "supportsLora": true
+    },
+    "checked_with": "GET-only Fireworks inventory",
+    "collision_free": true,
+    "collisions": {
+      "job": [],
+      "output_model": [],
+      "train_dataset": [],
+      "validation_dataset": []
+    },
+    "counts": {
+      "datasets": 0,
+      "jobs": 0,
+      "models": 0
+    }
+  },
+  "resources": {
+    "content_suffix": "bbe6341d88b3",
+    "job_id": "jev-agentic-s1-bbe6341d88b3",
+    "output_model_id": "jev-agentic-s1-bbe6341d88b3",
+    "train_dataset_id": "jev-act-v1-eeabaaea",
+    "validation_dataset_id": "jev-act-v1-e0365874"
+  },
+  "schema": "agentic-s1-fireworks-plan/v1",
+  "target_account_id": "dave-z-d5jskgf9ohx3",
+  "token_audit": {
+    "exact_hf_chat_template": true,
+    "train": {
+      "answer": {
+        "count": 460,
+        "histogram": {
+          "8": 460
+        },
+        "max": 8,
+        "mean": 8.0,
+        "median": 8.0,
+        "min": 8,
+        "p95": 8,
+        "total": 3680
+      },
+      "candidate_sequences": {
+        "count": 4276,
+        "histogram": {
+          "8": 4276
+        },
+        "max": 8,
+        "mean": 8.0,
+        "median": 8.0,
+        "min": 8,
+        "p95": 8,
+        "raw_sequence_logprob_length_comparable": true,
+        "rows_with_mixed_token_lengths": 0,
+        "total": 34208
+      },
+      "rendered": {
+        "count": 460,
+        "max": 1037,
+        "mean": 710.28,
+        "median": 720.5,
+        "min": 429,
+        "p95": 943,
+        "total": 326729
+      }
+    },
+    "validation": {
+      "answer": {
+        "count": 72,
+        "histogram": {
+          "8": 72
+        },
+        "max": 8,
+        "mean": 8.0,
+        "median": 8.0,
+        "min": 8,
+        "p95": 8,
+        "total": 576
+      },
+      "candidate_sequences": {
+        "count": 720,
+        "histogram": {
+          "8": 720
+        },
+        "max": 8,
+        "mean": 8.0,
+        "median": 8.0,
+        "min": 8,
+        "p95": 8,
+        "raw_sequence_logprob_length_comparable": true,
+        "rows_with_mixed_token_lengths": 0,
+        "total": 5760
+      },
+      "rendered": {
+        "count": 72,
+        "max": 868,
+        "mean": 695.625,
+        "median": 669.5,
+        "min": 564,
+        "p95": 864,
+        "total": 50085
+      }
+    }
+  },
+  "tokenizer": {
+    "class": "TokenizersBackend",
+    "requested": "Qwen/Qwen3.6-35B-A3B",
+    "resolved_name_or_path": "Qwen/Qwen3.6-35B-A3B",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "training": {
+    "batch_size_samples": 16,
+    "epochs": 2,
+    "estimated_optimizer_steps": 58,
+    "eval_auto_carveout": false,
+    "evaluation_dataset_required": true,
+    "learning_rate": "model-selected platform default",
+    "learning_rate_scheduler": "constant after warmup (API default)",
+    "learning_rate_warmup_steps": "platform-resolved, unknown before create",
+    "lora_rank": 8,
+    "max_context_length": "platform default",
+    "observed_max_rendered_tokens": 1037,
+    "optimizer": "platform-resolved, unknown before create",
+    "optimizer_weight_decay": "platform-resolved, unknown before create",
+    "purpose": "omitted; platform default",
+    "reservation_placement": "REST default: try account reservation, then shared fallback",
+    "wandb": "disabled"
+  },
+  "workflow_path": "managed_rest"
+}

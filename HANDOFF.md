@@ -62,34 +62,32 @@ The strongest measured shortcut on the final 72-row validation set is 17/72
 - Train dataset ID: `jev-act-v1-eeabaaea`.
 - Validation dataset ID: `jev-act-v1-e0365874`.
 - Job/output model ID: `jev-agentic-s1-bbe6341d88b3`.
-- Approval hash:
-  `2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`.
+- Active approval hash:
+  `f66147ebf62fb7242f02461abd12c26a5773e13c4139a7e2ae1b90f032b98ead`.
 
-The live Fireworks GET-only preflight found the base READY and supervised-LoRA
-tunable, 11 existing datasets, zero SFT jobs, zero account output models, and
-no proposed resource-ID collisions.
+The replacement-account Fireworks preflight found the base READY and
+supervised-LoRA tunable, an empty account inventory, and no proposed
+resource-ID collisions.
 
 ## Hard boundary and exact next action
 
-The training-only plan was approved with hash
-`2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`.
-The two content-addressed Fireworks datasets were uploaded and are READY:
+The account-specific training-only plan for `dave-z-d5jskgf9ohx3` was approved
+with hash
+`f66147ebf62fb7242f02461abd12c26a5773e13c4139a7e2ae1b90f032b98ead`.
+The two content-addressed datasets are READY:
 
 - `jev-act-v1-eeabaaea`: 460 training rows;
 - `jev-act-v1-e0365874`: 72 validation rows.
 
-The approved job creation was attempted exactly once. Fireworks rejected it
-before creation with HTTP 400 code 9, `payment method is required`. A subsequent
-GET-only reconciliation found zero training jobs and zero output models, so no
-billable training has started and there is no orphaned job to recover.
+Exactly one managed SFT job, `jev-agentic-s1-bbe6341d88b3`, was created at
+2026-09-22T16:28:52Z. Its latest verified state is `JOB_STATE_RUNNING` with
+status `OK`. Fireworks did not return a server-side estimated-cost value; the
+approved dataset-derived ceiling remains $2.548486 for 653,458 training tokens.
 
-The exact next action is to add a payment method to Fireworks account
-`zhangye1987-q56dy8y3`, then rerun the approval-locked `train` command recorded
-in the private run manifest. The executor will reuse both READY datasets and
-the same caller-owned job ID; do not upload them again or create a differently
-named job. The existing approval and cost range remain valid. Paid inference,
-serving deployment, behavioral replay, Hugging Face publication, GMI, and
-all-data training remain separate later approvals.
+The exact next action is to monitor this existing job to a terminal state; do
+not create another job. After it succeeds, paid behavioral replay requires a
+separately costed and approved serving deployment. Hugging Face publication,
+GMI, and all-data training remain separate later approvals.
 
 ---
 

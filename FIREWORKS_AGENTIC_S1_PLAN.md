@@ -221,20 +221,22 @@ Completed locally:
 - exact token audit, live GET-only inventory, and exact cost plan;
 - approval-locked remote executor and duplicate-safe reconciliation;
 - two content-addressed Fireworks datasets uploaded and READY;
-- 50 passing tests.
+- explicit recovery for a confirmed empty `UPLOADING` dataset shell;
+- one approval-locked managed SFT job created on account
+  `dave-z-d5jskgf9ohx3` and verified `JOB_STATE_RUNNING`;
+- 51 passing tests.
 
 Not performed:
 
-- no training job or paid inference: the one approved create attempt was
-  rejected before creation with `payment method is required`;
-- GET-only reconciliation confirms zero training jobs and zero output models;
+- no paid inference or serving deployment;
 - no Hugging Face publication;
 - no GMI model or deployment;
 - no claim of tuned-model accuracy.
 
-The training-only plan was approved with hash
-`2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`.
-The exact next action is to add a payment method to Fireworks account
-`zhangye1987-q56dy8y3`, then rerun the approval-locked `train` command. The
-executor will reuse both READY datasets and the same caller-owned job ID; no
-new approval is required while the immutable plan and cost range are unchanged.
+The active account-specific plan was approved with hash
+`f66147ebf62fb7242f02461abd12c26a5773e13c4139a7e2ae1b90f032b98ead`.
+Its immutable plan is
+`results/agentic_s1_v1_fold_09c/fireworks_plan_dave_account.json`. The exact
+next action is to monitor the existing job `jev-agentic-s1-bbe6341d88b3` to a
+terminal state. Do not create a second job. The approved training ceiling is
+$2.548486; evaluation and serving remain separate approval gates.

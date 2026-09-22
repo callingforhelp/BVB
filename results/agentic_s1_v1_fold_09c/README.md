@@ -38,15 +38,12 @@ On this package, the strongest measured train-label/position shortcut is
 
 ## Mutation boundary
 
-The training-only plan was approved with hash
-`2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`.
-The two content-addressed datasets were uploaded to Fireworks and are READY.
-The approved training-job creation was attempted exactly once, but Fireworks
-rejected it before creation with `payment method is required`. GET-only
-reconciliation confirms zero training jobs and zero output models; no billable
-training, paid inference, or deployment has started.
+The active account-specific training plan was approved with hash
+`f66147ebf62fb7242f02461abd12c26a5773e13c4139a7e2ae1b90f032b98ead`.
+Both content-addressed datasets are READY on account `dave-z-d5jskgf9ohx3`.
+Exactly one managed SFT job, `jev-agentic-s1-bbe6341d88b3`, was created and is
+running. Its approved training ceiling is $2.548486 for 653,458 tokens.
 
-After a payment method is added to account `zhangye1987-q56dy8y3`, rerun only
-the approval-locked `train` command. It will reuse the READY datasets and the
-same caller-owned job ID. Paid inference, serving, Hugging Face publication,
-GMI deployment, and all-data training require separate later approval.
+Monitor the existing job; do not create a second one. Paid inference, serving,
+Hugging Face publication, GMI deployment, and all-data training require
+separate later approval.

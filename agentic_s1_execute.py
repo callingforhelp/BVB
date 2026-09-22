@@ -204,7 +204,8 @@ def wait_dataset(client: FireworksClient, account_id: str,
 
 
 def upload_datasets(client: FireworksClient, plan: Mapping[str, Any],
-                    plan_path: Path) -> dict[str, Any]:
+                    plan_path: Path, *,
+                    resume_incomplete_upload: bool = False) -> dict[str, Any]:
     account_id = str(plan["target_account_id"])
     results: list[dict[str, Any]] = []
     for spec in dataset_specs(plan, plan_path):
@@ -214,6 +215,9 @@ def upload_datasets(client: FireworksClient, plan: Mapping[str, Any],
             existing = _unwrap(existing_payload, "dataset")
             _verify_existing_dataset(existing, spec)
             if existing.get("state") != "READY":
+                if (existing.get("state") == "UPLOADING"
+                        and resume_incomplete_upload):
+                    client.post_file(f"{resource_path}:upload", spec["path"])
                 existing = wait_dataset(client, account_id, spec)
             results.append({
                 "id": spec["id"], "action": "reused",
@@ -321,6 +325,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--approval-hash", required=True)
     parser.add_argument("--api-base", default=API)
     parser.add_argument("--session-id")
+    parser.add_argument(
+        "--resume-incomplete-upload", action="store_true",
+        help=("upload bytes into an existing UPLOADING dataset shell; use only "
+              "after confirming the earlier file upload never started"),
+    )
     args = parser.parse_args(argv)
 
     plan = approved_plan(args.plan, args.approval_hash)
@@ -332,7 +341,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "preflight":
         value = remote_inventory(client, plan)
     elif args.command == "upload":
-        value = upload_datasets(client, plan, args.plan)
+        value = upload_datasets(
+            client, plan, args.plan,
+            resume_incomplete_upload=args.resume_incomplete_upload,
+        )
     elif args.command == "train":
         value = create_job(client, plan)
     else:

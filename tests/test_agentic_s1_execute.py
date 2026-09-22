@@ -5,7 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from agentic_s1_execute import approved_plan, dataset_specs, job_body
+from agentic_s1_execute import (
+    approved_plan,
+    dataset_specs,
+    job_body,
+    upload_datasets,
+)
 from agentic_s1_plan import refresh_approval_hash
 
 
@@ -82,3 +87,40 @@ def test_job_payload_matches_plan_and_omits_purpose(tmp_path: Path) -> None:
         "wandbConfig": {"enabled": False},
     }
     assert "purpose" not in payload
+
+
+def test_explicit_resume_uploads_existing_incomplete_dataset(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    path, value = plan(tmp_path)
+
+    class Client:
+        def __init__(self) -> None:
+            self.uploads: list[tuple[str, Path]] = []
+
+        def get_optional(self, resource_path: str) -> dict:
+            dataset_id = resource_path.rsplit("/", 1)[-1]
+            return {
+                "dataset": {
+                    "datasetId": dataset_id,
+                    "exampleCount": "1",
+                    "format": "CHAT",
+                    "state": "UPLOADING",
+                },
+            }
+
+        def post_file(self, resource_path: str, file_path: Path) -> dict:
+            self.uploads.append((resource_path, file_path))
+            return {}
+
+    client = Client()
+    monkeypatch.setattr(
+        "agentic_s1_execute.wait_dataset",
+        lambda _client, _account, spec: {"state": "READY", "id": spec["id"]},
+    )
+    result = upload_datasets(
+        client, value, path, resume_incomplete_upload=True)
+    assert [item[0] for item in client.uploads] == [
+        "/accounts/test-account/datasets/train-id:upload",
+        "/accounts/test-account/datasets/val-id:upload",
+    ]
+    assert all(item["state"] == "READY" for item in result["datasets"])
