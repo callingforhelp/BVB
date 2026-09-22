@@ -71,15 +71,24 @@ no proposed resource-ID collisions.
 
 ## Hard boundary and exact next action
 
-No Fireworks upload, training job, paid inference, Hugging Face publication,
-or GMI deployment has occurred.
+The training-only plan was approved with hash
+`2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`.
+The two content-addressed Fireworks datasets were uploaded and are READY:
 
-Read `FIREWORKS_AGENTIC_S1_PLAN.md` and
-`results/agentic_s1_v1_fold_09c/fireworks_plan.json`. The next action is to ask
-the user to approve or reject that exact approval hash. After approval, recheck
-remote collisions, upload each dataset once, create one managed SFT job,
-and monitor it. Behavioral replay requires a separately costed and approved
-serving deployment. Inference, deployment, Hugging Face publication, GMI, and
+- `jev-act-v1-eeabaaea`: 460 training rows;
+- `jev-act-v1-e0365874`: 72 validation rows.
+
+The approved job creation was attempted exactly once. Fireworks rejected it
+before creation with HTTP 400 code 9, `payment method is required`. A subsequent
+GET-only reconciliation found zero training jobs and zero output models, so no
+billable training has started and there is no orphaned job to recover.
+
+The exact next action is to add a payment method to Fireworks account
+`zhangye1987-q56dy8y3`, then rerun the approval-locked `train` command recorded
+in the private run manifest. The executor will reuse both READY datasets and
+the same caller-owned job ID; do not upload them again or create a differently
+named job. The existing approval and cost range remain valid. Paid inference,
+serving deployment, behavioral replay, Hugging Face publication, GMI, and
 all-data training remain separate later approvals.
 
 ---

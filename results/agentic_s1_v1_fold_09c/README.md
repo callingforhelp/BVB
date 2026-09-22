@@ -38,10 +38,15 @@ On this package, the strongest measured train-label/position shortcut is
 
 ## Mutation boundary
 
-This directory was produced locally. Its Fireworks inventory fields came only
-from authenticated GET requests. No dataset was uploaded, no training or
-inference job was created, and no deployment was provisioned.
+The training-only plan was approved with hash
+`2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`.
+The two content-addressed datasets were uploaded to Fireworks and are READY.
+The approved training-job creation was attempted exactly once, but Fireworks
+rejected it before creation with `payment method is required`. GET-only
+reconciliation confirms zero training jobs and zero output models; no billable
+training, paid inference, or deployment has started.
 
-Any remote mutation must match approval hash
-`2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`
-and requires explicit user approval.
+After a payment method is added to account `zhangye1987-q56dy8y3`, rerun only
+the approval-locked `train` command. It will reuse the READY datasets and the
+same caller-owned job ID. Paid inference, serving, Hugging Face publication,
+GMI deployment, and all-data training require separate later approval.

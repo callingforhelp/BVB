@@ -126,7 +126,7 @@ log-probability comparison does not contain a candidate-length preference.
 The longest rendered row is 1,037 tokens, far below the base model's reported
 262,144-token context.
 
-## Exact Fireworks plan awaiting approval
+## Exact approved Fireworks plan
 
 | Field | Value |
 |---|---|
@@ -219,16 +219,22 @@ Completed locally:
 - exporter, strict renderer, read-only planner, and tests;
 - immutable train/validation package;
 - exact token audit, live GET-only inventory, and exact cost plan;
-- 48 passing tests.
+- approval-locked remote executor and duplicate-safe reconciliation;
+- two content-addressed Fireworks datasets uploaded and READY;
+- 50 passing tests.
 
 Not performed:
 
-- no Fireworks dataset upload;
-- no training job or paid inference;
+- no training job or paid inference: the one approved create attempt was
+  rejected before creation with `payment method is required`;
+- GET-only reconciliation confirms zero training jobs and zero output models;
 - no Hugging Face publication;
 - no GMI model or deployment;
 - no claim of tuned-model accuracy.
 
-The next action is explicit approval or rejection of the training-only approval
-hash
+The training-only plan was approved with hash
 `2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`.
+The exact next action is to add a payment method to Fireworks account
+`zhangye1987-q56dy8y3`, then rerun the approval-locked `train` command. The
+executor will reuse both READY datasets and the same caller-owned job ID; no
+new approval is required while the immutable plan and cost range are unchanged.
