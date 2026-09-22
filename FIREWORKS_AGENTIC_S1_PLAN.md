@@ -134,7 +134,7 @@ The longest rendered row is 1,037 tokens, far below the base model's reported
 | Workflow | Fireworks Managed LoRA SFT through the existing REST driver |
 | Base model | `accounts/fireworks/models/qwen3p6-35b-a3b` |
 | Live model state | READY; supervised LoRA tunable; LoRA supported |
-| Purpose | `PURPOSE_PILOT` |
+| Purpose field | omitted; platform default |
 | Epochs | 2 |
 | LoRA rank | 8 |
 | Batch size | 16 samples |
@@ -147,7 +147,7 @@ The longest rendered row is 1,037 tokens, far below the base model's reported
 | W&B | disabled |
 | Job ID | `jev-agentic-s1-bbe6341d88b3` |
 | Output model ID | `jev-agentic-s1-bbe6341d88b3` |
-| Approval hash | `0f2382d47de58b5b845eac6d6690195679311f5637f96b18a9ccc2eba8a4d688` |
+| Approval hash | `2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98` |
 
 The read-only inventory found 11 existing datasets, zero SFT jobs, and zero
 account output models. None of the proposed dataset, job, or output-model IDs
@@ -231,4 +231,4 @@ Not performed:
 
 The next action is explicit approval or rejection of the training-only approval
 hash
-`0f2382d47de58b5b845eac6d6690195679311f5637f96b18a9ccc2eba8a4d688`.
+`2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98`.

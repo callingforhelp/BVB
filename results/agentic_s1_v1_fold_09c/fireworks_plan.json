@@ -1,6 +1,6 @@
 {
   "answer_contract": "stable_physical_frame_id",
-  "approval_hash": "0f2382d47de58b5b845eac6d6690195679311f5637f96b18a9ccc2eba8a4d688",
+  "approval_hash": "2ce848f686534b8140b64ddee39419f731d97ed43aedcca8cee493c83052cc98",
   "base_model": "accounts/fireworks/models/qwen3p6-35b-a3b",
   "cost": {
     "billable_train_tokens": 653458,
@@ -185,7 +185,7 @@
     "observed_max_rendered_tokens": 1037,
     "optimizer": "platform-resolved, unknown before create",
     "optimizer_weight_decay": "platform-resolved, unknown before create",
-    "purpose": "PURPOSE_PILOT",
+    "purpose": "omitted; platform default",
     "reservation_placement": "REST default: try account reservation, then shared fallback",
     "wandb": "disabled"
   },
