@@ -177,14 +177,19 @@ The range is planning protection, not a quote. The immutable JSON plan is
 
 ## Training and evaluation gates
 
-After explicit approval of the exact approval hash:
+After explicit approval of the exact approval hash, the training-only stage is:
 
 1. re-run GET-only collision checks;
 2. upload the two content-addressed datasets once;
 3. create exactly one managed SFT job with the recorded ID;
 4. monitor numeric progress and reconcile any `AlreadyExists` response rather
-   than launching a duplicate;
-5. evaluate the tuned model on the unchanged held-out replay;
+   than launching a duplicate.
+
+After successful training, prepare a separate serving/evaluation cost plan and
+obtain separate approval before provisioning a dedicated deployment or running
+paid inference. The behavioral evaluation stage will then:
+
+5. score the tuned model on the unchanged held-out replay;
 6. require zero clean false positives, at least 95/98 detection, at least
    94/98 typing, fewer than 437 judge calls, valid actions, and candidate-order
    invariance;
@@ -224,5 +229,6 @@ Not performed:
 - no GMI model or deployment;
 - no claim of tuned-model accuracy.
 
-The next action is explicit approval or rejection of approval hash
+The next action is explicit approval or rejection of the training-only approval
+hash
 `0f2382d47de58b5b845eac6d6690195679311f5637f96b18a9ccc2eba8a4d688`.

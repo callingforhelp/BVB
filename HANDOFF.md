@@ -78,8 +78,9 @@ Read `FIREWORKS_AGENTIC_S1_PLAN.md` and
 `results/agentic_s1_v1_fold_09c/fireworks_plan.json`. The next action is to ask
 the user to approve or reject that exact approval hash. After approval, recheck
 remote collisions, upload each dataset once, create one managed SFT job,
-monitor it, and evaluate against the frozen baseline. Deployment and all-data
-training remain separate later approvals.
+and monitor it. Behavioral replay requires a separately costed and approved
+serving deployment. Inference, deployment, Hugging Face publication, GMI, and
+all-data training remain separate later approvals.
 
 ---
 
