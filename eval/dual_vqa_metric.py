@@ -155,6 +155,7 @@ def ask_vlm(
                 model=model,
                 messages=[{"role": "user", "content": content}],
                 max_completion_tokens=32,
+                temperature=0,
             )
             answer = (resp.choices[0].message.content or "").strip()
             usage = {

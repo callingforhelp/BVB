@@ -20,6 +20,9 @@ DEFAULT_LOCAL_DIR = Path("sandbox/results")
 RETIRED_PATTERNS = [
     "*/unit_tests*.jsonl", "*/summary.json", "*/summary_*.json",
     "*/summary.shard-*.json", "*/introspection-cache*/**",
+    # Large reusable analysis caches stay on HF/GPU hosts unless explicitly
+    # requested; normal result restoration must not pull them to laptops.
+    "_pairwise_vjepa_features/**",
 ]
 
 

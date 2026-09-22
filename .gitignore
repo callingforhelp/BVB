@@ -18,6 +18,8 @@ sandbox/log/
 .conda/
 .tmp
 .vscode/
+blend/
+blend
 
 # Local authoring tools, private study responses, and build state
 .cursor/skills/
