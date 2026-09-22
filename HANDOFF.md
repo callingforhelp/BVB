@@ -1,3 +1,88 @@
+# Agentic S1 training addendum — 2026-09-22
+
+## Active checkout
+
+- Worktree: `/Users/oldap/WorkBuddy AI/2026-09-15-23-20-52/BVB/.verify_tmp/coherence_mvp_agentic_s1`
+- Branch: `codex/fireworks-agentic-s1-v1`
+- Stacked draft PR: `https://github.com/callingforhelp/BVB/pull/1`
+- Base: `flinter-evidence-policy` at plan start
+- Plan commit: `6dfb241f540ed3a38c2ab823fecce718dcdda0f8`
+- Tested implementation commit: `0ebbc35c706e297f1b74e6dc6bf7a11ede03e7f6`
+
+Do not edit or clean the dirty sibling reference worktree at
+`../coherence_mvp_flinter`.
+
+## Current objective
+
+Train an owned Jev-like next-evidence policy as a
+Qwen3.6-35B-A3B LoRA on Fireworks. The model selects the next valid physical
+frame to inspect from observed evidence. Code continues to own candidate
+construction, budget, safety floors, stopping, abstention, and final verdict
+arbitration.
+
+This is scorer/harness training, not raw-video model training and not direct
+final-class supervision.
+
+## Completed in this branch
+
+- Strict model-visible state renderer with fixed-width physical frame IDs.
+- Candidate-order and whole-timeline translation invariance.
+- Hard-label exporter for unique-best counterfactual actions.
+- Source-disjoint held-out split and explicit shortcut baselines.
+- Read-only exact tokenizer/cost planner with GET-only Fireworks inventory.
+- Duplicate-safe content-addressed dataset, job, and output-model IDs.
+- 48 passing tests with third-party pytest plugin autoload disabled.
+- Frozen artifact package in `results/agentic_s1_v1_fold_09c/`.
+
+## Important data-quality correction
+
+The originally proposed `1ada7a0617` validation fold was invalid: a global
+training-label-frequency lookup selected 29/30 held-out answers because the
+synthetic corpus reuses absolute seam coordinates. That would let a model
+appear competent without reading the state.
+
+The final package instead holds out `09c1414f1b` and augments both splits with
+candidate-order permutations and semantics-preserving timeline translations.
+The strongest measured shortcut on the final 72-row validation set is 17/72
+(23.61%); 64/72 target IDs are unseen in training.
+
+## Frozen package and exact plan
+
+- Training: 460 rows, 326,729 tokens,
+  SHA-256 `eeabaaea9004c50a8932a849230dc6e91fe0017ee054f5c2b70e228ad565f4d4`.
+- Validation: 72 rows, 50,085 tokens,
+  SHA-256 `e03658748b1f9aced2cb8d0d1bf604874ad03fc5782aa68d739cbc37810858e9`.
+- Every answer and offered candidate is exactly eight Qwen tokens; zero rows
+  mix candidate token lengths.
+- Base: `accounts/fireworks/models/qwen3p6-35b-a3b`.
+- Managed LoRA SFT: rank 8, batch 16, two epochs, approximately 58 updates.
+- Billable training tokens: 653,458.
+- Published-rate point estimate: $1.96 (exact: $1.960374).
+- Planning range: $1.37–$2.55.
+- Train dataset ID: `jev-act-v1-eeabaaea`.
+- Validation dataset ID: `jev-act-v1-e0365874`.
+- Job/output model ID: `jev-agentic-s1-bbe6341d88b3`.
+- Approval hash:
+  `0f2382d47de58b5b845eac6d6690195679311f5637f96b18a9ccc2eba8a4d688`.
+
+The live Fireworks GET-only preflight found the base READY and supervised-LoRA
+tunable, 11 existing datasets, zero SFT jobs, zero account output models, and
+no proposed resource-ID collisions.
+
+## Hard boundary and exact next action
+
+No Fireworks upload, training job, paid inference, Hugging Face publication,
+or GMI deployment has occurred.
+
+Read `FIREWORKS_AGENTIC_S1_PLAN.md` and
+`results/agentic_s1_v1_fold_09c/fireworks_plan.json`. The next action is to ask
+the user to approve or reject that exact approval hash. After approval, recheck
+remote collisions, upload each dataset once, create one managed SFT job,
+monitor it, and evaluate against the frozen baseline. Deployment and all-data
+training remain separate later approvals.
+
+---
+
 # Flinter evidence-policy MVP — handoff
 
 Date: 2026-09-19
