@@ -80,14 +80,16 @@ The two content-addressed datasets are READY:
 - `jev-act-v1-e0365874`: 72 validation rows.
 
 Exactly one managed SFT job, `jev-agentic-s1-bbe6341d88b3`, was created at
-2026-09-22T16:28:52Z. Its latest verified state is `JOB_STATE_RUNNING` with
-status `OK`. Fireworks did not return a server-side estimated-cost value; the
-approved dataset-derived ceiling remains $2.548486 for 653,458 training tokens.
+2026-09-22T16:28:52Z and completed at 2026-09-22T16:49:52Z. Its verified state
+is `JOB_STATE_COMPLETED`, status `OK`, and 100% progress. Fireworks reports a
+training cost of `$1.954854012`, below the approved `$2.548486` ceiling.
 
-The exact next action is to monitor this existing job to a terminal state; do
-not create another job. After it succeeds, paid behavioral replay requires a
-separately costed and approved serving deployment. Hugging Face publication,
-GMI, and all-data training remain separate later approvals.
+The resulting output model is
+`accounts/dave-z-d5jskgf9ohx3/models/jev-agentic-s1-bbe6341d88b3`.
+The next action is to prepare a separate serving and held-out behavioral
+evaluation cost plan. Do not provision a deployment or run paid inference
+until that plan is separately approved. Hugging Face publication, GMI, and
+all-data training remain separate later approvals.
 
 ---
 

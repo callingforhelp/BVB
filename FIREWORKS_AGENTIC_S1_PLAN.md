@@ -222,8 +222,8 @@ Completed locally:
 - approval-locked remote executor and duplicate-safe reconciliation;
 - two content-addressed Fireworks datasets uploaded and READY;
 - explicit recovery for a confirmed empty `UPLOADING` dataset shell;
-- one approval-locked managed SFT job created on account
-  `dave-z-d5jskgf9ohx3` and verified `JOB_STATE_RUNNING`;
+- one approval-locked managed SFT job created and completed on account
+  `dave-z-d5jskgf9ohx3`;
 - 51 passing tests.
 
 Not performed:
@@ -236,7 +236,10 @@ Not performed:
 The active account-specific plan was approved with hash
 `f66147ebf62fb7242f02461abd12c26a5773e13c4139a7e2ae1b90f032b98ead`.
 Its immutable plan is
-`results/agentic_s1_v1_fold_09c/fireworks_plan_dave_account.json`. The exact
-next action is to monitor the existing job `jev-agentic-s1-bbe6341d88b3` to a
-terminal state. Do not create a second job. The approved training ceiling is
-$2.548486; evaluation and serving remain separate approval gates.
+`results/agentic_s1_v1_fold_09c/fireworks_plan_dave_account.json`. The existing
+job `jev-agentic-s1-bbe6341d88b3` completed at 100% with status `OK`; Fireworks
+reported `$1.954854012` training cost against the approved `$2.548486` ceiling.
+The resulting output model is
+`accounts/dave-z-d5jskgf9ohx3/models/jev-agentic-s1-bbe6341d88b3`.
+The next action is a separate serving and held-out behavioral-evaluation cost
+plan. Do not create a deployment or run paid inference before approval.

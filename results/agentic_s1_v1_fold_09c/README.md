@@ -41,9 +41,10 @@ On this package, the strongest measured train-label/position shortcut is
 The active account-specific training plan was approved with hash
 `f66147ebf62fb7242f02461abd12c26a5773e13c4139a7e2ae1b90f032b98ead`.
 Both content-addressed datasets are READY on account `dave-z-d5jskgf9ohx3`.
-Exactly one managed SFT job, `jev-agentic-s1-bbe6341d88b3`, was created and is
-running. Its approved training ceiling is $2.548486 for 653,458 tokens.
+Exactly one managed SFT job, `jev-agentic-s1-bbe6341d88b3`, was created and
+completed at 100% with status `OK`. Fireworks reported training cost
+`$1.954854012` against the approved `$2.548486` ceiling. The output model is
+`accounts/dave-z-d5jskgf9ohx3/models/jev-agentic-s1-bbe6341d88b3`.
 
-Monitor the existing job; do not create a second one. Paid inference, serving,
-Hugging Face publication, GMI deployment, and all-data training require
-separate later approval.
+Paid inference, serving, Hugging Face publication, GMI deployment, and all-data
+training require separate later approval.
